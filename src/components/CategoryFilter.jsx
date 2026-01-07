@@ -12,6 +12,7 @@ const CATEGORIES = [
   { id: 'chowder', label: 'Chowder', emoji: '🥣' },
   { id: 'breakfast', label: 'Breakfast', emoji: '🥞' },
   { id: 'salad', label: 'Salads', emoji: '🥗' },
+  { id: 'fries', label: 'Fries', emoji: '🍟' },
   { id: 'apps', label: 'Apps', emoji: '🍴' },
   { id: 'fried chicken', label: 'Fried Chicken', emoji: '🍗' },
   { id: 'entree', label: 'Entrees', emoji: '🍖' },
