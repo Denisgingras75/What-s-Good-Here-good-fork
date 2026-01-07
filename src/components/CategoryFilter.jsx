@@ -8,6 +8,7 @@ const CATEGORIES = [
   { id: 'taco', label: 'Tacos', emoji: '🌮' },
   { id: 'wings', label: 'Wings', emoji: '🍗' },
   { id: 'lobster roll', label: 'Lobster Rolls', emoji: '🦞' },
+  { id: 'lobster', label: 'Lobster', emoji: '🦞' },
   { id: 'fish', label: 'Fish', emoji: '🐟' },
   { id: 'chowder', label: 'Chowder', emoji: '🥣' },
   { id: 'breakfast', label: 'Breakfast', emoji: '🥞' },
