@@ -2,12 +2,13 @@ const CATEGORIES = [
   { id: null, label: 'All Dishes', emoji: '🍽️' },
   { id: 'burger', label: 'Burgers', emoji: '🍔' },
   { id: 'pizza', label: 'Pizza', emoji: '🍕' },
-  { id: 'sushi', label: 'Sushi', emoji: '🍣' },
-  { id: 'burrito', label: 'Burritos', emoji: '🌯' },
-  { id: 'sandwich', label: 'Sandwiches', emoji: '🥪' },
   { id: 'taco', label: 'Tacos', emoji: '🌮' },
   { id: 'wings', label: 'Wings', emoji: '🍗' },
   { id: 'lobster roll', label: 'Lobster Rolls', emoji: '🦞' },
+  { id: 'fish', label: 'Fish', emoji: '🐟' },
+  { id: 'chowder', label: 'Chowder', emoji: '🥣' },
+  { id: 'apps', label: 'Apps', emoji: '🍴' },
+  { id: 'fried chicken', label: 'Fried Chicken', emoji: '🍗' },
 ]
 
 export function CategoryFilter({ selectedCategory, onSelectCategory }) {
