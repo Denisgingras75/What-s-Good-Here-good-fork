@@ -56,7 +56,7 @@ export function CategoryFilter({ selectedCategory, onSelectCategory }) {
                 }}
               >
                 <img
-                  src={category.id ? getCategoryImage(category.id, 'thumbnail') : DEFAULT_DISH_IMAGE.replace('w=800&h=600', 'w=100&h=100')}
+                  src={category.id ? getCategoryImage(category.id) : DEFAULT_DISH_IMAGE}
                   alt={category.label}
                   className="w-6 h-6 rounded-full object-cover"
                   loading="lazy"
