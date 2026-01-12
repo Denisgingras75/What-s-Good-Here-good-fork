@@ -131,68 +131,6 @@
   }
 }
 
-/* Realistic physics-based crumb falling animation */
-@keyframes crumbFallPhysics {
-  0% {
-    opacity: 1;
-    transform:
-      translateY(0)
-      translateX(0)
-      rotate(var(--initial-rotation, 0deg))
-      scale(1);
-  }
-  15% {
-    opacity: 1;
-    transform:
-      translateY(calc(var(--fall-distance, 40px) * 0.1))
-      translateX(calc(var(--fall-direction, 1) * 3px))
-      rotate(calc(var(--initial-rotation, 0deg) + var(--rotation-speed, 180deg) * 0.15))
-      scale(1);
-  }
-  40% {
-    opacity: 1;
-    transform:
-      translateY(calc(var(--fall-distance, 40px) * 0.5))
-      translateX(calc(var(--fall-direction, 1) * 10px))
-      rotate(calc(var(--initial-rotation, 0deg) + var(--rotation-speed, 180deg) * 0.4))
-      scale(1);
-  }
-  70% {
-    opacity: 0.9;
-    transform:
-      translateY(calc(var(--fall-distance, 40px) * 0.85))
-      translateX(calc(var(--fall-direction, 1) * 18px))
-      rotate(calc(var(--initial-rotation, 0deg) + var(--rotation-speed, 180deg) * 0.7))
-      scale(0.95);
-  }
-  /* Bounce at 75% for solid chunks */
-  75% {
-    opacity: 0.85;
-    transform:
-      translateY(calc(var(--fall-distance, 40px) * (1 - var(--bounce, 0))))
-      translateX(calc(var(--fall-direction, 1) * 20px))
-      rotate(calc(var(--initial-rotation, 0deg) + var(--rotation-speed, 180deg) * 0.75))
-      scale(0.9);
-  }
-  85% {
-    opacity: 0.6;
-    transform:
-      translateY(var(--fall-distance, 40px))
-      translateX(calc(var(--fall-direction, 1) * 22px))
-      rotate(calc(var(--initial-rotation, 0deg) + var(--rotation-speed, 180deg) * 0.85))
-      scale(0.85);
-  }
-  100% {
-    opacity: 0;
-    transform:
-      translateY(calc(var(--fall-distance, 40px) + 5px))
-      translateX(calc(var(--fall-direction, 1) * 25px))
-      rotate(calc(var(--initial-rotation, 0deg) + var(--rotation-speed, 180deg)))
-      scale(0.7);
-  }
-}
-
-/* Legacy animation for backwards compatibility */
 @keyframes crumbFall {
   0% {
     opacity: 1;

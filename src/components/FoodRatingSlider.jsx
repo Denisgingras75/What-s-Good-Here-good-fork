@@ -23,128 +23,6 @@ import { AppsSVG } from './foods/AppsSVG'
 import { FriedChickenSVG } from './foods/FriedChickenSVG'
 import { EntreeSVG } from './foods/EntreeSVG'
 
-// Realistic crumb configurations per food type
-const CRUMB_CONFIGS = {
-  burger: [
-    { type: 'chunk', colors: ['#8B4513', '#A0522D', '#D2691E'], weight: 3 }, // Bun chunks
-    { type: 'shred', colors: ['#228B22', '#32CD32'], weight: 2 }, // Lettuce
-    { type: 'splat', colors: ['#FF6347', '#DC143C'], weight: 1 }, // Ketchup/tomato
-    { type: 'crumb', colors: ['#F5DEB3', '#DEB887'], weight: 2 }, // Sesame seeds
-  ],
-  pizza: [
-    { type: 'chunk', colors: ['#D97706', '#B8860B'], weight: 3 }, // Crust
-    { type: 'drip', colors: ['#FFA500', '#FFD700'], weight: 2 }, // Cheese stretching
-    { type: 'splat', colors: ['#DC143C', '#B22222'], weight: 1 }, // Sauce
-    { type: 'crumb', colors: ['#8B0000', '#A52A2A'], weight: 1 }, // Pepperoni bits
-  ],
-  taco: [
-    { type: 'shard', colors: ['#E8C060', '#DAA520', '#F4A460'], weight: 3 }, // Shell shards
-    { type: 'shred', colors: ['#228B22', '#90EE90'], weight: 2 }, // Lettuce
-    { type: 'chunk', colors: ['#8B4513', '#A0522D'], weight: 2 }, // Meat
-    { type: 'splat', colors: ['#FF6347', '#FF4500'], weight: 1 }, // Salsa
-  ],
-  sandwich: [
-    { type: 'chunk', colors: ['#D4A574', '#C4A060', '#B8956E'], weight: 3 }, // Bread
-    { type: 'shred', colors: ['#228B22', '#32CD32'], weight: 2 }, // Lettuce
-    { type: 'crumb', colors: ['#F5DEB3', '#FAEBD7'], weight: 2 }, // Bread crumbs
-  ],
-  'breakfast sandwich': [
-    { type: 'chunk', colors: ['#D4A056', '#C49040'], weight: 2 }, // Bagel/bread
-    { type: 'drip', colors: ['#FFD700', '#FFA500'], weight: 2 }, // Egg yolk
-    { type: 'crumb', colors: ['#F5DEB3', '#FFE4B5'], weight: 2 }, // Crumbs
-  ],
-  pasta: [
-    { type: 'strand', colors: ['#F5DEB3', '#FAEBD7', '#FFE4C4'], weight: 3 }, // Noodles
-    { type: 'splat', colors: ['#DC143C', '#B22222', '#8B0000'], weight: 2 }, // Sauce
-    { type: 'crumb', colors: ['#FFF8DC', '#FFFACD'], weight: 1 }, // Parmesan
-  ],
-  sushi: [
-    { type: 'grain', colors: ['#FFFAFA', '#F5F5F5', '#FFFAF0'], weight: 3 }, // Rice
-    { type: 'chunk', colors: ['#FA8072', '#E9967A'], weight: 2 }, // Fish
-    { type: 'shred', colors: ['#1B4D3E', '#2F4F4F'], weight: 1 }, // Nori
-  ],
-  wings: [
-    { type: 'chunk', colors: ['#8B4513', '#A0522D', '#D2691E'], weight: 2 }, // Crispy skin
-    { type: 'splat', colors: ['#FF4500', '#DC143C', '#B22222'], weight: 3 }, // Buffalo sauce
-    { type: 'crumb', colors: ['#DEB887', '#D2B48C'], weight: 1 }, // Breading
-  ],
-  fries: [
-    { type: 'chunk', colors: ['#FFD700', '#FFC107', '#F4D03F'], weight: 3 }, // Fry pieces
-    { type: 'crumb', colors: ['#DAA520', '#B8860B'], weight: 2 }, // Crispy bits
-    { type: 'grain', colors: ['#FFFFFF', '#F5F5F5'], weight: 1 }, // Salt
-  ],
-  salad: [
-    { type: 'shred', colors: ['#228B22', '#32CD32', '#90EE90', '#98FB98'], weight: 4 }, // Lettuce
-    { type: 'chunk', colors: ['#FF6347', '#FF4500'], weight: 1 }, // Tomato
-    { type: 'drip', colors: ['#F5DEB3', '#FFE4B5'], weight: 1 }, // Dressing
-  ],
-  chowder: [
-    { type: 'splat', colors: ['#FFFDD0', '#FFF8DC', '#FAEBD7'], weight: 3 }, // Cream
-    { type: 'chunk', colors: ['#DEB887', '#F4A460'], weight: 2 }, // Potato/clam
-    { type: 'drip', colors: ['#FFFACD', '#FFF8E7'], weight: 1 }, // Broth drip
-  ],
-  soup: [
-    { type: 'splat', colors: ['#FF6347', '#E07020', '#DC143C'], weight: 3 }, // Tomato soup
-    { type: 'drip', colors: ['#FF7F50', '#FF6347'], weight: 2 }, // Drips
-  ],
-  'lobster roll': [
-    { type: 'chunk', colors: ['#FFA07A', '#FA8072', '#E9967A'], weight: 3 }, // Lobster
-    { type: 'chunk', colors: ['#D4A574', '#C4A060'], weight: 2 }, // Bun
-    { type: 'drip', colors: ['#FFFACD', '#FFF8DC'], weight: 1 }, // Mayo/butter
-  ],
-  breakfast: [
-    { type: 'drip', colors: ['#FFD700', '#FFA500'], weight: 3 }, // Egg yolk
-    { type: 'shard', colors: ['#8B0000', '#A52A2A'], weight: 2 }, // Bacon
-    { type: 'crumb', colors: ['#F5DEB3', '#DEB887'], weight: 1 }, // Toast
-  ],
-  entree: [
-    { type: 'chunk', colors: ['#8B4513', '#A0522D', '#654321'], weight: 3 }, // Meat
-    { type: 'drip', colors: ['#8B0000', '#A52A2A'], weight: 2 }, // Juice/sauce
-  ],
-}
-
-// Get random crumb type based on weights
-function getRandomCrumbType(category) {
-  const config = CRUMB_CONFIGS[category] || CRUMB_CONFIGS.burger
-  const totalWeight = config.reduce((sum, c) => sum + c.weight, 0)
-  let random = Math.random() * totalWeight
-
-  for (const crumbType of config) {
-    random -= crumbType.weight
-    if (random <= 0) {
-      return {
-        type: crumbType.type,
-        color: crumbType.colors[Math.floor(Math.random() * crumbType.colors.length)]
-      }
-    }
-  }
-  return { type: 'crumb', color: '#D97706' }
-}
-
-// Generate SVG path for different crumb shapes
-function getCrumbPath(type, size) {
-  const s = size
-  switch (type) {
-    case 'chunk': // Irregular polygon chunk
-      return `M${-s*0.8},${-s*0.3} L${-s*0.2},${-s} L${s*0.7},${-s*0.6} L${s},${s*0.2} L${s*0.4},${s*0.9} L${-s*0.5},${s*0.7} Z`
-    case 'shard': // Sharp triangular shard (taco shell)
-      return `M${-s},${s*0.5} L${-s*0.3},${-s} L${s*0.8},${-s*0.7} L${s},${s*0.3} L${s*0.2},${s} Z`
-    case 'shred': // Long thin shred (lettuce)
-      return `M${-s*1.5},${-s*0.2} Q${-s*0.5},${-s*0.5} ${0},${-s*0.1} Q${s*0.5},${s*0.3} ${s*1.5},${s*0.1} Q${s*0.7},${s*0.5} ${0},${s*0.3} Q${-s*0.7},${0} ${-s*1.5},${-s*0.2} Z`
-    case 'splat': // Sauce splatter
-      return `M${0},${-s} Q${s*0.5},${-s*0.5} ${s*0.8},${-s*0.3} Q${s},${0} ${s*0.6},${s*0.4} Q${s*0.3},${s*0.8} ${0},${s*0.6} Q${-s*0.4},${s*0.9} ${-s*0.7},${s*0.4} Q${-s},${0} ${-s*0.6},${-s*0.5} Q${-s*0.3},${-s*0.8} ${0},${-s} Z`
-    case 'drip': // Dripping liquid
-      return `M${-s*0.3},${-s} Q${-s*0.5},${0} ${-s*0.2},${s*0.5} Q${0},${s*1.2} ${s*0.2},${s*0.5} Q${s*0.5},${0} ${s*0.3},${-s} Q${0},${-s*0.7} ${-s*0.3},${-s} Z`
-    case 'strand': // Pasta strand
-      return `M${-s*2},${-s*0.15} Q${-s},${-s*0.4} ${0},${0} Q${s},${s*0.4} ${s*2},${s*0.15} L${s*2},${s*0.35} Q${s},${s*0.6} ${0},${s*0.2} Q${-s},${-s*0.2} ${-s*2},${s*0.05} Z`
-    case 'grain': // Rice grain or salt crystal
-      return `M${0},${-s*0.8} Q${s*0.4},${-s*0.4} ${s*0.35},${0} Q${s*0.4},${s*0.4} ${0},${s*0.8} Q${-s*0.4},${s*0.4} ${-s*0.35},${0} Q${-s*0.4},${-s*0.4} ${0},${-s*0.8} Z`
-    case 'crumb': // Small irregular crumb
-    default:
-      return `M${-s*0.6},${-s*0.4} L${s*0.2},${-s*0.7} L${s*0.7},${-s*0.1} L${s*0.5},${s*0.6} L${-s*0.3},${s*0.5} L${-s*0.8},${0} Z`
-  }
-}
-
 export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.1, category }) {
   const [crumbs, setCrumbs] = useState([])
   const lastValue = useRef(value)
@@ -156,35 +34,22 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
   // Track last bite sound time to throttle
   const lastBiteSoundTime = useRef(0)
 
-  // Generate realistic crumbs when slider moves up
+  // Generate crumbs and play bite sound when slider moves up (more eating)
   useEffect(() => {
     if (value > lastValue.current) {
       const valueDiff = value - lastValue.current
-      const numCrumbs = Math.ceil(valueDiff * 3) + 1
+      const numCrumbs = Math.ceil(valueDiff * 2.5)
       const newCrumbs = []
 
       for (let i = 0; i < numCrumbs; i++) {
-        const { type, color } = getRandomCrumbType(category)
-        const size = type === 'grain' ? 1 + Math.random() * 1.5
-                   : type === 'strand' ? 1.5 + Math.random() * 2
-                   : type === 'shred' ? 2 + Math.random() * 2
-                   : 2 + Math.random() * 3
-
         newCrumbs.push({
           id: crumbIdRef.current++,
-          x: 35 + Math.random() * 30,
-          y: 25 + Math.random() * 25,
-          size,
-          type,
-          color,
-          path: getCrumbPath(type, size),
+          x: 40 + Math.random() * 20,
+          y: 30 + Math.random() * 20,
+          size: 2 + Math.random() * 3,
           rotation: Math.random() * 360,
-          rotationSpeed: (Math.random() - 0.5) * 720, // How much it spins while falling
-          fallDirection: (Math.random() - 0.5) * 2, // -1 to 1
-          fallDistance: 35 + Math.random() * 25, // How far it falls
-          delay: i * 40 + Math.random() * 30,
-          duration: 600 + Math.random() * 400, // Varying fall speeds
-          bounce: type === 'chunk' || type === 'shard' ? 0.15 + Math.random() * 0.1 : 0,
+          fallDirection: Math.random() > 0.5 ? 1 : -1,
+          delay: i * 50,
         })
       }
 
@@ -192,9 +57,9 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
 
       setTimeout(() => {
         setCrumbs(prev => prev.filter(c => !newCrumbs.find(nc => nc.id === c.id)))
-      }, 1200)
+      }, 1000)
 
-      // Play bite sound
+      // Play bite sound (throttled to avoid too many sounds)
       const now = Date.now()
       if (now - lastBiteSoundTime.current > 80 && valueDiff > 0.3) {
         playBiteSound(category)
@@ -237,40 +102,21 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
           {/* Render the food SVG */}
           <FoodComponent eatenPercent={eatenPercent} value={value} />
 
-          {/* Falling crumbs - realistic shapes */}
+          {/* Falling crumbs */}
           {crumbs.map(crumb => (
-            <g
+            <circle
               key={crumb.id}
+              cx={crumb.x}
+              cy={crumb.y}
+              r={crumb.size}
+              fill={crumbColor}
+              className="animate-crumb-fall"
               style={{
-                transform: `translate(${crumb.x}px, ${crumb.y}px)`,
                 '--fall-direction': crumb.fallDirection,
-                '--fall-distance': `${crumb.fallDistance}px`,
-                '--rotation-speed': `${crumb.rotationSpeed}deg`,
-                '--initial-rotation': `${crumb.rotation}deg`,
-                '--bounce': crumb.bounce,
-                '--duration': `${crumb.duration}ms`,
-                animation: `crumbFallPhysics var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+                '--fall-delay': `${crumb.delay}ms`,
                 animationDelay: `${crumb.delay}ms`,
               }}
-            >
-              <path
-                d={crumb.path}
-                fill={crumb.color}
-                style={{
-                  filter: crumb.type === 'splat' || crumb.type === 'drip' ? 'blur(0.3px)' : 'none',
-                  opacity: crumb.type === 'grain' ? 0.9 : 1,
-                }}
-              />
-              {/* Add highlight/shadow for depth */}
-              {(crumb.type === 'chunk' || crumb.type === 'shard') && (
-                <path
-                  d={crumb.path}
-                  fill="white"
-                  opacity="0.2"
-                  style={{ transform: 'translate(-0.5px, -0.5px) scale(0.7)' }}
-                />
-              )}
-            </g>
+            />
           ))}
         </svg>
 
