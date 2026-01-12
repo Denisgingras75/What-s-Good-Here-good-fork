@@ -69,12 +69,12 @@ Coop de Ville,Popcorn Shrimp,apps,14
 Coop de Ville,Local Hand-dug Steamers,apps,32
 Coop de Ville,Coconut Shrimp,apps,15
 Coop de Ville,Maryland Style Crab Cakes,apps,20
-Coop de Ville,Clam Strip Basket,fish,19
-Coop de Ville,Beer Battered Shrimp Basket,fish,18
-Coop de Ville,Whole Belly Clam Basket,fish,29
-Coop de Ville,Fresh Sea Scallop Basket,fish,26
-Coop de Ville,Popcorn Shrimp Basket,fish,17
-Coop de Ville,Blackened Mahi Mahi,fish,30
+Coop de Ville,Clam Strip Basket,seafood,19
+Coop de Ville,Beer Battered Shrimp Basket,seafood,18
+Coop de Ville,Whole Belly Clam Basket,seafood,29
+Coop de Ville,Fresh Sea Scallop Basket,seafood,26
+Coop de Ville,Popcorn Shrimp Basket,seafood,17
+Coop de Ville,Blackened Mahi Mahi,seafood,30
 Coop de Ville,Popcorn Chicken Basket,fried chicken,17
 Coop de Ville,BBQ Ribs Half Rack,entree,23
 Coop de Ville,BBQ Ribs Full Rack,entree,44
@@ -119,11 +119,11 @@ Martha's Vineyard Chowder Company,The Classic Caesar,salad,15
 Martha's Vineyard Chowder Company,Watermelon Mint Arugula,salad,16
 Martha's Vineyard Chowder Company,Summa Power Salad,salad,17
 Martha's Vineyard Chowder Company,Crispy Tofu Salad,salad,19
-Martha's Vineyard Chowder Company,Crispy Atlantic Cod Sandwich,fish,19
-Martha's Vineyard Chowder Company,Atlantic Cod Fish & Chips,fish,29
-Martha's Vineyard Chowder Company,Fried Shrimp Platter,fish,34
-Martha's Vineyard Chowder Company,Grilled Swordfish Piccata,fish,29
-Martha's Vineyard Chowder Company,Sesame Crusted Ahi Tuna,fish,33
+Martha's Vineyard Chowder Company,Crispy Atlantic Cod Sandwich,seafood,19
+Martha's Vineyard Chowder Company,Atlantic Cod Fish & Chips,seafood,29
+Martha's Vineyard Chowder Company,Fried Shrimp Platter,seafood,34
+Martha's Vineyard Chowder Company,Grilled Swordfish Piccata,seafood,29
+Martha's Vineyard Chowder Company,Sesame Crusted Ahi Tuna,seafood,33
 Martha's Vineyard Chowder Company,Grilled Chicken Sandwich,sandwich,19
 Martha's Vineyard Chowder Company,Grilled Sirloin Steak Sandwich,sandwich,25
 Martha's Vineyard Chowder Company,Hot Honey Chicken Sandwich,sandwich,19
@@ -198,11 +198,11 @@ Lookout Tavern,Italian Sub,sandwich,16
 Lookout Tavern,Club Sandwich,sandwich,16
 Lookout Tavern,Tuna Melt,sandwich,15
 Lookout Tavern,BLT,sandwich,14
-Lookout Tavern,Fish & Chips,fish,24
-Lookout Tavern,Fried Shrimp,fish,26
-Lookout Tavern,Fried Scallops,fish,28
-Lookout Tavern,Seafood Platter,fish,38
-Lookout Tavern,Grilled Salmon,fish,28
+Lookout Tavern,Fish & Chips,seafood,24
+Lookout Tavern,Fried Shrimp,seafood,26
+Lookout Tavern,Fried Scallops,seafood,28
+Lookout Tavern,Seafood Platter,seafood,38
+Lookout Tavern,Grilled Salmon,seafood,28
 Lookout Tavern,Fish Tacos,taco,18
 Lookout Tavern,Lobster Mac & Cheese,pasta,32
 Lookout Tavern,Chicken Tenders,tendys,16
@@ -218,27 +218,27 @@ Nancy's Restaurant,Mediterranean Sampler,apps,25.95
 Nancy's Restaurant,Chowder Fries,fries,16.95
 Nancy's Restaurant,Nancy's Wings,wings,19.95
 Nancy's Restaurant,Smash Burger,burger,19.95
-Nancy's Restaurant,Salmon BLT,fish,26.95
-Nancy's Restaurant,Fried Fish Sandwich,fish,19.95
+Nancy's Restaurant,Salmon BLT,seafood,26.95
+Nancy's Restaurant,Fried Fish Sandwich,seafood,19.95
 Nancy's Restaurant,Joe's Chicken Sandwich,sandwich,22.95
 Nancy's Restaurant,Buffalo Chicken Wrap,fried chicken,19.95
 Nancy's Restaurant,Greek Wrap,sandwich,18.95
 Nancy's Restaurant,Fish or Shrimp Tacos,taco,22.95
-Nancy's Restaurant,Fish & Chips,fish,29.95
-Nancy's Restaurant,Jumbo Shrimp,fish,30.95
-Nancy's Restaurant,Sea Scallops,fish,31.95
-Nancy's Restaurant,Clam Strips,fish,32.95
-Nancy's Restaurant,Clam Bellies,fish,44.95
-Nancy's Restaurant,Seafood Plate,fish,48.95
-Nancy's Restaurant,Lobster Mac & Cheese,lobster,39.95
+Nancy's Restaurant,Fish & Chips,seafood,29.95
+Nancy's Restaurant,Jumbo Shrimp,seafood,30.95
+Nancy's Restaurant,Sea Scallops,seafood,31.95
+Nancy's Restaurant,Clam Strips,seafood,32.95
+Nancy's Restaurant,Clam Bellies,seafood,44.95
+Nancy's Restaurant,Seafood Plate,seafood,48.95
+Nancy's Restaurant,Lobster Mac & Cheese,seafood,39.95
 Nancy's Restaurant,Cold Lobster Roll,lobster roll,30.95
 Nancy's Restaurant,Hot Lobster Roll,lobster roll,32.95
-Nancy's Restaurant,Steamed Lobster,lobster,39.95
-Nancy's Restaurant,Baked Cod,fish,34.95
-Nancy's Restaurant,Baked Scallops,fish,37.95
-Nancy's Restaurant,Broiled Seafood Plate,fish,39.95
-Nancy's Restaurant,Shrimp Scampi,fish,28.95
-Nancy's Restaurant,Salmon,fish,35.95
+Nancy's Restaurant,Steamed Lobster,seafood,39.95
+Nancy's Restaurant,Baked Cod,seafood,34.95
+Nancy's Restaurant,Baked Scallops,seafood,37.95
+Nancy's Restaurant,Broiled Seafood Plate,seafood,39.95
+Nancy's Restaurant,Shrimp Scampi,seafood,28.95
+Nancy's Restaurant,Salmon,seafood,35.95
 Nancy's Restaurant,Mediterranean Chicken Plate,entree,29.95
 Nancy's Restaurant,Shumai,sushi,12
 Nancy's Restaurant,Gyoza,sushi,12
@@ -272,10 +272,10 @@ Offshore Ale Company,Knife and Fork Fried Chicken Sandwich,fried chicken,24
 Offshore Ale Company,Power Bowl,salad,20
 Offshore Ale Company,Caesar Salad,salad,17
 Offshore Ale Company,Pub Salad,salad,17
-Offshore Ale Company,Fish and Chips,fish,30
-Offshore Ale Company,Fish Sandwich,fish,24
-Offshore Ale Company,Salmon BLT,fish,25
-Offshore Ale Company,Tuna Poke,fish,34
+Offshore Ale Company,Fish and Chips,seafood,30
+Offshore Ale Company,Fish Sandwich,seafood,24
+Offshore Ale Company,Salmon BLT,seafood,25
+Offshore Ale Company,Tuna Poke,seafood,34
 Offshore Ale Company,Grilled Cheese and Tomato Soup,sandwich,18
 Offshore Ale Company,Tavern Burger,burger,20
 Offshore Ale Company,Turkey Burger,burger,23
@@ -305,10 +305,10 @@ Black Dog,Jalapeno Popper Puffs,apps,16
 Black Dog,Spinach Artichoke Dip,apps,18
 Black Dog,Chicken Wings,wings,17
 Black Dog,Chicken Tenders,tendys,18
-Black Dog,Drunken Sailor Shrimp,fish,18
-Black Dog,Fish and Chips,fish,30
-Black Dog,Garlic and Herb Panko Cod,fish,34
-Black Dog,Roasted Salmon,fish,35
+Black Dog,Drunken Sailor Shrimp,seafood,18
+Black Dog,Fish and Chips,seafood,30
+Black Dog,Garlic and Herb Panko Cod,seafood,34
+Black Dog,Roasted Salmon,seafood,35
 Black Dog,Harvest Salad,salad,18
 Black Dog,Caesar Salad,salad,17
 Black Dog,Vineyard Cobb,salad,18
@@ -347,9 +347,9 @@ Black Dog,French Fries,fries,7
 9 Craft Kitchen and Bar,Lobster Crawfish Risotto,pasta,42
 9 Craft Kitchen and Bar,Parmesan Koginut Squash Risotto,pasta,34
 9 Craft Kitchen and Bar,Cast-Iron Baked Gnocchi,pasta,29
-9 Craft Kitchen and Bar,Scottish Salmon,fish,36
-9 Craft Kitchen and Bar,Miso Cod,fish,36
-9 Craft Kitchen and Bar,Swordfish Steak,fish,39
+9 Craft Kitchen and Bar,Scottish Salmon,seafood,36
+9 Craft Kitchen and Bar,Miso Cod,seafood,36
+9 Craft Kitchen and Bar,Swordfish Steak,seafood,39
 9 Craft Kitchen and Bar,Filet Mignon,entree,49
 9 Craft Kitchen and Bar,Chicken Tagine (Serves 2),entree,49
 9 Craft Kitchen and Bar,Dry-Aged Pork Chop,entree,42
@@ -367,9 +367,9 @@ Beach Road,Beet Roulade,apps,16
 Beach Road,Charred Savoy Cabbage,apps,19
 Beach Road,Autumn Salad,salad,21
 Beach Road,Caesar Salad,salad,19
-Beach Road,Tempura Shrimp,fish,20
-Beach Road,Bouillabaisse,fish,50
-Beach Road,Atlantic Halibut,fish,48
+Beach Road,Tempura Shrimp,seafood,20
+Beach Road,Bouillabaisse,seafood,50
+Beach Road,Atlantic Halibut,seafood,48
 Beach Road,Sugar Pumpkin & Mushroom Mafaldine,pasta,42
 Beach Road,Lamb Chops,entree,26
 Beach Road,Berkshire Pork Chop,entree,48
@@ -384,12 +384,12 @@ The Attic,Beer Battered Onion Rings,apps,17
 The Attic,French Onion Soup,apps,15
 The Attic,Soup of the Day,apps,15
 The Attic,Attic Wings,wings,12
-The Attic,Tuna Tartar,fish,26
-The Attic,Portuguese Mussels,fish,25
-The Attic,House-made Crab Cakes,fish,22
-The Attic,Fried Codfish Sandwich,fish,25
-The Attic,Hoisin Glazed Salmon Rice Bowl,fish,38
-The Attic,Fish & Chips,fish,30
+The Attic,Tuna Tartar,seafood,26
+The Attic,Portuguese Mussels,seafood,25
+The Attic,House-made Crab Cakes,seafood,22
+The Attic,Fried Codfish Sandwich,seafood,25
+The Attic,Hoisin Glazed Salmon Rice Bowl,seafood,38
+The Attic,Fish & Chips,seafood,30
 The Attic,Attic Salad,salad,22
 The Attic,Butternut Squash & Spinach Salad,salad,22
 The Attic,Caesar Salad,salad,20
@@ -462,9 +462,9 @@ Town Bar,Smash Burger,burger,19
 Town Bar,Southern Bird,fried chicken,17
 Town Bar,Bulgogi Steak N Cheese,sandwich,20
 Town Bar,Green Goddess,sandwich,19
-Town Bar,Spicy Baja Fish Sandwich,fish,19
-Town Bar,Spicy Baja Fish & Chips,fish,29
-Town Bar,Pistachio Salmon,fish,38
+Town Bar,Spicy Baja Fish Sandwich,seafood,19
+Town Bar,Spicy Baja Fish & Chips,seafood,29
+Town Bar,Pistachio Salmon,seafood,38
 Town Bar,Brazilian Steak Tips,entree,32
 Town Bar,Cider-Glazed Pork Chop,entree,28
 Town Bar,Cilantro Lime Chicken,entree,26
@@ -473,45 +473,45 @@ Town Bar,Gnocchi Cacio e Pepe,pasta,28
 Alchemy Bistro & Bar,Duck Confit,entree,32
 Alchemy Bistro & Bar,Truffle Fries,apps,14
 Alchemy Bistro & Bar,Lobster Tacos,taco,28
-Alchemy Bistro & Bar,Pan Seared Scallops,fish,38
+Alchemy Bistro & Bar,Pan Seared Scallops,seafood,38
 Alchemy Bistro & Bar,Steak Frites,entree,42
 Alchemy Bistro & Bar,Roasted Boneless Half-Chicken,fried chicken,48
 Alchemy Bistro & Bar,Blackened Lobster Tail,entree,74
 ArtCliff Diner,Clam Chowder,chowder,9
 ArtCliff Diner,Blueberry Pancakes,breakfast,12
 ArtCliff Diner,Classic Burger,burger,14
-ArtCliff Diner,Fish & Chips,fish,18
+ArtCliff Diner,Fish & Chips,seafood,18
 ArtCliff Diner,Lobster Benedict,breakfast,24
-Atria,Seared Tuna,fish,38
+Atria,Seared Tuna,seafood,38
 Atria,Wagyu Burger,burger,28
 Atria,Lobster Risotto,entree,42
 Atria,Beet Salad,salad,16
-Atria,Pan-Seared Scallops,fish,44
+Atria,Pan-Seared Scallops,seafood,44
 Back Door Donuts,Apple Cider Donut,breakfast,4
 Back Door Donuts,Apple Fritter,breakfast,9
 Back Door Donuts,Boston Cream Donut,breakfast,3.5
 Back Door Donuts,Maple Bacon Donut,breakfast,4
 Back Door Donuts,Cinnamon Roll,breakfast,6.5
 Bettini Restaurant,Clam Chowder,chowder,14
-Bettini Restaurant,Grilled Swordfish,fish,44
+Bettini Restaurant,Grilled Swordfish,seafood,44
 Bettini Restaurant,Pan Roasted Chicken,fried chicken,32
 Bettini Restaurant,Lobster Ravioli,pasta,38
 Bettini Restaurant,Caesar Salad,salad,12
 Bettini Restaurant,New England Crab Cake,apps,29
 Biscuits,Chicken & Biscuits,fried chicken,16
-Biscuits,Shrimp & Grits,fish,18
+Biscuits,Shrimp & Grits,seafood,18
 Biscuits,Fried Chicken & Waffle,fried chicken,17
 Biscuits,Biscuits Benedict,breakfast,15
 Biscuits,Buttermilk Pancakes,breakfast,12
 Garde East,New England Clam Chowder,chowder,14
 Garde East,Garde Burger,burger,18
-Garde East,Pan Roasted Cod,fish,28
+Garde East,Pan Roasted Cod,seafood,28
 Garde East,Crispy Calamari,apps,16
 Garde East,Lobster Roll,lobster roll,36
 Garde East,Citrus Salad,salad,22
-Garde East,Striped Bass,fish,60
+Garde East,Striped Bass,seafood,60
 Garde East,Lobster Cavatelli,pasta,42
-L'etoile Restaurant,Seared Scallops,fish,42
+L'etoile Restaurant,Seared Scallops,seafood,42
 L'etoile Restaurant,Beef Bourguignon,entree,48
 L'etoile Restaurant,Lobster Bisque,chowder,16
 L'etoile Restaurant,Duck Breast,entree,44
@@ -522,14 +522,14 @@ Red Cat Kitchen,Brussels Sprouts,apps,14
 Red Cat Kitchen,Codfish Cake,apps,18
 Red Cat Kitchen,Braised Short Rib,entree,36
 Red Cat Kitchen,Miso Glazed Pork Loin,entree,32
-Red Cat Kitchen,Faroe Island Salmon,fish,34
+Red Cat Kitchen,Faroe Island Salmon,seafood,34
 Red Cat Kitchen,Linguini and Clams,pasta,28
 Red Cat Kitchen,Buttermilk Fried Chicken,fried chicken,28
-Red Cat Kitchen,Blackened Swordfish,fish,36
-Red Cat Kitchen,Broiled Chatham Codfish,fish,32
+Red Cat Kitchen,Blackened Swordfish,seafood,36
+Red Cat Kitchen,Broiled Chatham Codfish,seafood,32
 State Road,Clam Chowder,chowder,15
 State Road,State Road Burger,burger,24
-State Road,Pan Roasted Halibut,fish,42
+State Road,Pan Roasted Halibut,seafood,42
 State Road,Fried Chicken,fried chicken,32
 State Road,Brussels Sprouts,apps,14
 The Covington,Our Bread Service,apps,2
@@ -547,13 +547,13 @@ The Covington,Sweet Potato Gnocchi,pasta,40
 The Covington,Mushroom Ragu,pasta,40
 The Covington,Bolognese,pasta,42
 The Covington,Shrimp Piperade,entree,42
-The Covington,Nova Scotia Halibut,fish,52
+The Covington,Nova Scotia Halibut,seafood,52
 The Covington,Pork Chop,entree,60
 The Covington,NY Striploin,entree,76
 The Covington,Honey Pie,apps,16
 The Covington,Strawberry-Basil Sorbet,apps,12
 The Covington,Chocolate Cake,apps,16
-The Sweet Life Café,Pan Roasted Halibut,fish,42
+The Sweet Life Café,Pan Roasted Halibut,seafood,42
 The Sweet Life Café,Duck Confit,entree,38
 The Sweet Life Café,Beef Tenderloin,entree,48
 The Sweet Life Café,Lobster Risotto,entree,44
@@ -582,19 +582,19 @@ Rockfish,Prosciutto & Arugula,pizza,26
 Rockfish,Veggie Pizza,pizza,25
 Rockfish,White Pizza,pizza,26
 Rockfish,Chicken Bacon Ranch,pizza,26
-Rockfish,Oven Roasted Cod,fish,40
+Rockfish,Oven Roasted Cod,seafood,40
 Rockfish,Asparagus Risotto,pasta,33
 Rockfish,Mac-n-Cheese,pasta,31
 Rockfish,Chicken Pot Pie,entree,32
 Rockfish,Lobster Pot Pie,entree,48
-Rockfish,Fish & Chips,fish,32
-Rockfish,Whole Belly Clam Plate,fish,35
+Rockfish,Fish & Chips,seafood,32
+Rockfish,Whole Belly Clam Plate,seafood,35
 Rockfish,Cheeseburger & Fries,burger,25
 Rockfish,Surf-n-Turf Burger,burger,40
 Rockfish,Chef's Special Burger,burger,25
 Rockfish,Jumbo Lobster Roll,lobster roll,39
 Rockfish,Sautéed Lobster Roll,lobster roll,40
-Rockfish,Fish Sandwich,fish,20
+Rockfish,Fish Sandwich,seafood,20
 Rockfish,Hot Dog,sandwich,19
 Rockfish,Chicken Bahn Mi,sandwich,22
 Rockfish,Short Rib Grilled Cheese,sandwich,26
@@ -612,7 +612,7 @@ Rockfish,Guinness Braised Short Rib,entree,40
 Rockfish,Pan Seared Filet Mignon,entree,58
 Rockfish,Chicken Pesto,pasta,39
 Rockfish,Bolognese,pasta,38
-Rockfish,Halibut,fish,49
+Rockfish,Halibut,seafood,49
 Sharky's Cantina,Street Corn Battered Fried Shrimp,apps,12.99
 Sharky's Cantina,The Vegadilla,apps,15.99
 Sharky's Cantina,The BLT Quesadilla,apps,13.99
@@ -622,7 +622,7 @@ Sharky's Cantina,Cheeseburger Quesadilla,apps,14.99
 Sharky's Cantina,Fajita-dilla,apps,16.99
 Sharky's Cantina,Double Cheeseburger Chimi,burger,17.99
 Sharky's Cantina,Build-Ur-Own Chicken Sammie,sandwich,12.99
-Sharky's Cantina,Corona Cod Sandwich,fish,15.99
+Sharky's Cantina,Corona Cod Sandwich,seafood,15.99
 Wolf's Den Pizzeria,Cheese Pizza,pizza,10.99
 Wolf's Den Pizzeria,Meat Lover Pizza,pizza,15.99
 Wolf's Den Pizzeria,Big Bad Wolf Pizza,pizza,15.99
@@ -685,7 +685,7 @@ Ocean Club,Penne alla Vodka,pasta,52
 Ocean Club,Cassoulet,entree,55
 Ocean Club,Prime Brandt Steak Frites,entree,69
 Ocean Club,Braised Short Rib,entree,42
-Ocean Club,Halibut Piccata,fish,52
+Ocean Club,Halibut Piccata,seafood,52
 Catboat,Egg & Cheese,breakfast sandwich,7
 Catboat,Sausage Egg & Cheese,breakfast sandwich,9
 Catboat,Lebanese,breakfast sandwich,14
@@ -733,7 +733,7 @@ The Maker,Smashed Duck Fat Potatoes,apps,12
 The Maker,Whipped Herbed Burrata,apps,22
 The Maker,Caesar Salad,salad,17
 The Maker,Baby Spinach Salad,salad,19
-The Maker,Faroe Island Salmon,fish,38
+The Maker,Faroe Island Salmon,seafood,38
 The Maker,Coq Au Vin,entree,34
 The Maker,The Maker Burger,burger,25
 The Maker,Lumache,pasta,33
@@ -754,7 +754,7 @@ The Barn Bowl & Bistro,Bacon Brussels Sprouts,apps,18
 The Barn Bowl & Bistro,Crispy Calamari,apps,18
 The Barn Bowl & Bistro,Garlic Naan w/ Curry Sauce,apps,12
 The Barn Bowl & Bistro,Pork Ribs,apps,17
-The Barn Bowl & Bistro,Crispy Fish Bites,fish,19
+The Barn Bowl & Bistro,Crispy Fish Bites,seafood,19
 The Barn Bowl & Bistro,Brazilian Steak Skewers,apps,26
 The Barn Bowl & Bistro,Southwest Chicken Egg Rolls,apps,13
 The Barn Bowl & Bistro,Artichoke & Spinach Dip,apps,19
@@ -784,10 +784,10 @@ The Barn Bowl & Bistro,Ahi Tuna Poke Bowl,pokebowl,28
 The Barn Bowl & Bistro,Brown Sugar Steak Tips,entree,28
 The Barn Bowl & Bistro,Bourbon Street Pasta,pasta,24
 The Barn Bowl & Bistro,Grilled Sirloin Alfredo,pasta,42
-The Barn Bowl & Bistro,Baked Tilapia,fish,28
+The Barn Bowl & Bistro,Baked Tilapia,seafood,28
 The Barn Bowl & Bistro,Braised Beef Stew,entree,27
 The Barn Bowl & Bistro,Shrimp & Lobster Pasta,pasta,42
-The Barn Bowl & Bistro,Teriyaki Glazed Salmon,fish,32
+The Barn Bowl & Bistro,Teriyaki Glazed Salmon,seafood,32
 The Barn Bowl & Bistro,Chicken & Broccoli Alfredo,pasta,28
 The Barn Bowl & Bistro,Braised Beef Short Rib,entree,39
 The Barn Bowl & Bistro,Fig & BBQ Meatloaf,entree,29
@@ -796,7 +796,7 @@ The Barn Bowl & Bistro,BBQ Baby Back Ribs,entree,28
 The Barn Bowl & Bistro,Jamaican Jerk Rice Bowl,entree,27
 The Barn Bowl & Bistro,Mussels & Shrimp Fra Diavolo,pasta,26
 The Barn Bowl & Bistro,Beef Lasagna,pasta,26
-The Barn Bowl & Bistro,Fried Cod Filet & Chips,fish,28
+The Barn Bowl & Bistro,Fried Cod Filet & Chips,seafood,28
 The Barn Bowl & Bistro,Fried Chicken Dinner,fried chicken,26
 Winston's Kitchen,Breakfast Sandwich,breakfast sandwich,8
 Winston's Kitchen,Breakfast Plate,breakfast,12
@@ -982,7 +982,7 @@ Indigo,Chilli Chicken Dry,apps,22
 Indigo,Chicken Tenders,tendys,18
 Indigo,Indigo's Special Wings,wings,18
 Indigo,Tawa Shrimp,apps,22
-Indigo,Tawa Fish,fish,22
+Indigo,Tawa Fish,seafood,22
 Indigo,Beetroot Kebab,entree,20
 Indigo,Paneer Tikka,entree,25
 Indigo,Tandoori Chicken Half,entree,24
@@ -992,7 +992,7 @@ Indigo,Chicken Seekh Kebab,entree,26
 Indigo,Lamb Chops,entree,35
 Indigo,Lamb Seekh Kebab,entree,30
 Indigo,Beef Seekh Kebab,entree,30
-Indigo,Tandoori Salmon,fish,32
+Indigo,Tandoori Salmon,seafood,32
 Indigo,Dal Tadka,entree,27
 Indigo,Dal Fry,entree,27
 Indigo,Aloo Matar,entree,29
@@ -1014,7 +1014,7 @@ Indigo,Chicken Vindaloo,entree,32
 Indigo,Lamb Vindaloo,entree,35
 Indigo,Saag Lamb,entree,35
 Indigo,Lamb Tikka Masala,entree,35
-Indigo,Malabar Fish Curry,fish,32
+Indigo,Malabar Fish Curry,seafood,32
 Indigo,Goan Shrimp Curry,entree,32
 Indigo,Mixed Veg Biryani,entree,26
 Indigo,Nawabi Style Chicken Biryani,entree,30
@@ -1039,7 +1039,7 @@ The Newes from America,Logan's Crispy Chicken Sando,sandwich,23
 The Newes from America,1742 Burger,burger,25
 The Newes from America,Reuben,sandwich,21
 The Newes from America,Lobster Roll,lobster roll,37
-The Newes from America,Fish & Chips,fish,28
+The Newes from America,Fish & Chips,seafood,28
 The Newes from America,Shrimp Po Boy,sandwich,22
 The Newes from America,Crispy Tacos,taco,29
 Square Rigger,Spinach Artichoke Dip,apps,18
@@ -1057,6 +1057,38 @@ Square Rigger,Logan's Crispy Chicken Sando,sandwich,23
 Square Rigger,1742 Burger,burger,25
 Square Rigger,Reuben Sandwich,sandwich,21
 Square Rigger,Lobster Roll,lobster roll,37
-Square Rigger,Fish and Chips,fish,28
+Square Rigger,Fish and Chips,seafood,28
 Square Rigger,Shrimp Po Boy,sandwich,22
 Square Rigger,Crispy Fish Tacos,taco,29
+Wharf Pub,Clam Chowder,chowder,12.00
+Wharf Pub,Kale Salad,salad,17.00
+Wharf Pub,House Salad,salad,17.00
+Wharf Pub,Caesar Salad,salad,18.00
+Wharf Pub,Sausage & Broccoli Rabe Ravioli,apps,18.00
+Wharf Pub,Fried Calamari,apps,20.00
+Wharf Pub,Mussels,apps,22.00
+Wharf Pub,Potato Skins,apps,12.00
+Wharf Pub,Fried Pickle Chips,apps,14.00
+Wharf Pub,Chicken Wings,wings,18.00
+Wharf Pub,Loaded Nachos,apps,16.00
+Wharf Pub,Chicken Tenders,tendys,17.00
+Wharf Pub,Truffle Fries,fries,16.00
+Wharf Pub,Chowder Fries,fries,18.00
+Wharf Pub,Fried Cod Sandwich,sandwich,20.00
+Wharf Pub,Fried Chicken Sandwich,sandwich,19.00
+Wharf Pub,Wharf Reuben,sandwich,19.00
+Wharf Pub,Turkey BLT,sandwich,18.00
+Wharf Pub,Philly Steak Bomb,sandwich,21.00
+Wharf Pub,Black & Bleu Burger,burger,21.00
+Wharf Pub,Jalapeño Burger,burger,21.00
+Wharf Pub,Crack Burger,burger,21.00
+Wharf Pub,Bistro Burger,burger,25.00
+Wharf Pub,Beyond Burger,burger,20.00
+Wharf Pub,Braised Short Ribs,entree,36.00
+Wharf Pub,Pan Seared Chicken,entree,29.00
+Wharf Pub,Braised Pork Shoulder,entree,32.00
+Wharf Pub,Surf & Turf,entree,36.00
+Wharf Pub,Fish N' Chips,seafood,29.00
+Wharf Pub,Grilled NY Strip Steak,entree,42.00
+Wharf Pub,Veggie Penne,pasta,21.00
+Wharf Pub,Bolognese,pasta,28.00

@@ -1,5 +1,5 @@
-import { VoteButtons } from './VoteButtons'
-import { getConfidenceIndicator } from '../utils/ranking'
+import { ReviewFlow } from './ReviewFlow'
+import { getWorthItBadge, formatScore10, calculateWorthItScore10 } from '../utils/ranking'
 import { getCategoryImage } from '../constants/categoryImages'
 
 export function DishCard({ dish, onVote, onLoginRequired }) {
@@ -11,11 +11,15 @@ export function DishCard({ dish, onVote, onLoginRequired }) {
     price,
     photo_url,
     total_votes,
+    yes_votes,
     percent_worth_it,
+    avg_rating_10,
     distance_miles,
   } = dish
 
-  const confidence = getConfidenceIndicator(total_votes || 0)
+  const totalVotes = total_votes || 0
+  const worthItScore10 = calculateWorthItScore10(percent_worth_it || 0)
+  const badge = getWorthItBadge(worthItScore10, totalVotes)
 
   // Use photo_url if dish has one, otherwise use category-based image
   const imageUrl = photo_url || getCategoryImage(category)
@@ -65,48 +69,67 @@ export function DishCard({ dish, onVote, onLoginRequired }) {
         </div>
 
         {/* Rating Section */}
-        {total_votes > 0 ? (
-          <div className="mb-4 p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100">
-            <div className="flex items-center justify-between">
-              {/* Percentage Display */}
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-neutral-900 leading-none">
-                  {percent_worth_it}
-                  <span className="text-2xl text-neutral-500">%</span>
-                </span>
-                <div className="text-sm text-neutral-600 font-medium">
-                  Worth It
-                </div>
-              </div>
-
-              {/* Confidence Indicator */}
-              <div className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all ${
-                confidence.level === 'low'
-                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                  : confidence.level === 'high'
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                  : 'bg-neutral-100 text-neutral-600'
-              }`}>
-                {confidence.icon && (
-                  <span className="text-base">{confidence.icon}</span>
-                )}
-                <span className="text-xs font-semibold whitespace-nowrap">
-                  {total_votes} {total_votes === 1 ? 'vote' : 'votes'}
-                </span>
-              </div>
+        {totalVotes === 0 ? (
+          /* No votes yet */
+          <div className="mb-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200 border-dashed">
+            <p className="text-sm text-neutral-500 text-center font-medium">
+              No votes yet — be the first!
+            </p>
+          </div>
+        ) : totalVotes < 10 ? (
+          /* Not enough votes (1-9 votes) */
+          <div className="mb-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-lg">📊</span>
+              <p className="text-sm text-amber-700 font-medium">
+                Not enough votes yet ({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})
+              </p>
             </div>
           </div>
         ) : (
-          <div className="mb-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200 border-dashed">
-            <p className="text-sm text-neutral-500 text-center font-medium">
-              No votes yet — be the first to review!
-            </p>
+          /* 10+ votes - Show full stats */
+          <div className="mb-4 p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100 space-y-3">
+            {/* Worth-It Badge with Emoji */}
+            <div className="flex items-center justify-center gap-2 pb-2 border-b border-orange-200/50">
+              <span className="text-2xl">{badge.emoji}</span>
+              <span className="text-lg font-bold text-neutral-800">{badge.label}</span>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Would Order Again % */}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-neutral-900">
+                  {percent_worth_it}%
+                </div>
+                <div className="text-xs text-neutral-500">would order again</div>
+              </div>
+
+              {/* Average Rating */}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-neutral-900">
+                  {avg_rating_10 ? formatScore10(avg_rating_10) : '—'}
+                  <span className="text-sm text-neutral-400">/10</span>
+                </div>
+                <div className="text-xs text-neutral-500">avg rating</div>
+              </div>
+            </div>
+
+            {/* Vote count */}
+            <div className="text-center pt-2 border-t border-orange-200/50">
+              <span className="text-xs text-neutral-500 font-medium">
+                {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
+              </span>
+            </div>
           </div>
         )}
 
-        {/* Vote Buttons */}
-        <VoteButtons
+        {/* Review Flow (replaces VoteButtons) */}
+        <ReviewFlow
           dishId={dish_id}
+          dishName={dish_name}
+          totalVotes={totalVotes}
+          yesVotes={yes_votes || 0}
           onVote={onVote}
           onLoginRequired={onLoginRequired}
         />

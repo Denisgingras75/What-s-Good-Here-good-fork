@@ -5,7 +5,8 @@ export function useVote() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  const submitVote = async (dishId, wouldOrderAgain) => {
+  // Submit both wouldOrderAgain AND rating_10 in one call
+  const submitVote = async (dishId, wouldOrderAgain, rating10) => {
     try {
       setSubmitting(true)
       setError(null)
@@ -17,7 +18,7 @@ export function useVote() {
         throw new Error('You must be logged in to vote')
       }
 
-      // Upsert vote (insert or update if exists)
+      // Upsert vote with both fields
       const { error: voteError } = await supabase
         .from('votes')
         .upsert(
@@ -25,6 +26,7 @@ export function useVote() {
             dish_id: dishId,
             user_id: user.id,
             would_order_again: wouldOrderAgain,
+            rating_10: rating10,
           },
           {
             onConflict: 'dish_id,user_id',
@@ -48,18 +50,21 @@ export function useVote() {
   const getUserVotes = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
+      if (!user) return {}
 
       const { data, error } = await supabase
         .from('votes')
-        .select('dish_id, would_order_again')
+        .select('dish_id, would_order_again, rating_10')
         .eq('user_id', user.id)
 
       if (error) throw error
 
       // Return as a map for easy lookup
       return data.reduce((acc, vote) => {
-        acc[vote.dish_id] = vote.would_order_again
+        acc[vote.dish_id] = {
+          wouldOrderAgain: vote.would_order_again,
+          rating10: vote.rating_10,
+        }
         return acc
       }, {})
     } catch (err) {

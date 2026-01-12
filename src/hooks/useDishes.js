@@ -25,15 +25,17 @@ export function useDishes(location, radius, category = null, restaurantId = null
               price,
               photo_url,
               restaurant_id,
-              restaurants (
+              restaurants!inner (
                 id,
                 name,
                 address,
                 lat,
-                lng
+                lng,
+                is_open
               )
             `)
             .eq('restaurant_id', restaurantId)
+            .eq('restaurants.is_open', true)
 
           // Apply category filter if selected
           if (category) {
@@ -101,15 +103,17 @@ export function useDishes(location, radius, category = null, restaurantId = null
             price,
             photo_url,
             restaurant_id,
-            restaurants (
+            restaurants!inner (
               id,
               name,
               address,
               lat,
-              lng
+              lng,
+              is_open
             )
           `)
           .eq('restaurant_id', restaurantId)
+          .eq('restaurants.is_open', true)
 
         if (category) {
           query = query.eq('category', category)
