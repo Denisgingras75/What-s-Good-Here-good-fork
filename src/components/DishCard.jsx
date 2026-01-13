@@ -128,6 +128,7 @@ export function DishCard({ dish, onVote, onLoginRequired }) {
         <ReviewFlow
           dishId={dish_id}
           dishName={dish_name}
+          category={category}
           totalVotes={totalVotes}
           yesVotes={yes_votes || 0}
           onVote={onVote}

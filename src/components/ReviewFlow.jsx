@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useVote } from '../hooks/useVote'
 import { supabase } from '../lib/supabase'
-import { PizzaRatingSlider } from './PizzaRatingSlider'
+import { FoodRatingSlider } from './FoodRatingSlider'
 
-export function ReviewFlow({ dishId, dishName, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
+export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
   const { submitVote, submitting } = useVote()
   const [user, setUser] = useState(null)
   const [userVote, setUserVote] = useState(null)
@@ -213,13 +213,14 @@ export function ReviewFlow({ dishId, dishName, totalVotes = 0, yesVotes = 0, onV
           <div className="w-12" />
         </div>
 
-        {/* Pizza Rating Slider */}
-        <PizzaRatingSlider
+        {/* Food Rating Slider */}
+        <FoodRatingSlider
           value={sliderValue}
           onChange={setSliderValue}
           min={0}
           max={10}
           step={0.1}
+          category={category}
         />
 
         <button
