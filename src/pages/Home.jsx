@@ -1,111 +1,46 @@
-import { useState } from 'react'
-import { useLocation } from '../hooks/useLocation'
-import { useDishes } from '../hooks/useDishes'
-import { LocationPicker } from '../components/LocationPicker'
-import { DishFeed } from '../components/DishFeed'
-import { LoginModal } from '../components/Auth/LoginModal'
-import { isSoundMuted, toggleSoundMute } from '../lib/sounds'
+import { Link } from 'react-router-dom'
 
 export function Home() {
-  const { location, radius, setRadius, loading: locationLoading, error: locationError } = useLocation()
-  const [loginModalOpen, setLoginModalOpen] = useState(false)
-  const [soundMuted, setSoundMuted] = useState(isSoundMuted())
-
-  const handleToggleSound = () => {
-    const newMutedState = toggleSoundMute()
-    setSoundMuted(newMutedState)
-  }
-
-  const { dishes, loading: dishesLoading, error: dishesError, refetch } = useDishes(
-    location,
-    radius,
-    null, // No category filter on home
-    null  // No restaurant filter on home
-  )
-
-  const handleVote = () => {
-    refetch()
-  }
-
-  const handleLoginRequired = () => {
-    setLoginModalOpen(true)
-  }
-
   return (
-    <div className="bg-stone-50">
-      {/* Header */}
-      <header className="relative bg-white border-b border-neutral-200 overflow-hidden">
-        {/* Decorative gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 opacity-50" />
-
-        {/* Decorative pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }} />
-
-        <div className="relative px-4 py-6">
-          <div className="max-w-4xl mx-auto">
-            {/* Logo and Title */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                  <span className="text-2xl">🍽️</span>
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-neutral-900 font-serif leading-none">
-                    What's Good Here
-                  </h1>
-                  <p className="text-sm text-neutral-600 mt-1 font-medium">
-                    Discover the best dishes, skip the rest
-                  </p>
-                </div>
-              </div>
-
-              {/* Sound Toggle */}
-              <button
-                onClick={handleToggleSound}
-                className="w-10 h-10 rounded-full bg-white/80 hover:bg-white border border-neutral-200 flex items-center justify-center transition-all shadow-sm hover:shadow"
-                title={soundMuted ? 'Unmute bite sounds' : 'Mute bite sounds'}
-              >
-                {soundMuted ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-neutral-400">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-orange-500">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-stone-50 flex flex-col">
+      {/* Hero Section */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        {/* Logo */}
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-xl shadow-orange-500/30 mb-6">
+          <span className="text-4xl">🍽️</span>
         </div>
-      </header>
 
-      {/* Location Picker */}
-      <LocationPicker
-        radius={radius}
-        onRadiusChange={setRadius}
-        location={location}
-        error={locationError}
-      />
+        {/* Title */}
+        <h1 className="text-4xl font-bold text-neutral-900 font-serif text-center leading-tight">
+          What's Good Here
+        </h1>
 
-      {/* Dish Feed */}
-      <main>
-        <DishFeed
-          dishes={dishes}
-          loading={locationLoading || dishesLoading}
-          error={dishesError}
-          onVote={handleVote}
-          onLoginRequired={handleLoginRequired}
-        />
-      </main>
+        {/* Tagline */}
+        <p className="text-lg text-neutral-600 mt-3 text-center max-w-xs">
+          Find the best dishes on Martha's Vineyard. Skip the rest.
+        </p>
 
-      {/* Login Modal */}
-      <LoginModal
-        isOpen={loginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-      />
+        {/* CTA Buttons */}
+        <div className="flex flex-col gap-3 mt-10 w-full max-w-xs">
+          <Link
+            to="/browse"
+            className="w-full py-4 px-6 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl text-center shadow-lg shadow-orange-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
+          >
+            Browse by Food
+          </Link>
+          <Link
+            to="/restaurants"
+            className="w-full py-4 px-6 bg-white text-neutral-900 font-semibold rounded-xl text-center border-2 border-neutral-200 hover:border-orange-300 hover:bg-orange-50 transition-all"
+          >
+            Browse by Restaurant
+          </Link>
+        </div>
+
+        {/* Stats or social proof could go here */}
+        <p className="text-sm text-neutral-400 mt-12">
+          Powered by locals who know what's good
+        </p>
+      </div>
     </div>
   )
 }
