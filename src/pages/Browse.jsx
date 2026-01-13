@@ -70,7 +70,7 @@ export function Browse() {
       {/* Header */}
       <header className="bg-white border-b border-neutral-200 px-4 py-4">
         <div className="flex flex-col items-center mb-4">
-          <img src="/logo.png" alt="What's Good Here" className="h-12 w-auto" />
+          <img src="/logo.png" alt="What's Good Here" className="h-20 w-auto" />
         </div>
 
         {/* Search bar */}

@@ -56,7 +56,7 @@ export function Home() {
           <img
             src="/logo.png"
             alt="What's Good Here"
-            className="h-16 w-auto"
+            className="h-24 w-auto"
           />
           <p className="text-xs text-neutral-500 mt-1">Martha's Vineyard</p>
         </div>

@@ -115,7 +115,7 @@ export function Profile() {
       {/* Header */}
       <header className="bg-white border-b border-neutral-200 px-4 py-4">
         <div className="flex flex-col items-center">
-          <img src="/logo.png" alt="What's Good Here" className="h-12 w-auto" />
+          <img src="/logo.png" alt="What's Good Here" className="h-20 w-auto" />
         </div>
       </header>
 
