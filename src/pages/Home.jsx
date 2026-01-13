@@ -52,16 +52,13 @@ export function Home() {
     <div className="min-h-screen bg-stone-50">
       {/* Header */}
       <header className="bg-white border-b border-neutral-200 px-4 py-4">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <span className="text-2xl">🍽️</span>
-          </div>
-          <div className="text-center">
-            <h1 className="text-xl font-bold text-neutral-900 font-serif">
-              What's Good Here
-            </h1>
-            <p className="text-xs text-neutral-500">Martha's Vineyard</p>
-          </div>
+        <div className="flex flex-col items-center">
+          <img
+            src="/logo.png"
+            alt="What's Good Here"
+            className="h-16 w-auto"
+          />
+          <p className="text-xs text-neutral-500 mt-1">Martha's Vineyard</p>
         </div>
       </header>
 
