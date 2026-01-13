@@ -82,7 +82,11 @@ export function Home() {
           ) : (
             <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
               {topDishes.slice(0, 5).map((dish) => (
-                <DishCard key={dish.dish_id} dish={dish} />
+                <DishCard
+                  key={dish.dish_id}
+                  dish={dish}
+                  onClick={() => navigate(`/browse?category=${dish.category}`)}
+                />
               ))}
             </div>
           )}
@@ -116,7 +120,11 @@ export function Home() {
               ) : (
                 <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
                   {categoryDishes.map((dish) => (
-                    <DishCard key={dish.dish_id} dish={dish} />
+                    <DishCard
+                      key={dish.dish_id}
+                      dish={dish}
+                      onClick={() => navigate(`/browse?category=${dish.category}`)}
+                    />
                   ))}
                   {categoryDishes.length > 0 && (
                     <button
@@ -156,7 +164,11 @@ export function Home() {
           ) : (
             <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
               {topDishes.map((dish) => (
-                <DishCard key={dish.dish_id} dish={dish} />
+                <DishCard
+                  key={dish.dish_id}
+                  dish={dish}
+                  onClick={() => navigate(`/browse?category=${dish.category}`)}
+                />
               ))}
             </div>
           )}
@@ -172,24 +184,31 @@ export function Home() {
 }
 
 // Compact horizontal dish card
-function DishCard({ dish }) {
+function DishCard({ dish, onClick }) {
   const {
     dish_id,
     dish_name,
     category,
     image_url,
+    photo_url,
     restaurant_name,
     percent_worth_it,
     total_votes,
   } = dish
 
+  // Use photo_url or image_url
+  const imgSrc = photo_url || image_url
+
   return (
-    <div className="flex-shrink-0 w-64 bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+    <button
+      onClick={onClick}
+      className="flex-shrink-0 w-64 bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden text-left hover:shadow-md hover:border-orange-200 transition-all active:scale-[0.98]"
+    >
       {/* Image */}
       <div className="relative h-28 bg-neutral-100">
-        {image_url ? (
+        {imgSrc ? (
           <img
-            src={image_url}
+            src={imgSrc}
             alt={dish_name}
             className="w-full h-full object-cover"
           />
@@ -224,6 +243,6 @@ function DishCard({ dish }) {
           </p>
         )}
       </div>
-    </div>
+    </button>
   )
 }
