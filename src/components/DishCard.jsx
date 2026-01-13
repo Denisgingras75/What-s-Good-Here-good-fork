@@ -1,6 +1,7 @@
 import { ReviewFlow } from './ReviewFlow'
 import { getWorthItBadge, formatScore10, calculateWorthItScore10 } from '../utils/ranking'
 import { getCategoryImage } from '../constants/categoryImages'
+import { getDishImage } from '../lib/dishImages'
 
 export function DishCard({ dish, onVote, onLoginRequired }) {
   const {
@@ -21,8 +22,8 @@ export function DishCard({ dish, onVote, onLoginRequired }) {
   const worthItScore10 = calculateWorthItScore10(percent_worth_it || 0)
   const badge = getWorthItBadge(worthItScore10, totalVotes)
 
-  // Use photo_url if dish has one, otherwise use category-based image
-  const imageUrl = photo_url || getCategoryImage(category)
+  // Use photo_url if dish has one, then try keyword-based image, finally category image
+  const imageUrl = photo_url || getDishImage(dish_name) || getCategoryImage(category)
 
   return (
     <article className="card-elevated overflow-hidden mb-6 stagger-item">

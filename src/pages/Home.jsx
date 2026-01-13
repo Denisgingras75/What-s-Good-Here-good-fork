@@ -6,6 +6,7 @@ import { LocationPicker } from '../components/LocationPicker'
 import { DishCard as FullDishCard } from '../components/DishCard'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { getCategoryImage } from '../constants/categoryImages'
+import { getDishImage } from '../lib/dishImages'
 
 const FEATURED_CATEGORIES = [
   { id: 'pizza', label: 'Pizza', emoji: '🍕' },
@@ -236,8 +237,8 @@ function DishCard({ dish, onClick }) {
     total_votes,
   } = dish
 
-  // Use photo_url or image_url
-  const imgSrc = photo_url || image_url
+  // Use photo_url, then keyword-based image, then category image
+  const imgSrc = photo_url || getDishImage(dish_name) || getCategoryImage(category)
 
   return (
     <button
@@ -246,17 +247,11 @@ function DishCard({ dish, onClick }) {
     >
       {/* Image */}
       <div className="relative h-28 bg-neutral-100">
-        {imgSrc ? (
-          <img
-            src={imgSrc}
-            alt={dish_name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-amber-100">
-            <span className="text-4xl opacity-50">🍽️</span>
-          </div>
-        )}
+        <img
+          src={imgSrc}
+          alt={dish_name}
+          className="w-full h-full object-cover"
+        />
 
         {/* Rating Badge */}
         {total_votes > 0 && (
