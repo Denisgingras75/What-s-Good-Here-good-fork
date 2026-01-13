@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLocation } from '../hooks/useLocation'
 import { useDishes } from '../hooks/useDishes'
 import { LocationPicker } from '../components/LocationPicker'
+import { DishCard as FullDishCard } from '../components/DishCard'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { getCategoryImage } from '../constants/categoryImages'
 
@@ -17,6 +18,7 @@ const FEATURED_CATEGORIES = [
 export function Home() {
   const navigate = useNavigate()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [selectedDish, setSelectedDish] = useState(null)
 
   const { location, radius, setRadius, error: locationError } = useLocation()
   const { dishes, loading, error, refetch } = useDishes(
@@ -36,6 +38,14 @@ export function Home() {
 
   const handleCategoryClick = (categoryId) => {
     navigate(`/browse?category=${categoryId}`)
+  }
+
+  const handleVote = () => {
+    refetch()
+  }
+
+  const handleLoginRequired = () => {
+    setLoginModalOpen(true)
   }
 
   return (
@@ -85,7 +95,7 @@ export function Home() {
                 <DishCard
                   key={dish.dish_id}
                   dish={dish}
-                  onClick={() => navigate(`/browse?category=${dish.category}`)}
+                  onClick={() => setSelectedDish(dish)}
                 />
               ))}
             </div>
@@ -123,7 +133,7 @@ export function Home() {
                     <DishCard
                       key={dish.dish_id}
                       dish={dish}
-                      onClick={() => navigate(`/browse?category=${dish.category}`)}
+                      onClick={() => setSelectedDish(dish)}
                     />
                   ))}
                   {categoryDishes.length > 0 && (
@@ -167,13 +177,46 @@ export function Home() {
                 <DishCard
                   key={dish.dish_id}
                   dish={dish}
-                  onClick={() => navigate(`/browse?category=${dish.category}`)}
+                  onClick={() => setSelectedDish(dish)}
                 />
               ))}
             </div>
           )}
         </section>
       </main>
+
+      {/* Dish Detail Modal */}
+      {selectedDish && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedDish(null)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-stone-50 rounded-t-3xl animate-slide-up">
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedDish(null)}
+              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Dish Card */}
+            <div className="p-4 pt-2">
+              <FullDishCard
+                dish={selectedDish}
+                onVote={handleVote}
+                onLoginRequired={handleLoginRequired}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <LoginModal
         isOpen={loginModalOpen}
