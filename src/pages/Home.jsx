@@ -284,39 +284,21 @@ function VerticalDishCard({ dish, rank, onClick }) {
 
       {/* Info */}
       <div className="flex-1 min-w-0 text-left">
-        <h3 className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
+        <h3 className="font-semibold text-sm line-clamp-2" style={{ color: 'var(--color-text-primary)' }}>
           {dish_name}
         </h3>
-        <p className="text-xs truncate mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
           {restaurant_name}
         </p>
-      </div>
-
-      {/* Rating */}
-      <div className="flex-shrink-0 text-right">
-        {total_votes > 0 ? (
-          <>
-            <div
-              className="text-sm font-bold"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              {Math.round(percent_worth_it)}%
-            </div>
-            <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-              {total_votes} {total_votes === 1 ? 'vote' : 'votes'}
-            </div>
-          </>
-        ) : (
-          <span
-            className="text-xs font-medium px-2 py-1 rounded-full"
-            style={{
-              background: 'color-mix(in srgb, var(--color-primary) 15%, white)',
-              color: 'var(--color-primary)'
-            }}
-          >
-            New
-          </span>
-        )}
+        {/* Rating info - subtle secondary line */}
+        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+          {total_votes === 0
+            ? 'Be first to rate'
+            : total_votes < 10
+              ? `${total_votes} ${total_votes === 1 ? 'vote' : 'votes'}`
+              : `👍 ${Math.round(percent_worth_it)}% · ${total_votes} votes`
+          }
+        </p>
       </div>
 
       {/* Arrow */}

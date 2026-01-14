@@ -37,11 +37,20 @@ export function DishCard({ dish, onVote, onLoginRequired, isFavorite, onToggleFa
           loading="lazy"
         />
 
-        {/* Subtle overlay for better text contrast if needed */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Subtle gradient for badge contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+        {/* Rating badge - bottom left (only show if 10+ votes) */}
+        {totalVotes >= 10 && (
+          <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+            <span className="text-sm font-semibold text-white">
+              👍 {Math.round(percent_worth_it)}%
+            </span>
+          </div>
+        )}
 
         {/* Top badges row */}
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div className="absolute top-3 right-3 flex items-center gap-2">
           {/* Favorite button */}
           {onToggleFavorite && (
             <button
@@ -49,7 +58,7 @@ export function DishCard({ dish, onVote, onLoginRequired, isFavorite, onToggleFa
                 e.stopPropagation()
                 onToggleFavorite(dish_id)
               }}
-              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all ${
                 isFavorite
                   ? 'bg-red-500 text-white'
                   : 'bg-white/95 backdrop-blur-sm text-neutral-400 hover:text-red-500'
@@ -74,7 +83,7 @@ export function DishCard({ dish, onVote, onLoginRequired, isFavorite, onToggleFa
 
           {/* Distance badge */}
           {distance_miles && (
-            <div className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-sm shadow-lg">
+            <div className="px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-sm shadow-lg">
               <span className="text-xs font-semibold text-neutral-700">
                 {Number(distance_miles).toFixed(1)} mi
               </span>
@@ -85,90 +94,96 @@ export function DishCard({ dish, onVote, onLoginRequired, isFavorite, onToggleFa
 
       {/* Card Content */}
       <div className="p-5">
-        {/* Dish Name - Primary Focus */}
-        <h3 className="text-xl font-bold text-neutral-900 mb-1 leading-snug font-serif">
+        {/* Dish Name - Primary Focus (2 lines max) */}
+        <h3
+          className="text-xl font-bold leading-snug font-serif line-clamp-2"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
           {dish_name}
         </h3>
 
-        {/* Restaurant & Price - Secondary Info */}
-        <div className="flex items-center gap-2 text-sm text-neutral-600 mb-4">
-          <span className="font-medium">{restaurant_name}</span>
-          {price && (
-            <>
-              <span className="text-neutral-300">•</span>
-              <span className="font-semibold text-neutral-900">
-                ${Number(price).toFixed(2)}
-              </span>
-            </>
-          )}
+        {/* Restaurant & Meta Info */}
+        <div className="mt-1.5 space-y-0.5">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              {restaurant_name}
+            </span>
+            {price && (
+              <>
+                <span style={{ color: 'var(--color-divider)' }}>•</span>
+                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  ${Number(price).toFixed(2)}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Rating summary line - subtle, not a big box */}
+          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+            {totalVotes === 0
+              ? 'Be first to rate'
+              : totalVotes < 10
+                ? `${totalVotes} ${totalVotes === 1 ? 'vote' : 'votes'} so far`
+                : `${totalVotes} votes · ${Math.round(percent_worth_it)}% would order again`
+            }
+          </p>
         </div>
 
-        {/* Rating Section */}
-        {totalVotes === 0 ? (
-          /* No votes yet */
-          <div className="mb-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200 border-dashed">
-            <p className="text-sm text-neutral-500 text-center font-medium">
-              No votes yet — be the first!
-            </p>
-          </div>
-        ) : totalVotes < 10 ? (
-          /* Not enough votes (1-9 votes) */
-          <div className="mb-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-lg">📊</span>
-              <p className="text-sm text-amber-700 font-medium">
-                Not enough votes yet ({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})
-              </p>
-            </div>
-          </div>
-        ) : (
-          /* 10+ votes - Show full stats */
-          <div className="mb-4 p-4 rounded-xl space-y-3" style={{ background: 'color-mix(in srgb, var(--color-rating) 15%, white)', border: '1px solid color-mix(in srgb, var(--color-rating) 30%, transparent)' }}>
-            {/* Worth-It Badge with Emoji */}
-            <div className="flex items-center justify-center gap-2 pb-2" style={{ borderBottom: '1px solid color-mix(in srgb, var(--color-rating) 25%, transparent)' }}>
-              <span className="text-2xl">{badge.emoji}</span>
-              <span className="text-lg font-bold text-neutral-800">{badge.label}</span>
+        {/* Detailed Rating Section - only for 10+ votes */}
+        {totalVotes >= 10 && (
+          <div
+            className="mt-4 p-4 rounded-xl"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-divider)'
+            }}
+          >
+            {/* Badge row */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="text-xl">{badge.emoji}</span>
+              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                {badge.label}
+              </span>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {/* Would Order Again % */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-neutral-900">
-                  {percent_worth_it}%
+                <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {Math.round(percent_worth_it)}%
                 </div>
-                <div className="text-xs text-neutral-500">would order again</div>
+                <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  would order again
+                </div>
               </div>
 
               {/* Average Rating */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-neutral-900">
+                <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                   {avg_rating_10 ? formatScore10(avg_rating_10) : '—'}
-                  <span className="text-sm text-neutral-400">/10</span>
+                  <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
                 </div>
-                <div className="text-xs text-neutral-500">avg rating</div>
+                <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  avg rating
+                </div>
               </div>
-            </div>
-
-            {/* Vote count */}
-            <div className="text-center pt-2" style={{ borderTop: '1px solid color-mix(in srgb, var(--color-rating) 25%, transparent)' }}>
-              <span className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
-                {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
-              </span>
             </div>
           </div>
         )}
 
-        {/* Review Flow (replaces VoteButtons) */}
-        <ReviewFlow
-          dishId={dish_id}
-          dishName={dish_name}
-          category={category}
-          totalVotes={totalVotes}
-          yesVotes={yes_votes || 0}
-          onVote={onVote}
-          onLoginRequired={onLoginRequired}
-        />
+        {/* Review Flow */}
+        <div className="mt-4">
+          <ReviewFlow
+            dishId={dish_id}
+            dishName={dish_name}
+            category={category}
+            totalVotes={totalVotes}
+            yesVotes={yes_votes || 0}
+            onVote={onVote}
+            onLoginRequired={onLoginRequired}
+          />
+        </div>
       </div>
     </article>
   )
