@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLocation } from '../hooks/useLocation'
 import { useDishes } from '../hooks/useDishes'
+import { useSavedDishes } from '../hooks/useSavedDishes'
 import { LocationPicker } from '../components/LocationPicker'
 import { DishCard as FullDishCard } from '../components/DishCard'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { getCategoryImage } from '../constants/categoryImages'
+import { supabase } from '../lib/supabase'
 
 const FEATURED_CATEGORIES = [
   { id: 'pizza', label: 'Pizza', emoji: '🍕' },
@@ -19,6 +21,16 @@ export function Home() {
   const navigate = useNavigate()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [selectedDish, setSelectedDish] = useState(null)
+  const [user, setUser] = useState(null)
+
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   const { location, radius, setRadius, error: locationError } = useLocation()
   const { dishes, loading, error, refetch } = useDishes(
@@ -27,6 +39,7 @@ export function Home() {
     null,
     null
   )
+  const { isSaved, toggleSave } = useSavedDishes(user?.id)
 
   // Get top dishes overall
   const topDishes = dishes?.slice(0, 10) || []
@@ -46,6 +59,14 @@ export function Home() {
 
   const handleLoginRequired = () => {
     setLoginModalOpen(true)
+  }
+
+  const handleToggleSave = async (dishId) => {
+    if (!user) {
+      setLoginModalOpen(true)
+      return
+    }
+    await toggleSave(dishId)
   }
 
   return (
@@ -209,6 +230,8 @@ export function Home() {
                 dish={selectedDish}
                 onVote={handleVote}
                 onLoginRequired={handleLoginRequired}
+                isFavorite={isSaved ? isSaved(selectedDish.dish_id) : false}
+                onToggleFavorite={handleToggleSave}
               />
             </div>
           </div>
