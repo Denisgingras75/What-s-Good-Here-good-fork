@@ -3,6 +3,40 @@ import { useVote } from '../hooks/useVote'
 import { supabase } from '../lib/supabase'
 import { FoodRatingSlider } from './FoodRatingSlider'
 
+// Helper to get/set pending vote from localStorage (survives OAuth redirect)
+const PENDING_VOTE_KEY = 'whats_good_here_pending_vote'
+
+export function getPendingVoteFromStorage() {
+  try {
+    const stored = localStorage.getItem(PENDING_VOTE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Check if it's recent (within 5 minutes) to avoid stale data
+      if (Date.now() - parsed.timestamp < 5 * 60 * 1000) {
+        return parsed
+      }
+      localStorage.removeItem(PENDING_VOTE_KEY)
+    }
+  } catch (e) {}
+  return null
+}
+
+export function setPendingVoteToStorage(dishId, vote) {
+  try {
+    localStorage.setItem(PENDING_VOTE_KEY, JSON.stringify({
+      dishId,
+      vote,
+      timestamp: Date.now()
+    }))
+  } catch (e) {}
+}
+
+export function clearPendingVoteStorage() {
+  try {
+    localStorage.removeItem(PENDING_VOTE_KEY)
+  } catch (e) {}
+}
+
 export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
   const { submitVote, submitting } = useVote()
   const [user, setUser] = useState(null)
@@ -13,8 +47,15 @@ export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVote
   const [localYesVotes, setLocalYesVotes] = useState(yesVotes)
 
   // Flow: 1 = yes/no, 2 = rating, 3 = preview/confirm
-  const [step, setStep] = useState(1)
-  const [pendingVote, setPendingVote] = useState(null)
+  // Initialize from localStorage if there's a pending vote for this dish (survives page reload after magic link)
+  const [step, setStep] = useState(() => {
+    const stored = getPendingVoteFromStorage()
+    return (stored && stored.dishId === dishId) ? 2 : 1
+  })
+  const [pendingVote, setPendingVote] = useState(() => {
+    const stored = getPendingVoteFromStorage()
+    return (stored && stored.dishId === dishId) ? stored.vote : null
+  })
   const [sliderValue, setSliderValue] = useState(0)
 
   const [showConfirmation, setShowConfirmation] = useState(false)
@@ -60,14 +101,28 @@ export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVote
     fetchUserVote()
   }, [dishId, user])
 
-  // Continue flow after successful login
+  // Continue flow after successful login (including OAuth redirect)
   useEffect(() => {
     if (user && awaitingLogin && pendingVote !== null) {
       // User just logged in and we have a pending vote - continue to rating step
       setAwaitingLogin(false)
       setStep(2)
+      clearPendingVoteStorage()
     }
   }, [user, awaitingLogin, pendingVote])
+
+  // Check for pending vote in localStorage after OAuth redirect
+  useEffect(() => {
+    if (user && step === 1 && pendingVote === null) {
+      const stored = getPendingVoteFromStorage()
+      if (stored && stored.dishId === dishId) {
+        // User just logged in after OAuth redirect - restore their vote and continue
+        setPendingVote(stored.vote)  // Set the pending vote BEFORE changing step
+        setStep(2)
+        clearPendingVoteStorage()
+      }
+    }
+  }, [user, dishId, step, pendingVote])
 
   // Auth guard: if on step 2+ without auth, kick back to step 1
   useEffect(() => {
@@ -88,6 +143,8 @@ export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVote
 
       // Auth gate: check if user is logged in BEFORE going to rating step
       if (!user) {
+        // Save to localStorage so it survives OAuth redirect
+        setPendingVoteToStorage(dishId, wouldOrderAgain)
         setAwaitingLogin(true)
         onLoginRequired?.()
         // Don't advance to step 2 - wait for login
@@ -131,6 +188,7 @@ export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVote
     const result = await submitVote(dishId, pendingVote, sliderValue)
 
     if (result.success) {
+      clearPendingVoteStorage()
       setStep(1)
       setPendingVote(null)
       onVote?.()

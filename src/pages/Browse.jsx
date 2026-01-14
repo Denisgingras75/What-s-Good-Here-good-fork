@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { useLocation } from '../hooks/useLocation'
 import { useDishes } from '../hooks/useDishes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
 import { BrowseCard } from '../components/BrowseCard'
-import { ReviewFlow } from '../components/ReviewFlow'
+import { ReviewFlow, getPendingVoteFromStorage } from '../components/ReviewFlow'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { getCategoryImage } from '../constants/categoryImages'
 import { supabase } from '../lib/supabase'
@@ -67,6 +68,23 @@ export function Browse() {
     null
   )
   const { isSaved, toggleSave } = useSavedDishes(user?.id)
+
+  // Auto-reopen modal after OAuth/magic link login if there's a pending vote
+  useEffect(() => {
+    if (user && dishes?.length > 0 && !selectedDish) {
+      const pending = getPendingVoteFromStorage()
+      if (pending) {
+        // Find the dish they were voting on
+        const dish = dishes.find(d => d.dish_id === pending.dishId)
+        if (dish) {
+          // Small delay to ensure page is fully loaded after redirect
+          setTimeout(() => {
+            setSelectedDish(dish)
+          }, 100)
+        }
+      }
+    }
+  }, [user, dishes, selectedDish])
 
   const handleVote = () => {
     refetch()
@@ -252,122 +270,84 @@ export function Browse() {
         )}
       </div>
 
-      {/* Dish Detail Modal */}
-      {selectedDish && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          {/* Backdrop */}
+      {/* Dish Detail Modal - Using portal to escape any CSS inheritance */}
+      {selectedDish && createPortal(
+        <div
+          key={`modal-${selectedDish.dish_id}`}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            padding: '16px',
+          }}
+          onClick={() => setSelectedDish(null)}
+        >
+          {/* Modal card */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setSelectedDish(null)}
-          />
-
-          {/* Modal Content - flex column with sticky bottom */}
-          <div
-            className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-t-3xl animate-slide-up"
-            style={{ background: 'var(--color-bg)' }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '360px',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              backgroundColor: '#fff',
+              borderRadius: '16px',
+              padding: '20px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+            }}
           >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full" style={{ background: 'var(--color-divider)' }} />
-            </div>
-
             {/* Close button */}
             <button
               onClick={() => setSelectedDish(null)}
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center"
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                backgroundColor: '#e5e5e5',
+                border: 'none',
+                fontSize: '18px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              ×
             </button>
 
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto px-4">
-              {/* Dish Image - shorter for modal */}
-              <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden" style={{ background: 'var(--color-surface)' }}>
-                <img
-                  src={selectedDish.photo_url || getCategoryImage(selectedDish.category)}
-                  alt={selectedDish.dish_name}
-                  className="w-full h-full object-cover"
-                />
-                {/* Rating badge */}
-                {(selectedDish.total_votes || 0) >= 10 && (
-                  <div className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
-                    <span className="text-sm font-semibold text-white">
-                      👍 {Math.round(selectedDish.percent_worth_it)}%
-                    </span>
-                  </div>
-                )}
-                {/* Favorite button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleToggleSave(selectedDish.dish_id)
-                  }}
-                  className={`absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all ${
-                    isSaved?.(selectedDish.dish_id)
-                      ? 'bg-red-500 text-white'
-                      : 'bg-white/90 backdrop-blur-sm text-neutral-400'
-                  }`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={isSaved?.(selectedDish.dish_id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                  </svg>
-                </button>
-              </div>
+            {/* Dish name + restaurant */}
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px', paddingRight: '30px' }}>
+              {selectedDish.dish_name}
+            </h2>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+              {selectedDish.restaurant_name}
+              {selectedDish.price && ` · $${Number(selectedDish.price).toFixed(0)}`}
+            </p>
 
-              {/* Dish Info */}
-              <div className="py-4">
-                <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                  {selectedDish.dish_name}
-                </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {selectedDish.restaurant_name}
-                  </span>
-                  {selectedDish.price && (
-                    <>
-                      <span style={{ color: 'var(--color-divider)' }}>•</span>
-                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                        ${Number(selectedDish.price).toFixed(2)}
-                      </span>
-                    </>
-                  )}
-                  {selectedDish.distance_miles && (
-                    <>
-                      <span style={{ color: 'var(--color-divider)' }}>•</span>
-                      <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-                        {Number(selectedDish.distance_miles).toFixed(1)} mi
-                      </span>
-                    </>
-                  )}
-                </div>
-                <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {(selectedDish.total_votes || 0) === 0
-                    ? 'Be first to rate this dish'
-                    : `${selectedDish.total_votes} votes`
-                  }
-                </p>
-              </div>
-            </div>
-
-            {/* Sticky Bottom - Review Flow */}
-            <div
-              className="flex-shrink-0 px-4 py-4 border-t"
-              style={{ borderColor: 'var(--color-divider)', background: 'var(--color-bg)' }}
-            >
-              <ReviewFlow
-                dishId={selectedDish.dish_id}
-                dishName={selectedDish.dish_name}
-                category={selectedDish.category}
-                totalVotes={selectedDish.total_votes || 0}
-                yesVotes={selectedDish.yes_votes || 0}
-                onVote={handleVote}
-                onLoginRequired={handleLoginRequired}
-              />
-            </div>
+            {/* Review Flow - this is where thumbs up/down appears */}
+            <ReviewFlow
+              dishId={selectedDish.dish_id}
+              dishName={selectedDish.dish_name}
+              category={selectedDish.category}
+              totalVotes={selectedDish.total_votes || 0}
+              yesVotes={selectedDish.yes_votes || 0}
+              onVote={handleVote}
+              onLoginRequired={handleLoginRequired}
+            />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <LoginModal
