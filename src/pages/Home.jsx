@@ -4,7 +4,7 @@ import { useLocation } from '../hooks/useLocation'
 import { useDishes } from '../hooks/useDishes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
 import { LocationPicker } from '../components/LocationPicker'
-import { DishCard as FullDishCard } from '../components/DishCard'
+import { ReviewFlow } from '../components/ReviewFlow'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { getCategoryImage } from '../constants/categoryImages'
 import { supabase } from '../lib/supabase'
@@ -72,7 +72,7 @@ export function Home() {
           <img
             src="/logo.png"
             alt="What's Good Here"
-            className="h-12 w-auto"
+            className="h-14 w-auto"
           />
           <button
             onClick={() => navigate('/browse')}
@@ -213,13 +213,13 @@ export function Home() {
             onClick={() => setSelectedDish(null)}
           />
 
-          {/* Modal Content */}
+          {/* Modal Content - flex column with sticky bottom */}
           <div
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl animate-slide-up"
-            style={{ background: 'var(--color-surface)' }}
+            className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-t-3xl animate-slide-up"
+            style={{ background: 'var(--color-bg)' }}
           >
             {/* Handle */}
-            <div className="sticky top-0 z-10 flex justify-center pt-3 pb-2" style={{ background: 'var(--color-surface)' }}>
+            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
               <div className="w-10 h-1 rounded-full" style={{ background: 'var(--color-divider)' }} />
             </div>
 
@@ -233,14 +233,89 @@ export function Home() {
               </svg>
             </button>
 
-            {/* Dish Card */}
-            <div className="px-4 pb-8">
-              <FullDishCard
-                dish={selectedDish}
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto px-4">
+              {/* Dish Image - shorter for modal */}
+              <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden" style={{ background: 'var(--color-surface)' }}>
+                <img
+                  src={selectedDish.photo_url || getCategoryImage(selectedDish.category)}
+                  alt={selectedDish.dish_name}
+                  className="w-full h-full object-cover"
+                />
+                {/* Rating badge */}
+                {(selectedDish.total_votes || 0) >= 10 && (
+                  <div className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                    <span className="text-sm font-semibold text-white">
+                      👍 {Math.round(selectedDish.percent_worth_it)}%
+                    </span>
+                  </div>
+                )}
+                {/* Favorite button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleToggleSave(selectedDish.dish_id)
+                  }}
+                  className={`absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all ${
+                    isSaved?.(selectedDish.dish_id)
+                      ? 'bg-red-500 text-white'
+                      : 'bg-white/90 backdrop-blur-sm text-neutral-400'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={isSaved?.(selectedDish.dish_id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Dish Info */}
+              <div className="py-4">
+                <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {selectedDish.dish_name}
+                </h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    {selectedDish.restaurant_name}
+                  </span>
+                  {selectedDish.price && (
+                    <>
+                      <span style={{ color: 'var(--color-divider)' }}>•</span>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        ${Number(selectedDish.price).toFixed(2)}
+                      </span>
+                    </>
+                  )}
+                  {selectedDish.distance_miles && (
+                    <>
+                      <span style={{ color: 'var(--color-divider)' }}>•</span>
+                      <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {Number(selectedDish.distance_miles).toFixed(1)} mi
+                      </span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {(selectedDish.total_votes || 0) === 0
+                    ? 'Be first to rate this dish'
+                    : `${selectedDish.total_votes} votes`
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Sticky Bottom - Review Flow */}
+            <div
+              className="flex-shrink-0 px-4 py-4 border-t"
+              style={{ borderColor: 'var(--color-divider)', background: 'var(--color-bg)' }}
+            >
+              <ReviewFlow
+                dishId={selectedDish.dish_id}
+                dishName={selectedDish.dish_name}
+                category={selectedDish.category}
+                totalVotes={selectedDish.total_votes || 0}
+                yesVotes={selectedDish.yes_votes || 0}
                 onVote={handleVote}
                 onLoginRequired={handleLoginRequired}
-                isFavorite={isSaved ? isSaved(selectedDish.dish_id) : false}
-                onToggleFavorite={handleToggleSave}
               />
             </div>
           </div>
