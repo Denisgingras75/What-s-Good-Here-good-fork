@@ -86,21 +86,13 @@ export function Home() {
             Real ratings by people on Martha's Vineyard.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
-            <button
-              onClick={() => navigate('/browse')}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/30"
-            >
-              Find food near me
-            </button>
-            <button
-              onClick={() => navigate('/browse')}
-              className="flex-1 px-6 py-3 bg-white border-2 border-neutral-200 text-neutral-700 font-semibold rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all"
-            >
-              Browse top dishes
-            </button>
-          </div>
+          {/* CTA Button */}
+          <button
+            onClick={() => navigate('/browse')}
+            className="w-full max-w-xs px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/30"
+          >
+            Find food near me
+          </button>
         </div>
       </header>
 
