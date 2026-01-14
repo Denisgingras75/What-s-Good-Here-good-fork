@@ -243,6 +243,7 @@ export function Home() {
         >
           {/* Modal card */}
           <div
+            ref={(el) => { if (el) el.scrollTop = 0 }}
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'relative',
