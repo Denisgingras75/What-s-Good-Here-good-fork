@@ -79,7 +79,7 @@ export function Home() {
             alt="What's Good Here"
             className="h-16 w-auto mb-4"
           />
-          <h1 className="text-2xl font-bold font-serif mb-2" style={{ color: 'var(--color-text-primary)' }}>
+          <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
             Find the best dishes near you.
           </h1>
           <p className="mb-6 max-w-xs" style={{ color: 'var(--color-text-secondary)' }}>
@@ -210,7 +210,7 @@ export function Home() {
 function SectionHeader({ emoji, title, onSeeAll }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg font-bold font-serif flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+      <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
         <span>{emoji}</span> {title}
       </h2>
       <button

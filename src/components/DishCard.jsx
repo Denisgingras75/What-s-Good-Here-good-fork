@@ -96,7 +96,7 @@ export function DishCard({ dish, onVote, onLoginRequired, isFavorite, onToggleFa
       <div className="p-5">
         {/* Dish Name - Primary Focus (2 lines max) */}
         <h3
-          className="text-xl font-bold leading-snug font-serif line-clamp-2"
+          className="text-xl font-bold leading-snug line-clamp-2"
           style={{ color: 'var(--color-text-primary)' }}
         >
           {dish_name}

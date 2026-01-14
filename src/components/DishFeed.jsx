@@ -46,7 +46,7 @@ export function DishFeed({ dishes, loading, error, onVote, onLoginRequired, sele
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
             <span className="text-4xl">🔍</span>
           </div>
-          <h3 className="text-2xl font-bold text-neutral-900 mb-3 font-serif">
+          <h3 className="text-2xl font-bold text-neutral-900 mb-3">
             No dishes found
           </h3>
           <p className="text-neutral-600 mb-6 max-w-sm mx-auto">

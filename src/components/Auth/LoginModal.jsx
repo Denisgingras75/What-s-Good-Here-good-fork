@@ -93,7 +93,7 @@ export function LoginModal({ isOpen, onClose }) {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-3 font-serif">
+            <h2 className="text-3xl font-bold text-neutral-900 mb-3">
               Sign in to vote
             </h2>
             <p className="text-neutral-600 leading-relaxed">
