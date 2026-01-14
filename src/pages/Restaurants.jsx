@@ -32,8 +32,6 @@ export function Restaurants() {
           address,
           lat,
           lng,
-          phone,
-          hours,
           dishes (id)
         `)
         .order('name')
