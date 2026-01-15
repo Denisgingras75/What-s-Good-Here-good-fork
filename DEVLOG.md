@@ -4,6 +4,15 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ---
 
+## 2025-01-14 - Daniel (Session 2)
+
+### UX Improvements
+- Added 300ms debounce to search input (smoother typing experience)
+- Created skeleton loading components for Home and Browse pages
+- Created `LocationContext` for centralized location state management
+
+---
+
 ## 2025-01-14 - Daniel
 
 ### Code Structure Improvements
