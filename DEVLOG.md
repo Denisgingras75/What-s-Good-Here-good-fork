@@ -31,6 +31,7 @@ A shared log of what each contributor worked on. Add your entries at the top.
 - Fixed memory leak in `LocationContext` - geolocation permission listener now properly cleaned up
 - Fixed unreliable search filtering in Browse - wrapped `filteredDishes` in `useMemo` with proper dependencies
 - Fixed modal not reopening after magic link login - removed unreliable `setTimeout(100)`, opens immediately
+- Fixed slow initial load - app no longer blocks on geolocation, dishes load instantly with default MV location
 
 ---
 
