@@ -7,6 +7,7 @@ import { Browse } from './pages/Browse'
 import { Restaurants } from './pages/Restaurants'
 import { Profile } from './pages/Profile'
 import { Admin } from './pages/Admin'
+import { Login } from './pages/Login'
 import { preloadSounds } from './lib/sounds'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/browse" element={<Layout><Browse /></Layout>} />
           <Route path="/restaurants" element={<Layout><Restaurants /></Layout>} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
+          <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </BrowserRouter>
