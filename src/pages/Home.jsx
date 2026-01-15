@@ -314,6 +314,7 @@ function DishRow({ dish, rank, onClick, isRanked }) {
     category,
     photo_url,
     percent_worth_it,
+    avg_rating,
     total_votes,
     distance_miles,
   } = dish
@@ -369,7 +370,7 @@ function DishRow({ dish, rank, onClick, isRanked }) {
         {isRanked ? (
           <>
             <div className="text-sm font-bold" style={{ color: 'var(--color-rating)' }}>
-              👍 {Math.round(percent_worth_it)}%
+              ⭐ {avg_rating || '—'}/10
             </div>
             <div className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
               {votes} votes{distance_miles ? ` · ${Number(distance_miles).toFixed(1)}mi` : ''}

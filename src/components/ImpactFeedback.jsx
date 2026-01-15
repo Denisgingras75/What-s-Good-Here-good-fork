@@ -51,9 +51,9 @@ export function getImpactMessage(before, after, beforeRank, afterRank) {
     }
   }
 
-  // Default for ranked dishes - show percentage
+  // Default for ranked dishes - show rating
   return {
-    message: `Now ${Math.round(after.percent_worth_it)}% Worth It`,
+    message: `Now rated ${after.avg_rating || '—'}/10`,
     emoji: "✓",
     type: "update"
   }

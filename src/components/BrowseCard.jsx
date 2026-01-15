@@ -11,6 +11,7 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
     photo_url,
     price,
     percent_worth_it,
+    avg_rating,
     total_votes,
     distance_miles,
   } = dish
@@ -40,7 +41,7 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
         {isRanked ? (
           <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
             <span className="text-sm font-semibold text-white">
-              👍 {Math.round(percent_worth_it)}%
+              ⭐ {avg_rating || '—'}/10
             </span>
           </div>
         ) : (
