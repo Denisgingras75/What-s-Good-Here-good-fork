@@ -33,6 +33,27 @@ Ideas and features for future versions. Not prioritized yet.
 
 ---
 
+## Gamification Framework
+
+**Golden Rule:** If a mechanic risks inflating scores, biasing ratings, or low-effort behavior — it does not ship.
+
+**NOT building:** Streaks, leaderboards, XP/points, Yelp Elite nonsense
+
+**Phase 1 (Now):**
+- Impact feedback after rating ("This dish entered Top 10", "You moved this up 2 spots")
+- Contribution count on profile
+- "You helped shape this" messaging
+
+**Phase 2 (After traction):**
+- Contribution levels: Explorer → Contributor → Tastemaker → Local Legend
+- Trust-based unlocks (suggest dishes, flag data, curate lists)
+
+**Phase 3 (Restaurants involved):**
+- Specials voting
+- Community favorite badges (earned, not paid)
+
+---
+
 ## How to Add Ideas
 
 ```markdown
