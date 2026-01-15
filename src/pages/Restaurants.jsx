@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
-import { useLocation } from '../hooks/useLocation'
+import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
 import { DishFeed } from '../components/DishFeed'
@@ -15,7 +15,7 @@ export function Restaurants() {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
 
-  const { location, radius } = useLocation()
+  const { location, radius } = useLocationContext()
   const { dishes, loading: dishesLoading, error: dishesError, refetch } = useDishes(
     location,
     radius,

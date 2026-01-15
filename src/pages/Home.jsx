@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLocation } from '../hooks/useLocation'
+import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
 import { LocationPicker } from '../components/LocationPicker'
@@ -9,6 +9,7 @@ import { DishModal } from '../components/DishModal'
 import { getPendingVoteFromStorage } from '../components/ReviewFlow'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { getCategoryImage } from '../constants/categoryImages'
+import { DishRowSkeleton } from '../components/Skeleton'
 
 const TOP_COUNT = 10
 const MIN_VOTES_FOR_RANKING = 5
@@ -29,7 +30,7 @@ export function Home() {
     requestLocation,
     useDefaultLocation,
     loading: locationLoading
-  } = useLocation()
+  } = useLocationContext()
   const { dishes, loading, error, refetch } = useDishes(
     location,
     radius,
@@ -147,11 +148,7 @@ export function Home() {
         {loading && (
           <div className="space-y-2">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-16 rounded-xl animate-pulse"
-                style={{ background: 'var(--color-divider)' }}
-              />
+              <DishRowSkeleton key={i} />
             ))}
           </div>
         )}

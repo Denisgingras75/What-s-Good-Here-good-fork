@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { LocationProvider } from './context/LocationContext'
 import { Layout } from './components/Layout'
 import { Home } from './pages/Home'
 import { Browse } from './pages/Browse'
@@ -18,16 +19,18 @@ function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout><Home /></Layout>} />
-          <Route path="/browse" element={<Layout><Browse /></Layout>} />
-          <Route path="/restaurants" element={<Layout><Restaurants /></Layout>} />
-          <Route path="/profile" element={<Layout><Profile /></Layout>} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
-      </BrowserRouter>
+      <LocationProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout><Home /></Layout>} />
+            <Route path="/browse" element={<Layout><Browse /></Layout>} />
+            <Route path="/restaurants" element={<Layout><Restaurants /></Layout>} />
+            <Route path="/profile" element={<Layout><Profile /></Layout>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
+        </BrowserRouter>
+      </LocationProvider>
     </AuthProvider>
   )
 }

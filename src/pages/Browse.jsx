@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useLocation } from '../hooks/useLocation'
+import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
 import { BrowseCard } from '../components/BrowseCard'
 import { DishModal } from '../components/DishModal'
 import { getPendingVoteFromStorage } from '../components/ReviewFlow'
 import { LoginModal } from '../components/Auth/LoginModal'
+import { DishCardSkeleton } from '../components/Skeleton'
 
 const CATEGORIES = [
   { id: null, label: 'All', emoji: '🍽️' },
@@ -38,6 +39,7 @@ export function Browse() {
   const { user } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [selectedDish, setSelectedDish] = useState(null)
   const categoryScrollRef = useRef(null)
@@ -50,7 +52,15 @@ export function Browse() {
     }
   }, [searchParams])
 
-  const { location, radius } = useLocation()
+  // Debounce search query by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const { location, radius } = useLocationContext()
   const { dishes, loading, error, refetch } = useDishes(
     location,
     radius,
@@ -116,8 +126,8 @@ export function Browse() {
 
   // Filter dishes by search query (dish name or restaurant name)
   const filteredDishes = dishes.filter(dish => {
-    if (!searchQuery.trim()) return true
-    const query = searchQuery.toLowerCase()
+    if (!debouncedSearchQuery.trim()) return true
+    const query = debouncedSearchQuery.toLowerCase()
     return (
       dish.dish_name?.toLowerCase().includes(query) ||
       dish.restaurant_name?.toLowerCase().includes(query)
@@ -218,14 +228,10 @@ export function Browse() {
       {/* Dish Grid */}
       <div className="px-4 py-4">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="relative w-16 h-16 mb-4">
-              <div className="absolute inset-0 rounded-full animate-pulse" style={{ background: 'var(--color-primary)' }} />
-              <div className="absolute inset-2 rounded-full bg-white flex items-center justify-center">
-                <span className="text-2xl">🍽️</span>
-              </div>
-            </div>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Finding dishes...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <DishCardSkeleton key={i} />
+            ))}
           </div>
         ) : error ? (
           <div className="py-16 text-center">
