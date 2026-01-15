@@ -28,7 +28,17 @@ export function Home() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const { location, radius, setRadius, error: locationError } = useLocation()
+  const {
+    location,
+    radius,
+    setRadius,
+    error: locationError,
+    permissionState,
+    isUsingDefault,
+    requestLocation,
+    useDefaultLocation,
+    loading: locationLoading
+  } = useLocation()
   const { dishes, loading, error, refetch } = useDishes(
     location,
     radius,
@@ -123,6 +133,11 @@ export function Home() {
         onRadiusChange={setRadius}
         location={location}
         error={locationError}
+        permissionState={permissionState}
+        isUsingDefault={isUsingDefault}
+        onRequestLocation={requestLocation}
+        onUseDefault={useDefaultLocation}
+        loading={locationLoading}
       />
 
       {/* Main Content */}
