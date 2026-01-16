@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 
 const STORAGE_KEY = 'wgh_has_seen_splash'
-const AUTO_DISMISS_MS = 5000
 
 /**
  * WelcomeSplash - One-time welcome screen for first-time visitors
- * Shows logo and mission statement, auto-dismisses after 5 seconds
- * Can be dismissed early by tapping anywhere
+ * Shows logo and mission statement, dismissed by tapping anywhere
  */
 export function WelcomeSplash() {
   const [isVisible, setIsVisible] = useState(false)
@@ -19,17 +17,6 @@ export function WelcomeSplash() {
       setIsVisible(true)
     }
   }, [])
-
-  // Auto-dismiss timer
-  useEffect(() => {
-    if (!isVisible) return
-
-    const timer = setTimeout(() => {
-      handleDismiss()
-    }, AUTO_DISMISS_MS)
-
-    return () => clearTimeout(timer)
-  }, [isVisible])
 
   const handleDismiss = () => {
     setIsFading(true)
