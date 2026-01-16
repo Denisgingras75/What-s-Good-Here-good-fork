@@ -10,40 +10,49 @@ export function AuthProvider({ children }) {
   const prevUserRef = useRef(null)
 
   useEffect(() => {
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) {
+    // Restore session from localStorage (instant, works offline)
+    // This is faster than getUser() which makes a network request
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error restoring session:', error)
+      }
+      const sessionUser = session?.user ?? null
+      setUser(sessionUser)
+      prevUserRef.current = sessionUser
+
+      if (sessionUser) {
         // Identify user in PostHog (no PII - just auth provider for segmentation)
-        posthog.identify(user.id, {
-          auth_provider: user.app_metadata?.provider || 'unknown',
+        posthog.identify(sessionUser.id, {
+          auth_provider: sessionUser.app_metadata?.provider || 'unknown',
         })
       }
       setLoading(false)
     })
 
-    // Listen for auth changes
+    // Listen for auth changes (handles token refresh, sign in/out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const newUser = session?.user ?? null
-      setUser(newUser)
-      setLoading(false)
 
-      // Track login success when user signs in
-      if (newUser && !prevUserRef.current) {
+      // Handle different auth events
+      if (event === 'SIGNED_IN' && newUser && !prevUserRef.current) {
+        // User just signed in
         posthog.identify(newUser.id, {
           auth_provider: newUser.app_metadata?.provider || 'unknown',
         })
         posthog.capture('login_completed', {
           method: newUser.app_metadata?.provider || 'unknown',
         })
-      }
-
-      // Track logout
-      if (!newUser && prevUserRef.current) {
+      } else if (event === 'SIGNED_OUT') {
+        // User signed out
         posthog.capture('logout')
-        posthog.reset() // Clear user identity
+        posthog.reset()
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Token was refreshed - session is still valid, user stays logged in
+        // No action needed, just update state
       }
 
+      setUser(newUser)
+      setLoading(false)
       prevUserRef.current = newUser
     })
 

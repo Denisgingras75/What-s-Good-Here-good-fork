@@ -9,9 +9,15 @@ const key = supabaseAnonKey || 'placeholder-key'
 
 export const supabase = createClient(url, key, {
   auth: {
+    // Session persistence - stores auth tokens in localStorage
     persistSession: true,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'whats-good-here-auth',
+
+    // Token refresh - automatically refreshes tokens before they expire
     autoRefreshToken: true,
+
+    // OAuth redirect handling - detects tokens in URL after OAuth redirect
     detectSessionInUrl: true,
   }
 })
