@@ -11,6 +11,8 @@ import { Restaurants } from './pages/Restaurants'
 import { Profile } from './pages/Profile'
 import { Admin } from './pages/Admin'
 import { Login } from './pages/Login'
+import { Privacy } from './pages/Privacy'
+import { Terms } from './pages/Terms'
 import { preloadSounds } from './lib/sounds'
 
 function App() {
@@ -44,6 +46,8 @@ function App() {
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
           </Routes>
         </BrowserRouter>
       </LocationProvider>

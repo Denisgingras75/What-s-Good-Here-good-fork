@@ -194,7 +194,10 @@ export function Login() {
 
         {/* Footer */}
         <p className="mt-8 text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>
-          By continuing, you agree to our Terms of Service and Privacy Policy
+          By continuing, you agree to our{' '}
+          <a href="/terms" className="underline hover:text-neutral-600">Terms of Service</a>
+          {' '}and{' '}
+          <a href="/privacy" className="underline hover:text-neutral-600">Privacy Policy</a>
         </p>
       </div>
     </div>

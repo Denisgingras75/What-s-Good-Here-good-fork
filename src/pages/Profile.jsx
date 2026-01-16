@@ -313,6 +313,38 @@ export function Profile() {
                 </div>
               </button>
 
+              {/* Privacy Policy */}
+              <a
+                href="/privacy"
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 transition-colors border-t border-neutral-100"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
+                    🔒
+                  </div>
+                  <span className="font-medium text-neutral-900">Privacy Policy</span>
+                </div>
+                <svg className="w-5 h-5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+
+              {/* Terms of Service */}
+              <a
+                href="/terms"
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 transition-colors border-t border-neutral-100"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
+                    📋
+                  </div>
+                  <span className="font-medium text-neutral-900">Terms of Service</span>
+                </div>
+                <svg className="w-5 h-5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+
               {/* Sign Out */}
               <button
                 onClick={handleSignOut}
