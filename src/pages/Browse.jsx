@@ -386,7 +386,7 @@ export function Browse() {
       {/* Header */}
       <header className="bg-white">
         <div className="flex flex-col items-center py-2">
-          <img src="/logo.png" alt="What's Good Here" className="h-12 w-auto" />
+          <img src="/logo.png" alt="What's Good Here" className="h-12 md:h-14 lg:h-16 w-auto" />
         </div>
 
         {/* Search bar with autocomplete */}

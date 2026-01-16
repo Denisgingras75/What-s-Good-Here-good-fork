@@ -144,7 +144,7 @@ export function Home() {
           <img
             src="/logo.png"
             alt="What's Good Here"
-            className="h-12 w-auto"
+            className="h-12 md:h-14 lg:h-16 w-auto"
           />
         </div>
       </header>
