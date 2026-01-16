@@ -23,9 +23,9 @@ function transformVote(vote) {
 const TIER_THRESHOLDS = [
   { min: 50, level: 5, title: 'Master', icon: '👑' },
   { min: 30, level: 4, title: 'Expert', icon: '⭐' },
-  { min: 20, level: 3, title: 'Connoisseur', icon: '🥇' },
-  { min: 10, level: 2, title: 'Fan', icon: '🥈' },
-  { min: 5, level: 1, title: 'Explorer', icon: '🥉' },
+  { min: 20, level: 3, title: 'Connoisseur', icon: '💎' },
+  { min: 10, level: 2, title: 'Fan', icon: '🔥' },
+  { min: 5, level: 1, title: 'Explorer', icon: '🌱' },
 ]
 
 /**
@@ -64,6 +64,62 @@ function getTierForCount(count) {
     }
   }
   return null
+}
+
+/**
+ * Get next tier info for a vote count
+ */
+function getNextTierInfo(count) {
+  // Find the next tier threshold above current count
+  const sortedThresholds = [...TIER_THRESHOLDS].sort((a, b) => a.min - b.min)
+
+  for (const tier of sortedThresholds) {
+    if (count < tier.min) {
+      return {
+        nextTier: tier,
+        votesNeeded: tier.min - count,
+        progress: count / tier.min,
+      }
+    }
+  }
+
+  // Already at max tier
+  return null
+}
+
+/**
+ * Calculate progress towards next tier for each category
+ */
+function calculateCategoryProgress(categoryCounts) {
+  const progress = []
+
+  for (const [category, count] of Object.entries(categoryCounts)) {
+    const nextInfo = getNextTierInfo(count)
+
+    // Only show progress if there's a next tier to reach
+    if (nextInfo) {
+      const info = CATEGORY_INFO[category] || { emoji: '🍽️', label: category }
+      const currentTier = getTierForCount(count)
+
+      progress.push({
+        category,
+        count,
+        ...info,
+        currentTier,
+        nextTier: nextInfo.nextTier,
+        votesNeeded: nextInfo.votesNeeded,
+        progress: nextInfo.progress,
+      })
+    }
+  }
+
+  // Sort by progress (closest to next tier first), then by count
+  progress.sort((a, b) => {
+    if (b.progress !== a.progress) return b.progress - a.progress
+    return b.count - a.count
+  })
+
+  return progress
 }
 
 /**
@@ -140,6 +196,9 @@ function calculateStats(data) {
   // Category tiers (only categories with 5+ votes)
   const categoryTiers = calculateCategoryTiers(categoryCounts)
 
+  // Category progress (categories working towards next tier)
+  const categoryProgress = calculateCategoryProgress(categoryCounts)
+
   // Rating personality
   const ratingPersonality = getRatingPersonality(avgRating)
 
@@ -167,6 +226,7 @@ function calculateStats(data) {
     favoriteRestaurant,
     uniqueRestaurants,
     categoryTiers,
+    categoryProgress,
     ratingPersonality,
     categoryCounts,
   }
@@ -186,6 +246,7 @@ export function useUserVotes(userId) {
     favoriteRestaurant: null,
     uniqueRestaurants: 0,
     categoryTiers: [],
+    categoryProgress: [],
     ratingPersonality: null,
     categoryCounts: {},
   })
@@ -224,6 +285,7 @@ export function useUserVotes(userId) {
         favoriteRestaurant: null,
         uniqueRestaurants: 0,
         categoryTiers: [],
+        categoryProgress: [],
         ratingPersonality: null,
         categoryCounts: {},
       })
