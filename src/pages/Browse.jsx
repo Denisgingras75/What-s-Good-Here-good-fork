@@ -14,7 +14,6 @@ import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
 const MIN_VOTES_FOR_RANKING = 5
 
 const CATEGORIES = [
-  { id: null, label: 'All', emoji: '🍽️' },
   { id: 'pizza', label: 'Pizza', emoji: '🍕' },
   { id: 'burger', label: 'Burgers', emoji: '🍔' },
   { id: 'taco', label: 'Tacos', emoji: '🌮' },
@@ -47,7 +46,6 @@ export function Browse() {
   const [selectedDish, setSelectedDish] = useState(null)
   const [impactFeedback, setImpactFeedback] = useState(null)
   const [pendingVoteData, setPendingVoteData] = useState(null)
-  const categoryScrollRef = useRef(null)
   const beforeVoteRef = useRef(null)
 
   // Handle category from URL params (when coming from home page)
@@ -67,10 +65,14 @@ export function Browse() {
   }, [searchQuery])
 
   const { location, radius } = useLocationContext()
+
+  // Only fetch dishes when we have a category selected OR when searching
+  const shouldFetchDishes = selectedCategory || debouncedSearchQuery.trim()
+
   const { dishes, loading, error, refetch } = useDishes(
-    location,
+    shouldFetchDishes ? location : null, // Pass null location to skip fetch
     radius,
-    selectedCategory,
+    debouncedSearchQuery.trim() ? null : selectedCategory, // Search across all categories
     null
   )
   const { isSaved, toggleSave } = useSavedDishes(user?.id)
@@ -163,12 +165,20 @@ export function Browse() {
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId)
+    setSearchQuery('') // Clear search when selecting category
+    setDebouncedSearchQuery('')
     // Update URL params
     if (categoryId) {
       setSearchParams({ category: categoryId })
     } else {
       setSearchParams({})
     }
+  }
+
+  // Go back to category grid
+  const handleBackToCategories = () => {
+    setSelectedCategory(null)
+    setSearchParams({})
   }
 
   // Filter dishes by search query (dish name or restaurant name)
@@ -188,6 +198,9 @@ export function Browse() {
   const clearSearch = () => {
     setSearchQuery('')
   }
+
+  // Are we showing dishes or the category grid?
+  const showingDishes = selectedCategory || debouncedSearchQuery.trim()
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -231,102 +244,125 @@ export function Browse() {
           </div>
         </div>
 
-        {/* Category chips - horizontal scroll */}
-        <div
-          ref={categoryScrollRef}
-          className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide"
-        >
-          {CATEGORIES.map((category) => (
+        {/* Back button and category indicator when viewing dishes */}
+        {showingDishes && selectedCategory && !debouncedSearchQuery.trim() && (
+          <div className="px-4 pb-3 flex items-center gap-3">
             <button
-              key={category.id || 'all'}
-              onClick={() => handleCategoryChange(category.id)}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                selectedCategory === category.id
-                  ? 'text-white shadow-md'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-              }`}
-              style={selectedCategory === category.id ? { background: 'var(--color-primary)' } : {}}
+              onClick={handleBackToCategories}
+              className="flex items-center gap-1 text-sm font-medium"
+              style={{ color: 'var(--color-primary)' }}
             >
-              <span>{category.emoji}</span>
-              <span>{category.label}</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Categories
             </button>
-          ))}
-        </div>
+            <span className="text-neutral-300">|</span>
+            <span className="text-sm font-medium text-neutral-700">
+              {CATEGORIES.find(c => c.id === selectedCategory)?.emoji}{' '}
+              {CATEGORIES.find(c => c.id === selectedCategory)?.label}
+            </span>
+          </div>
+        )}
       </header>
 
-      {/* Results count */}
-      <div className="px-4 py-2 bg-stone-50 border-b border-neutral-100">
-        <p className="text-sm text-neutral-500">
-          {loading ? (
-            'Loading...'
-          ) : (
-            <>
-              <span className="font-medium text-neutral-700">{filteredDishes.length}</span>
-              {' '}
-              {filteredDishes.length === 1 ? 'dish' : 'dishes'}
-              {selectedCategory && (
-                <span> in {CATEGORIES.find(c => c.id === selectedCategory)?.label}</span>
-              )}
-              {searchQuery && (
-                <span> matching "{searchQuery}"</span>
-              )}
-            </>
-          )}
-        </p>
-      </div>
-
-      {/* Dish Grid */}
-      <div className="px-4 py-4">
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <DishCardSkeleton key={i} />
+      {/* Main Content */}
+      {!showingDishes ? (
+        /* Category Grid - Default View */
+        <div className="px-4 py-6">
+          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
+            Browse by Category
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className="flex flex-col items-center justify-center p-5 bg-white rounded-2xl border border-neutral-200 hover:border-neutral-300 hover:shadow-md active:scale-[0.98] transition-all"
+              >
+                <span className="text-3xl mb-2">{category.emoji}</span>
+                <span className="text-sm font-medium text-neutral-700">{category.label}</span>
+              </button>
             ))}
           </div>
-        ) : error ? (
-          <div className="py-16 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
-            </div>
-            <p className="text-sm text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium"
-            >
-              Retry
-            </button>
-          </div>
-        ) : filteredDishes.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
-              <span className="text-2xl">🔍</span>
-            </div>
-            <p className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>No dishes found</p>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Try a different category or search</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filteredDishes.map((dish) => (
-              <BrowseCard
-                key={dish.dish_id}
-                dish={dish}
-                onClick={() => openDishModal(dish)}
-                isFavorite={isSaved ? isSaved(dish.dish_id) : false}
-                onToggleFavorite={handleToggleSave}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Footer */}
-        {!loading && filteredDishes.length > 0 && (
-          <div className="mt-8 pt-6 border-t text-center" style={{ borderColor: 'var(--color-divider)' }}>
-            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-              {filteredDishes.length} {filteredDishes.length === 1 ? 'dish' : 'dishes'} found
+        </div>
+      ) : (
+        /* Dish List View */
+        <>
+          {/* Results count */}
+          <div className="px-4 py-2 bg-stone-50 border-b border-neutral-100">
+            <p className="text-sm text-neutral-500">
+              {loading ? (
+                'Loading...'
+              ) : (
+                <>
+                  <span className="font-medium text-neutral-700">{filteredDishes.length}</span>
+                  {' '}
+                  {filteredDishes.length === 1 ? 'dish' : 'dishes'}
+                  {debouncedSearchQuery && (
+                    <span> matching "{debouncedSearchQuery}"</span>
+                  )}
+                </>
+              )}
             </p>
           </div>
-        )}
-      </div>
+
+          {/* Dish Grid */}
+          <div className="px-4 py-4">
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <DishCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="py-16 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <p className="text-sm text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : filteredDishes.length === 0 ? (
+              <div className="py-16 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
+                  <span className="text-2xl">🔍</span>
+                </div>
+                <p className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>No dishes found</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {debouncedSearchQuery ? 'Try a different search term' : 'No dishes in this category yet'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filteredDishes.map((dish) => (
+                  <BrowseCard
+                    key={dish.dish_id}
+                    dish={dish}
+                    onClick={() => openDishModal(dish)}
+                    isFavorite={isSaved ? isSaved(dish.dish_id) : false}
+                    onToggleFavorite={handleToggleSave}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Footer */}
+            {!loading && filteredDishes.length > 0 && (
+              <div className="mt-8 pt-6 border-t text-center" style={{ borderColor: 'var(--color-divider)' }}>
+                <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {filteredDishes.length} {filteredDishes.length === 1 ? 'dish' : 'dishes'} found
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Dish Detail Modal */}
       <DishModal
