@@ -453,6 +453,9 @@ export function Profile() {
               {/* How Ranks Work */}
               <RanksInfoSection />
 
+              {/* How Photos Work */}
+              <PhotosInfoSection />
+
               {/* Privacy Policy */}
               <a
                 href="/privacy"
@@ -771,6 +774,84 @@ function RanksInfoSection() {
 
           <p className="text-xs text-neutral-400 mt-4 text-center">
             Your rating style also earns you a personality badge based on your average scores.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Photos info section with expandable details
+function PhotosInfoSection() {
+  const [expanded, setExpanded] = useState(false)
+
+  const tiers = [
+    {
+      icon: '⭐',
+      title: 'Featured',
+      description: 'May be used as the main image for a dish',
+    },
+    {
+      icon: '👥',
+      title: 'Community',
+      description: 'Appears in the Community Photos section',
+    },
+    {
+      icon: '📁',
+      title: 'Saved',
+      description: 'Only shown under "See all photos"',
+    },
+  ]
+
+  return (
+    <div className="border-t border-neutral-100">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
+            📷
+          </div>
+          <span className="font-medium text-neutral-900">How Photos Work</span>
+        </div>
+        <svg
+          className={`w-5 h-5 text-neutral-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4">
+          <p className="text-sm text-neutral-600 mb-4">
+            When you add a photo, we automatically sort it so the clearest ones represent each dish. Everyone can contribute — not all photos are shown the same way.
+          </p>
+
+          <div className="space-y-2">
+            {tiers.map((tier) => (
+              <div
+                key={tier.title}
+                className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50"
+              >
+                <span className="text-xl">{tier.icon}</span>
+                <div className="flex-1">
+                  <span className="font-semibold text-neutral-900">{tier.title}</span>
+                  <p className="text-xs text-neutral-500">{tier.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-sm text-neutral-600 mt-4">
+            If a photo is too dark, too bright, or too small, we'll ask you to try again with a clearer shot.
+          </p>
+
+          <p className="text-xs text-neutral-400 mt-3 text-center">
+            This keeps the app trustworthy and makes dishes easier to recognize.
           </p>
         </div>
       )}
