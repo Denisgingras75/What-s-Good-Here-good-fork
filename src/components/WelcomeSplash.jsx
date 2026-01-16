@@ -52,21 +52,26 @@ export function WelcomeSplash() {
       aria-label="Welcome screen. Tap to continue."
     >
       <div className="welcome-splash__content">
-        {/* Logo */}
+        {/* Logo with entrance animation */}
         <img
           src="/logo.png"
           alt="What's Good Here"
           className="welcome-splash__logo"
         />
 
-        {/* Mission statement */}
-        <p className="welcome-splash__mission">
-          Help people confidently decide what to order, and let rankings emerge honestly.
+        {/* Welcome header */}
+        <p className="welcome-splash__header">
+          Welcome.
         </p>
 
-        {/* Subtext */}
+        {/* Mission statement */}
+        <p className="welcome-splash__mission">
+          Find dishes worth ordering — based on real people, not hype.
+        </p>
+
+        {/* Reinforcement */}
         <p className="welcome-splash__subtext">
-          Vote on dishes to help rankings form.
+          Vote on what you try. Let the best rise to the top.
         </p>
 
         {/* Tap hint */}

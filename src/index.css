@@ -129,7 +129,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg);
+    /* Warm, soft brand-tinted background */
+    background: color-mix(in srgb, var(--color-primary) 3%, var(--color-bg));
     cursor: pointer;
     opacity: 1;
     transition: opacity 0.4s ease-out;
@@ -148,10 +149,34 @@
     max-width: 360px;
   }
 
+  /* Logo entrance animation - gentle fade-up */
+  @keyframes splashLogoEnter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .welcome-splash__logo {
     width: auto;
     height: 80px;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: splashLogoEnter 0.6s ease-out 0.1s forwards;
+  }
+
+  .welcome-splash__header {
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out 0.3s forwards;
   }
 
   .welcome-splash__mission {
@@ -160,12 +185,17 @@
     line-height: 1.5;
     color: var(--color-text-primary);
     margin-bottom: 0.75rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out 0.5s forwards;
   }
 
   .welcome-splash__subtext {
     font-size: 0.875rem;
+    line-height: 1.5;
     color: var(--color-text-secondary);
     margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out 0.7s forwards;
   }
 
   .welcome-splash__hint {
@@ -180,9 +210,14 @@
     .welcome-splash {
       transition: none;
     }
+    .welcome-splash__logo,
+    .welcome-splash__header,
+    .welcome-splash__mission,
+    .welcome-splash__subtext,
     .welcome-splash__hint {
       animation: none;
       opacity: 1;
+      transform: none;
     }
   }
 }
