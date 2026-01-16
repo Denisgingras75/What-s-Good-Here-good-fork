@@ -35,6 +35,15 @@ A shared log of what each contributor worked on. Add your entries at the top.
 - Fixed delete photo using wrong file extension
 - Consolidated photo tier config into single source of truth
 
+### Welcome Splash for First-Time Users
+- Created `WelcomeSplash.jsx` component for one-time welcome screen
+- Shows logo, "Welcome." header, mission statement, and tap hint
+- Warm brand-tinted background (3% primary color mix)
+- Subtle entrance animations: logo fade-up, staggered text fade-ins
+- Tap anywhere to dismiss (no auto-dismiss — lets users read at their pace)
+- Respects `prefers-reduced-motion` by disabling animations
+- Uses localStorage to track seen state — never shows again after first visit
+
 ---
 
 ## 2025-01-15 - Daniel (Session 2)
