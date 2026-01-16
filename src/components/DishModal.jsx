@@ -1,17 +1,49 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { ReviewFlow } from './ReviewFlow'
 import { PhotoUploadButton } from './PhotoUploadButton'
 import { PhotoUploadConfirmation } from './PhotoUploadConfirmation'
+import { dishPhotosApi } from '../api/dishPhotosApi'
 
 export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
   const [photoUploaded, setPhotoUploaded] = useState(null)
   const [showReviewAfterPhoto, setShowReviewAfterPhoto] = useState(false)
+  const [featuredPhoto, setFeaturedPhoto] = useState(null)
+  const [communityPhotos, setCommunityPhotos] = useState([])
+  const [allPhotos, setAllPhotos] = useState([])
+  const [showAllPhotos, setShowAllPhotos] = useState(false)
+
+  // Fetch photos when modal opens
+  useEffect(() => {
+    if (!dish?.dish_id) return
+
+    const fetchPhotos = async () => {
+      const [featured, community, all] = await Promise.all([
+        dishPhotosApi.getFeaturedPhoto(dish.dish_id),
+        dishPhotosApi.getCommunityPhotos(dish.dish_id),
+        dishPhotosApi.getAllVisiblePhotos(dish.dish_id),
+      ])
+      setFeaturedPhoto(featured)
+      setCommunityPhotos(community)
+      setAllPhotos(all)
+    }
+
+    fetchPhotos()
+  }, [dish?.dish_id])
 
   if (!dish) return null
 
-  const handlePhotoUploaded = (photo) => {
+  const handlePhotoUploaded = async (photo) => {
     setPhotoUploaded(photo)
+    // Refresh photos after upload
+    const [featured, community, all] = await Promise.all([
+      dishPhotosApi.getFeaturedPhoto(dish.dish_id),
+      dishPhotosApi.getCommunityPhotos(dish.dish_id),
+      dishPhotosApi.getAllVisiblePhotos(dish.dish_id),
+    ])
+    setFeaturedPhoto(featured)
+    setCommunityPhotos(community)
+    setAllPhotos(all)
   }
 
   const handleRateNow = () => {
@@ -23,6 +55,10 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
     setPhotoUploaded(null)
     onClose()
   }
+
+  // Photos to display in the grid (first 4 of community, or all if showing all)
+  const displayPhotos = showAllPhotos ? allPhotos : communityPhotos.slice(0, 4)
+  const hasMorePhotos = allPhotos.length > 4 && !showAllPhotos
 
   return createPortal(
     <div
@@ -98,6 +134,40 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
               {dish.restaurant_name}
               {dish.price && ` · $${Number(dish.price).toFixed(0)}`}
             </p>
+
+            {/* Featured photo (hero) */}
+            {featuredPhoto && (
+              <div className="dish-hero-photo">
+                <img src={featuredPhoto.photo_url} alt={dish.dish_name} />
+                {featuredPhoto.source_type === 'restaurant' && (
+                  <span className="photo-badge restaurant">Official</span>
+                )}
+              </div>
+            )}
+
+            {/* Community photos grid */}
+            {displayPhotos.length > 0 && (
+              <div className="community-photos">
+                <h4>
+                  {showAllPhotos ? 'All Photos' : 'Community Photos'} ({displayPhotos.length})
+                </h4>
+                <div className="photo-grid">
+                  {displayPhotos.map((photo) => (
+                    <div key={photo.id} className="photo-grid-item">
+                      <img src={photo.photo_url} alt={dish.dish_name} />
+                    </div>
+                  ))}
+                </div>
+                {hasMorePhotos && (
+                  <button
+                    className="see-all-photos-btn"
+                    onClick={() => setShowAllPhotos(true)}
+                  >
+                    See all {allPhotos.length} photos
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Review Flow - this is where thumbs up/down appears */}
             <ReviewFlow

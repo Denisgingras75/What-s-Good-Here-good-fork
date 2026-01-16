@@ -7,13 +7,14 @@ import posthog from 'posthog-js'
 
 export const dishPhotosApi = {
   /**
-   * Upload a photo for a dish
+   * Upload a photo for a dish with quality metadata
    * @param {Object} params
    * @param {string} params.dishId - Dish ID
    * @param {File} params.file - Photo file to upload
+   * @param {Object} params.analysisResults - Quality analysis results from imageAnalysis
    * @returns {Promise<Object>} Photo record
    */
-  async uploadPhoto({ dishId, file }) {
+  async uploadPhoto({ dishId, file, analysisResults }) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -41,19 +42,32 @@ export const dishPhotosApi = {
         .from('dish-photos')
         .getPublicUrl(fileName)
 
+      // Build record with quality fields if analysis was provided
+      const photoRecord = {
+        dish_id: dishId,
+        user_id: user.id,
+        photo_url: publicUrl,
+      }
+
+      if (analysisResults) {
+        photoRecord.width = analysisResults.width
+        photoRecord.height = analysisResults.height
+        photoRecord.mime_type = analysisResults.mimeType
+        photoRecord.file_size_bytes = analysisResults.fileSize
+        photoRecord.avg_brightness = analysisResults.avgBrightness
+        photoRecord.bright_pixel_pct = analysisResults.brightPixelPct
+        photoRecord.dark_pixel_pct = analysisResults.darkPixelPct
+        photoRecord.quality_score = analysisResults.qualityScore
+        photoRecord.status = analysisResults.status
+        photoRecord.reject_reason = analysisResults.rejectReason
+      }
+
       // Insert or update photo record
       const { data, error } = await supabase
         .from('dish_photos')
-        .upsert(
-          {
-            dish_id: dishId,
-            user_id: user.id,
-            photo_url: publicUrl,
-          },
-          {
-            onConflict: 'dish_id,user_id',
-          }
-        )
+        .upsert(photoRecord, {
+          onConflict: 'dish_id,user_id',
+        })
         .select()
         .single()
 
@@ -63,6 +77,8 @@ export const dishPhotosApi = {
 
       posthog.capture('photo_uploaded', {
         dish_id: dishId,
+        quality_score: analysisResults?.qualityScore,
+        status: analysisResults?.status,
       })
 
       return data
@@ -266,6 +282,131 @@ export const dishPhotosApi = {
     } catch (error) {
       console.error('Error getting unrated count:', error)
       return 0
+    }
+  },
+
+  /**
+   * Get the featured photo for a dish (highest quality or restaurant photo)
+   * @param {string} dishId - Dish ID
+   * @returns {Promise<Object|null>} Featured photo or null
+   */
+  async getFeaturedPhoto(dishId) {
+    try {
+      // First check for restaurant photo
+      const { data: restaurantPhoto, error: restError } = await supabase
+        .from('dish_photos')
+        .select('*')
+        .eq('dish_id', dishId)
+        .eq('source_type', 'restaurant')
+        .maybeSingle()
+
+      if (!restError && restaurantPhoto) {
+        return restaurantPhoto
+      }
+
+      // Then get highest quality featured photo
+      const { data, error } = await supabase
+        .from('dish_photos')
+        .select('*')
+        .eq('dish_id', dishId)
+        .eq('status', 'featured')
+        .order('quality_score', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error fetching featured photo:', error)
+      return null
+    }
+  },
+
+  /**
+   * Get community photos for a dish (excludes featured and rejected)
+   * @param {string} dishId - Dish ID
+   * @returns {Promise<Array>} Array of community photos
+   */
+  async getCommunityPhotos(dishId) {
+    try {
+      const { data, error } = await supabase
+        .from('dish_photos')
+        .select('*')
+        .eq('dish_id', dishId)
+        .eq('status', 'community')
+        .order('quality_score', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching community photos:', error)
+      return []
+    }
+  },
+
+  /**
+   * Get all visible photos for a dish (featured, community, hidden)
+   * @param {string} dishId - Dish ID
+   * @returns {Promise<Array>} Array of photos ordered by status and quality
+   */
+  async getAllVisiblePhotos(dishId) {
+    try {
+      const { data, error } = await supabase
+        .from('dish_photos')
+        .select('*')
+        .eq('dish_id', dishId)
+        .in('status', ['featured', 'community', 'hidden'])
+        .order('quality_score', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      // Sort by status priority: featured > community > hidden
+      const statusOrder = { featured: 0, community: 1, hidden: 2 }
+      return (data || []).sort((a, b) => {
+        const statusDiff = (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3)
+        if (statusDiff !== 0) return statusDiff
+        return (b.quality_score || 0) - (a.quality_score || 0)
+      })
+    } catch (error) {
+      console.error('Error fetching all photos:', error)
+      return []
+    }
+  },
+
+  /**
+   * Get photo counts by status for a dish
+   * @param {string} dishId - Dish ID
+   * @returns {Promise<Object>} Counts by status
+   */
+  async getPhotoCounts(dishId) {
+    try {
+      const { data, error } = await supabase
+        .from('dish_photos')
+        .select('status')
+        .eq('dish_id', dishId)
+        .in('status', ['featured', 'community', 'hidden'])
+
+      if (error) {
+        throw error
+      }
+
+      const counts = { featured: 0, community: 0, hidden: 0, total: 0 }
+      for (const photo of data || []) {
+        counts[photo.status]++
+        counts.total++
+      }
+      return counts
+    } catch (error) {
+      console.error('Error fetching photo counts:', error)
+      return { featured: 0, community: 0, hidden: 0, total: 0 }
     }
   },
 }

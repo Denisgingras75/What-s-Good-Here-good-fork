@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useDishPhotos } from '../hooks/useDishPhotos'
 import { useAuth } from '../context/AuthContext'
 
@@ -10,8 +10,7 @@ export function PhotoUploadButton({
 }) {
   const fileInputRef = useRef(null)
   const { user } = useAuth()
-  const { uploadPhoto, uploading, uploadProgress, error, clearError } = useDishPhotos()
-  const [localError, setLocalError] = useState(null)
+  const { uploadPhoto, uploading, analyzing, uploadProgress, error, clearError } = useDishPhotos()
 
   const handleClick = () => {
     if (!user) {
@@ -25,25 +24,19 @@ export function PhotoUploadButton({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setLocalError('Please select an image file')
-      return
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setLocalError('Image must be under 10MB')
-      return
-    }
-
-    setLocalError(null)
     clearError()
 
     try {
       const result = await uploadPhoto(dishId, file)
+
+      // If rejected by quality checks, error is set in the hook
+      if (result?.rejected) {
+        // Error already displayed via the hook's error state
+        return
+      }
+
       onPhotoUploaded?.(result)
-    } catch (err) {
+    } catch {
       // Error is already set in the hook
     }
 
@@ -51,7 +44,7 @@ export function PhotoUploadButton({
     e.target.value = ''
   }
 
-  const displayError = localError || error
+  const isProcessing = analyzing || uploading
 
   if (compact) {
     return (
@@ -66,11 +59,11 @@ export function PhotoUploadButton({
         />
         <button
           onClick={handleClick}
-          disabled={uploading}
+          disabled={isProcessing}
           className="photo-upload-btn-compact"
           title="Add photo"
         >
-          {uploading ? (
+          {isProcessing ? (
             <span className="upload-spinner" />
           ) : (
             <span>📷</span>
@@ -78,6 +71,12 @@ export function PhotoUploadButton({
         </button>
       </>
     )
+  }
+
+  const getButtonText = () => {
+    if (analyzing) return 'Checking photo quality...'
+    if (uploading) return `Uploading... ${uploadProgress}%`
+    return 'Add Photo'
   }
 
   return (
@@ -93,13 +92,13 @@ export function PhotoUploadButton({
 
       <button
         onClick={handleClick}
-        disabled={uploading}
+        disabled={isProcessing}
         className="photo-upload-btn"
       >
-        {uploading ? (
+        {isProcessing ? (
           <>
             <span className="upload-spinner" />
-            <span>Uploading... {uploadProgress}%</span>
+            <span>{getButtonText()}</span>
           </>
         ) : (
           <>
@@ -109,8 +108,16 @@ export function PhotoUploadButton({
         )}
       </button>
 
-      {displayError && (
-        <p className="photo-upload-error">{displayError}</p>
+      {error && (
+        <div className="photo-upload-error-container">
+          <p className="photo-upload-error">{error}</p>
+          <button
+            onClick={handleClick}
+            className="photo-upload-retry-btn"
+          >
+            Try again
+          </button>
+        </div>
       )}
     </div>
   )
