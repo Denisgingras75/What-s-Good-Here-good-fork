@@ -42,6 +42,7 @@ Jan 15-16 (Week 4)                      Week 4: Polish
 ### Recent Work (update this as you go)
 | Date | What Changed | Category |
 |------|--------------|----------|
+| Jan 16 | Added quesadilla category, fixed steak items | Data |
 | Jan 16 | Category cleanup: steak, chicken, seafood split | Data |
 | Jan 16 | Welcome splash (tap to dismiss) | Onboarding |
 | Jan 16 | TopBar with brand tint | Polish |
@@ -134,20 +135,20 @@ Current categories (updated Jan 16, 2026):
 
 | Category | Count | Notes |
 |----------|-------|-------|
-| Sandwich | 168 | |
-| Seafood | 160 | Includes calamari, crab cakes, shrimp, mussels, oysters |
-| Apps | 154 | True appetizers (fried, dips, shareables) |
+| Sandwich | 177 | +9 from steak sandwiches moved back |
+| Seafood | 162 | +2 swordfish items moved here |
+| Apps | 145 | -9 quesadillas moved out |
 | Salad | 112 | |
-| Pizza | 75 | |
+| Pizza | 76 | +1 steak bomb pizza moved here |
 | Entree | 65 | Misc proteins (pork, lamb, duck, veggie) |
 | Burger | 64 | |
-| Steak | 63 | All beef/steak dishes |
 | Breakfast | 56 | Pancakes, benedicts, etc. |
 | Pasta | 53 | |
 | Breakfast Sandwich | 48 | |
+| Steak | 45 | -18 (sandwiches, pizza, swordfish moved) |
 | Sushi | 31 | |
 | Chowder | 29 | MV specialty |
-| Chicken | 25 | Non-fried chicken entrees |
+| Chicken | 29 | +4 pot pies moved here |
 | Fries | 24 | |
 | Fried Chicken | 23 | |
 | Wings | 23 | |
@@ -155,6 +156,7 @@ Current categories (updated Jan 16, 2026):
 | Soup | 17 | |
 | Lobster Roll | 16 | MV specialty |
 | Tendys | 12 | |
+| Quesadilla | 11 | NEW - moved from apps/steak |
 | Pokebowl | 6 | |
 | Donuts | 3 | Consider merging if stays small |
 | Asian | 1 | Consider merging if stays small |
