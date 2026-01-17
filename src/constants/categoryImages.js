@@ -25,6 +25,8 @@ export const CATEGORY_IMAGES = {
   'entree': `https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=800&q=80&${CACHE_BUST}`,
   'steak': `https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80&${CACHE_BUST}`,
   'chicken': `https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&q=80&${CACHE_BUST}`,
+  'donuts': `https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80&${CACHE_BUST}`,
+  'asian': `https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80&${CACHE_BUST}`,
 }
 
 // Fallback image - PIZZA for testing
