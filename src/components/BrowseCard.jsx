@@ -19,10 +19,20 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
   const isRanked = total_votes >= MIN_VOTES_FOR_RANKING
   const votesNeeded = MIN_VOTES_FOR_RANKING - (total_votes || 0)
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onClick()
+    }
+  }
+
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="w-full bg-white rounded-2xl overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:shadow-md text-left group"
+      onKeyDown={handleKeyDown}
+      className="w-full bg-white rounded-2xl overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:shadow-md text-left group cursor-pointer"
       style={{ borderColor: 'var(--color-divider)' }}
     >
       {/* Image with rating badge */}
@@ -151,6 +161,6 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
           </div>
         </div>
       </div>
-    </button>
+    </div>
   )
 }
