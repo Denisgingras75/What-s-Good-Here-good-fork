@@ -503,6 +503,7 @@ function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isS
 
 // Compact dish card for restaurant view - shows order again % prominently
 function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, onToggleFavorite }) {
+  const navigate = useNavigate()
   const {
     dish_id,
     dish_name,
@@ -518,9 +519,14 @@ function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, onToggle
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
   const votes = total_votes || 0
 
+  const handleClick = () => {
+    navigate(`/dish/${dish_id}`)
+  }
+
   return (
-    <div
-      className="flex gap-3 p-3 rounded-xl"
+    <button
+      onClick={handleClick}
+      className="w-full flex gap-3 p-3 rounded-xl text-left transition-all hover:shadow-md hover:border-orange-300"
       style={{
         background: 'var(--color-bg)',
         border: '1px solid var(--color-divider)'
@@ -615,6 +621,6 @@ function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, onToggle
           )}
         </div>
       </div>
-    </div>
+    </button>
   )
 }
