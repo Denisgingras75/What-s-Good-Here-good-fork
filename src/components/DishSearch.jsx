@@ -108,10 +108,8 @@ export function DishSearch({ dishes = [], loading = false }) {
   const handleDishSelect = (dish) => {
     setQuery('')
     setIsFocused(false)
-    // Navigate to browse with category filter and open dish modal
-    navigate(`/browse?category=${encodeURIComponent(dish.category)}`, {
-      state: { openDishId: dish.dish_id }
-    })
+    // Navigate to dedicated dish page
+    navigate(`/dish/${dish.dish_id}`)
   }
 
   // Handle category selection

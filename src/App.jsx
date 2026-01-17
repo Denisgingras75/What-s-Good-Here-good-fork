@@ -8,6 +8,7 @@ import { Layout } from './components/Layout'
 import { WelcomeModal } from './components/Auth/WelcomeModal'
 import { Home } from './pages/Home'
 import { Browse } from './pages/Browse'
+import { Dish } from './pages/Dish'
 import { Restaurants } from './pages/Restaurants'
 import { Profile } from './pages/Profile'
 import { Admin } from './pages/Admin'
@@ -44,6 +45,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Layout><Home /></Layout>} />
             <Route path="/browse" element={<Layout><Browse /></Layout>} />
+            <Route path="/dish/:dishId" element={<Layout><Dish /></Layout>} />
             <Route path="/restaurants" element={<Layout><Restaurants /></Layout>} />
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="/login" element={<Login />} />

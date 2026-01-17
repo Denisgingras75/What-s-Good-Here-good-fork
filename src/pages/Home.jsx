@@ -226,9 +226,7 @@ function RankedDishRow({ dish, rank }) {
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
 
   const handleClick = () => {
-    navigate(`/browse?category=${encodeURIComponent(category)}`, {
-      state: { openDishId: dish_id }
-    })
+    navigate(`/dish/${dish_id}`)
   }
 
   return (
