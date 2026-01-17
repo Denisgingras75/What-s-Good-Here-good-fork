@@ -119,6 +119,15 @@ export function DishSearch({ dishes = [], loading = false }) {
     navigate(`/browse?category=${encodeURIComponent(category.id)}`)
   }
 
+  // Handle Enter key - go to full search results page
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && query.trim().length >= MIN_SEARCH_LENGTH) {
+      setQuery('')
+      setIsFocused(false)
+      navigate(`/browse?q=${encodeURIComponent(query.trim())}`)
+    }
+  }
+
   return (
     <div className="relative w-full">
       {/* Search Input */}
@@ -147,6 +156,7 @@ export function DishSearch({ dishes = [], loading = false }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
+          onKeyDown={handleKeyDown}
           placeholder="Find the best ___ near you"
           className="flex-1 bg-transparent outline-none text-sm"
           style={{ color: 'var(--color-text-primary)' }}

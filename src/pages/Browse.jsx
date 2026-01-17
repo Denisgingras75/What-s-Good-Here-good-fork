@@ -74,11 +74,19 @@ export function Browse() {
   const autocompleteRef = useRef(null)
   const votingDishId = new URLSearchParams(window.location.search).get('votingDish')
 
-  // Handle category from URL params (when coming from home page)
+  // Handle category and search query from URL params (when coming from home page)
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category')
+    const queryFromUrl = searchParams.get('q')
+
     if (categoryFromUrl) {
       setSelectedCategory(categoryFromUrl)
+      setSearchQuery('')
+      setDebouncedSearchQuery('')
+    } else if (queryFromUrl) {
+      setSearchQuery(queryFromUrl)
+      setDebouncedSearchQuery(queryFromUrl)
+      setSelectedCategory(null)
     }
   }, [searchParams])
 
@@ -524,6 +532,15 @@ export function Browse() {
               {CATEGORIES.find(c => c.id === selectedCategory)?.emoji}{' '}
               {CATEGORIES.find(c => c.id === selectedCategory)?.label}
             </span>
+          </div>
+        )}
+
+        {/* Search results heading */}
+        {debouncedSearchQuery.trim() && !selectedCategory && (
+          <div className="px-4 pb-3">
+            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              Best "{debouncedSearchQuery}" near you
+            </h1>
           </div>
         )}
       </header>
