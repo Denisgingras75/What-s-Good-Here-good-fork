@@ -107,7 +107,7 @@ export function Home() {
       <div className="px-4 py-3" style={{ background: 'var(--color-bg)' }}>
         <DishSearch dishes={dishes} loading={loading} />
         <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-          Ranked by votes from locals & visitors
+          Discover the best dishes nearby, ranked by real votes
         </p>
       </div>
 
@@ -323,7 +323,7 @@ function RankedDishRow({ dish, rank }) {
               color: 'var(--color-text-tertiary)',
             }}
           >
-            {total_votes || 0}/{MIN_VOTES_FOR_RANKING} votes
+            {total_votes ? `Early · ${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'Be first to vote'}
           </div>
         )}
       </div>
@@ -431,7 +431,7 @@ function Top10Row({ dish, rank, onClick }) {
           </span>
         ) : (
           <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
-            {total_votes || 0}/5
+            {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
           </span>
         )}
       </div>

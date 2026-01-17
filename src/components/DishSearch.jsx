@@ -329,7 +329,7 @@ function DishResult({ dish, rank, onClick }) {
               color: 'var(--color-text-tertiary)',
             }}
           >
-            {total_votes || 0}/{MIN_VOTES_FOR_RANKING} votes
+            {total_votes ? `Early · ${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'Be first to vote'}
           </div>
         )}
       </div>

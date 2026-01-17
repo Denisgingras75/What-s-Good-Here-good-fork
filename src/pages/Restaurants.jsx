@@ -410,7 +410,9 @@ function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isS
         <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
           {sortedDishes.filtered
             ? `Results for "${searchQuery}"`
-            : 'What should I order?'
+            : rankedCount > 0
+              ? 'What should I order?'
+              : 'Help decide what to order here'
           }
         </h3>
         <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
@@ -418,7 +420,7 @@ function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isS
             ? `${sortedDishes.totalMatches} ${sortedDishes.totalMatches === 1 ? 'dish' : 'dishes'} found`
             : rankedCount > 0
               ? `Top picks based on ${rankedCount} rated ${rankedCount === 1 ? 'dish' : 'dishes'}`
-              : 'Not enough votes yet — be the first to rate dishes here'
+              : 'Vote on dishes to shape the rankings'
           }
         </p>
       </div>
@@ -617,7 +619,7 @@ function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, onToggle
             </>
           ) : (
             <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-              {votes > 0 ? `${votes} of ${MIN_VOTES_FOR_RANKING} votes to rank` : 'Be first to rate'}
+              {votes > 0 ? `Early · ${votes} vote${votes === 1 ? '' : 's'} so far` : 'Be first to vote'}
             </span>
           )}
         </div>

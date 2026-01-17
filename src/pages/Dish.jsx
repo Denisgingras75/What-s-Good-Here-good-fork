@@ -305,10 +305,10 @@ export function Dish() {
               {/* Vote info */}
               <p className="text-sm mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
                 {dish.total_votes === 0
-                  ? 'Be the first to rate this dish'
+                  ? 'Be the first to vote on this dish'
                   : isRanked
                     ? `${dish.total_votes} votes · ${dish.percent_worth_it}% would order again`
-                    : `${dish.total_votes} of ${MIN_VOTES_FOR_RANKING} votes to rank`
+                    : `Early · ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
                 }
               </p>
             </div>

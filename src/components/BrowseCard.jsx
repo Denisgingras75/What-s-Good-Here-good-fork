@@ -131,9 +131,9 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
             {/* Rating info line */}
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
               {total_votes === 0
-                ? 'Help rank this dish'
+                ? 'Be first to vote'
                 : !isRanked
-                  ? `${total_votes} of ${MIN_VOTES_FOR_RANKING} votes to rank`
+                  ? `Early · ${total_votes} vote${total_votes === 1 ? '' : 's'} so far`
                   : `${total_votes} votes`
               }
             </p>
