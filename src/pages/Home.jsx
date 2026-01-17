@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
@@ -198,7 +198,7 @@ export function Home() {
 
 // Category ranking section
 function CategoryRanking({ category, onViewAll }) {
-  const { label, emoji, dishes, totalCount } = category
+  const { label, dishes, totalCount } = category
 
   return (
     <section>
@@ -394,7 +394,7 @@ function Top10Sidebar({ dishes }) {
 
 // Compact row for Top 10 sidebar
 function Top10Row({ dish, rank, onClick }) {
-  const { dish_name, restaurant_name, category, avg_rating, total_votes } = dish
+  const { dish_name, restaurant_name, avg_rating, total_votes } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
 
   return (
