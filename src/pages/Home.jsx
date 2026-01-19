@@ -402,16 +402,24 @@ function Top10Row({ dish, rank, onClick }) {
       onClick={onClick}
       className="w-full flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-neutral-50 transition-colors text-left group"
     >
-      {/* Rank */}
-      <span
-        className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-        style={{
-          background: rank <= 3 ? 'var(--color-primary)' : 'var(--color-surface)',
-          color: rank <= 3 ? 'white' : 'var(--color-text-tertiary)',
-        }}
-      >
-        {rank}
-      </span>
+      {/* Rank - medals for top 3 */}
+      {rank <= 3 ? (
+        <span className="text-base flex-shrink-0 w-5 text-center">
+          {rank === 1 && '🥇'}
+          {rank === 2 && '🥈'}
+          {rank === 3 && '🥉'}
+        </span>
+      ) : (
+        <span
+          className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+          style={{
+            background: 'var(--color-surface)',
+            color: 'var(--color-text-tertiary)',
+          }}
+        >
+          {rank}
+        </span>
+      )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">
