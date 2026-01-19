@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect } from 'react'
+import posthog from 'posthog-js'
 import { useAuth } from '../context/AuthContext'
 import { useVote } from '../hooks/useVote'
 import { authApi, badgesApi } from '../api'
@@ -188,6 +189,16 @@ export function ReviewFlow({ dishId, dishName, category, totalVotes = 0, yesVote
     const result = await submitVote(dishId, pendingVote, sliderValue)
 
     if (result.success) {
+      // Track vote submission - the core conversion event
+      posthog.capture('vote_cast', {
+        dish_id: dishId,
+        dish_name: dishName,
+        category: category,
+        would_order_again: pendingVote,
+        rating: sliderValue,
+        is_update: previousVote !== null,
+      })
+
       clearPendingVoteStorage()
       setStep(1)
       setPendingVote(null)
