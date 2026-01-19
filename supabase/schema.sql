@@ -66,11 +66,11 @@ DROP POLICY IF EXISTS "Users can insert own votes" ON votes;
 DROP POLICY IF EXISTS "Users can update own votes" ON votes;
 DROP POLICY IF EXISTS "Users can delete own votes" ON votes;
 
--- Restaurants: Public read, no write (admin only via service role)
+-- Restaurants: Public read (admin write policies in add-admin-rls.sql)
 CREATE POLICY "Public read access" ON restaurants
   FOR SELECT USING (true);
 
--- Dishes: Public read, no write (admin only via service role)
+-- Dishes: Public read (admin write policies in add-admin-rls.sql)
 CREATE POLICY "Public read access" ON dishes
   FOR SELECT USING (true);
 
