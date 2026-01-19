@@ -107,7 +107,7 @@ export function Home() {
       <div className="px-4 py-3" style={{ background: 'var(--color-bg)' }}>
         <DishSearch dishes={dishes} loading={loading} />
         <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-          Discover the best dishes nearby, ranked by real votes
+          Real votes from real guests. Make better decisions.
         </p>
       </div>
 
