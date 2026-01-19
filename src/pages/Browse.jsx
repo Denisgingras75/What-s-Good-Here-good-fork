@@ -51,7 +51,11 @@ export function Browse() {
   const [impactFeedback, setImpactFeedback] = useState(null)
   const [pendingVoteData, setPendingVoteData] = useState(null)
   const [sortBy, setSortBy] = useState(() => {
-    return localStorage.getItem('browse_sort') || 'top_rated'
+    try {
+      return localStorage.getItem('browse_sort') || 'top_rated'
+    } catch {
+      return 'top_rated'
+    }
   })
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false)
 
@@ -105,7 +109,11 @@ export function Browse() {
   // Handle sort change
   const handleSortChange = (sortId) => {
     setSortBy(sortId)
-    localStorage.setItem('browse_sort', sortId)
+    try {
+      localStorage.setItem('browse_sort', sortId)
+    } catch {
+      // localStorage may be unavailable in private browsing or restricted contexts
+    }
     setSortDropdownOpen(false)
   }
 

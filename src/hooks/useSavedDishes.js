@@ -38,7 +38,11 @@ export function useSavedDishes(userId) {
 
     try {
       await favoritesApi.saveDish(dishId)
+      // Optimistically update IDs
       setSavedDishIds(prev => [...prev, dishId])
+      // Refetch to get full dish data for savedDishes list
+      const { savedDishes: dishes } = await favoritesApi.getSavedDishes()
+      setSavedDishes(dishes)
       return { error: null }
     } catch (err) {
       return { error: err.message }

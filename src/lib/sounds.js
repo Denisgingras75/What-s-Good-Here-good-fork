@@ -12,12 +12,20 @@ export function preloadSounds() {
 
 // Check if sounds are muted
 export function isSoundMuted() {
-  return localStorage.getItem('soundMuted') === 'true'
+  try {
+    return localStorage.getItem('soundMuted') === 'true'
+  } catch {
+    return false
+  }
 }
 
 // Set mute state
 export function setSoundMuted(muted) {
-  localStorage.setItem('soundMuted', String(muted))
+  try {
+    localStorage.setItem('soundMuted', String(muted))
+  } catch {
+    // localStorage may be unavailable
+  }
 }
 
 // Toggle mute state

@@ -8,7 +8,10 @@ export function useDishes(location, radius, category = null, restaurantId = null
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!location) return
+    if (!location) {
+      setLoading(false)
+      return
+    }
 
     async function fetchDishes() {
       try {

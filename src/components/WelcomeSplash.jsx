@@ -12,8 +12,13 @@ export function WelcomeSplash() {
 
   // Check if user has seen splash before
   useEffect(() => {
-    const hasSeenSplash = localStorage.getItem(STORAGE_KEY)
-    if (!hasSeenSplash) {
+    try {
+      const hasSeenSplash = localStorage.getItem(STORAGE_KEY)
+      if (!hasSeenSplash) {
+        setIsVisible(true)
+      }
+    } catch {
+      // localStorage unavailable, show splash anyway
       setIsVisible(true)
     }
   }, [])
@@ -22,7 +27,11 @@ export function WelcomeSplash() {
     setIsFading(true)
     // Wait for fade animation to complete before hiding
     setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, 'true')
+      try {
+        localStorage.setItem(STORAGE_KEY, 'true')
+      } catch {
+        // localStorage unavailable
+      }
       setIsVisible(false)
     }, 400)
   }

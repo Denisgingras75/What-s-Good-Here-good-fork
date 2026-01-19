@@ -68,27 +68,24 @@ export const restaurantsApi = {
    * @param {string} query - Search query
    * @param {number} limit - Max results
    * @returns {Promise<Array>} Array of matching restaurants
+   * @throws {Error} On API failure
    */
   async search(query, limit = 5) {
-    try {
-      if (!query?.trim()) return []
+    if (!query?.trim()) return []
 
-      const { data, error } = await supabase
-        .from('restaurants')
-        .select('id, name, address')
-        .eq('is_open', true)
-        .ilike('name', `%${query}%`)
-        .limit(limit)
+    const { data, error } = await supabase
+      .from('restaurants')
+      .select('id, name, address')
+      .eq('is_open', true)
+      .ilike('name', `%${query}%`)
+      .limit(limit)
 
-      if (error) {
-        throw error
-      }
-
-      return data || []
-    } catch (error) {
+    if (error) {
       console.error('Error searching restaurants:', error)
-      return []
+      throw error
     }
+
+    return data || []
   },
 
   /**

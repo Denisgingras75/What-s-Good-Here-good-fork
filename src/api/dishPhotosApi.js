@@ -324,56 +324,50 @@ export const dishPhotosApi = {
    * Get community photos for a dish (excludes featured and rejected)
    * @param {string} dishId - Dish ID
    * @returns {Promise<Array>} Array of community photos
+   * @throws {Error} On API failure
    */
   async getCommunityPhotos(dishId) {
-    try {
-      const { data, error } = await supabase
-        .from('dish_photos')
-        .select('*')
-        .eq('dish_id', dishId)
-        .eq('status', 'community')
-        .order('quality_score', { ascending: false })
+    const { data, error } = await supabase
+      .from('dish_photos')
+      .select('*')
+      .eq('dish_id', dishId)
+      .eq('status', 'community')
+      .order('quality_score', { ascending: false })
 
-      if (error) {
-        throw error
-      }
-
-      return data || []
-    } catch (error) {
+    if (error) {
       console.error('Error fetching community photos:', error)
-      return []
+      throw error
     }
+
+    return data || []
   },
 
   /**
    * Get all visible photos for a dish (featured, community, hidden)
    * @param {string} dishId - Dish ID
    * @returns {Promise<Array>} Array of photos ordered by status and quality
+   * @throws {Error} On API failure
    */
   async getAllVisiblePhotos(dishId) {
-    try {
-      const { data, error } = await supabase
-        .from('dish_photos')
-        .select('*')
-        .eq('dish_id', dishId)
-        .in('status', ['featured', 'community', 'hidden'])
-        .order('quality_score', { ascending: false })
+    const { data, error } = await supabase
+      .from('dish_photos')
+      .select('*')
+      .eq('dish_id', dishId)
+      .in('status', ['featured', 'community', 'hidden'])
+      .order('quality_score', { ascending: false })
 
-      if (error) {
-        throw error
-      }
-
-      // Sort by status priority: featured > community > hidden
-      const statusOrder = { featured: 0, community: 1, hidden: 2 }
-      return (data || []).sort((a, b) => {
-        const statusDiff = (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3)
-        if (statusDiff !== 0) return statusDiff
-        return (b.quality_score || 0) - (a.quality_score || 0)
-      })
-    } catch (error) {
+    if (error) {
       console.error('Error fetching all photos:', error)
-      return []
+      throw error
     }
+
+    // Sort by status priority: featured > community > hidden
+    const statusOrder = { featured: 0, community: 1, hidden: 2 }
+    return (data || []).sort((a, b) => {
+      const statusDiff = (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3)
+      if (statusDiff !== 0) return statusDiff
+      return (b.quality_score || 0) - (a.quality_score || 0)
+    })
   },
 
   /**

@@ -74,51 +74,48 @@ export const dishesApi = {
    * @param {string} query - Search query
    * @param {number} limit - Max results
    * @returns {Promise<Array>} Array of matching dishes sorted by rating
+   * @throws {Error} On API failure
    */
   async search(query, limit = 5) {
-    try {
-      if (!query?.trim()) return []
+    if (!query?.trim()) return []
 
-      const { data, error } = await supabase
-        .from('dishes')
-        .select(`
+    const { data, error } = await supabase
+      .from('dishes')
+      .select(`
+        id,
+        name,
+        category,
+        photo_url,
+        total_votes,
+        yes_votes,
+        avg_rating,
+        restaurants!inner (
           id,
           name,
-          category,
-          photo_url,
-          total_votes,
-          yes_votes,
-          avg_rating,
-          restaurants!inner (
-            id,
-            name,
-            is_open
-          )
-        `)
-        .eq('restaurants.is_open', true)
-        .ilike('name', `%${query}%`)
-        .order('avg_rating', { ascending: false, nullsFirst: false })
-        .limit(limit)
+          is_open
+        )
+      `)
+      .eq('restaurants.is_open', true)
+      .ilike('name', `%${query}%`)
+      .order('avg_rating', { ascending: false, nullsFirst: false })
+      .limit(limit)
 
-      if (error) {
-        throw error
-      }
-
-      // Transform to match expected format
-      return (data || []).map(dish => ({
-        dish_id: dish.id,
-        dish_name: dish.name,
-        category: dish.category,
-        photo_url: dish.photo_url,
-        total_votes: dish.total_votes || 0,
-        avg_rating: dish.avg_rating,
-        restaurant_id: dish.restaurants.id,
-        restaurant_name: dish.restaurants.name,
-      }))
-    } catch (error) {
+    if (error) {
       console.error('Error searching dishes:', error)
-      return []
+      throw error
     }
+
+    // Transform to match expected format
+    return (data || []).map(dish => ({
+      dish_id: dish.id,
+      dish_name: dish.name,
+      category: dish.category,
+      photo_url: dish.photo_url,
+      total_votes: dish.total_votes || 0,
+      avg_rating: dish.avg_rating,
+      restaurant_id: dish.restaurants.id,
+      restaurant_name: dish.restaurants.name,
+    }))
   },
 
   /**

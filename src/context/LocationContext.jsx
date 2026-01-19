@@ -22,9 +22,13 @@ export function LocationProvider({ children }) {
 
   // Check if we've asked before
   useEffect(() => {
-    const asked = localStorage.getItem(STORAGE_KEY)
-    if (asked) {
-      setHasAskedBefore(true)
+    try {
+      const asked = localStorage.getItem(STORAGE_KEY)
+      if (asked) {
+        setHasAskedBefore(true)
+      }
+    } catch {
+      // localStorage may be unavailable in private browsing or restricted contexts
     }
   }, [])
 
@@ -38,7 +42,11 @@ export function LocationProvider({ children }) {
 
     setLoading(true)
     setError(null)
-    localStorage.setItem(STORAGE_KEY, 'true')
+    try {
+      localStorage.setItem(STORAGE_KEY, 'true')
+    } catch {
+      // localStorage may be unavailable in private browsing or restricted contexts
+    }
     setHasAskedBefore(true)
 
     navigator.geolocation.getCurrentPosition(
