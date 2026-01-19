@@ -169,21 +169,14 @@ export function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+      <div className="bg-stone-50 flex items-center justify-center py-20">
         <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Header */}
-      <header className="bg-white px-4 py-2">
-        <div className="flex flex-col items-center">
-          <img src="/logo.png" alt="What's Good Here" className="h-12 md:h-14 lg:h-16 w-auto" />
-        </div>
-      </header>
-
+    <div className="bg-stone-50">
       {user ? (
         <>
           {/* Profile Header */}
