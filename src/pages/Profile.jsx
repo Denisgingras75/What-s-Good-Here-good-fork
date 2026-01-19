@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { authApi } from '../api'
+import { authApi, adminApi } from '../api'
 import { useProfile } from '../hooks/useProfile'
 import { useUserVotes } from '../hooks/useUserVotes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
@@ -11,9 +11,6 @@ import { getCategoryImage } from '../constants/categoryImages'
 import { PHOTO_TIERS_LIST } from '../constants/photoQuality'
 import { DishModal } from '../components/DishModal'
 import { LoginModal } from '../components/Auth/LoginModal'
-
-// Admin emails - comma-separated list from env var
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
 
 const TABS = [
   { id: 'unrated', label: 'Unrated', emoji: '📷' },
@@ -41,6 +38,16 @@ export function Profile() {
   const { dishes: unratedDishes, count: unratedCount, loading: unratedLoading, refetch: refetchUnrated } = useUnratedDishes(user?.id)
   const [selectedDish, setSelectedDish] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // Check admin status from database (matches RLS policies)
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false)
+      return
+    }
+    adminApi.isAdmin().then(setIsAdmin)
+  }, [user])
 
   // Load remembered email on mount (for logged-out state)
   useEffect(() => {
@@ -455,7 +462,7 @@ export function Profile() {
               </button>
 
               {/* Admin Panel Link - only visible to admins */}
-              {user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()) && (
+              {isAdmin && (
                 <Link
                   to="/admin"
                   className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 transition-colors border-t border-neutral-100"

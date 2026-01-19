@@ -2,9 +2,41 @@ import { supabase } from '../lib/supabase'
 
 /**
  * Admin API - Centralized data mutations for admin operations
+ *
+ * SECURITY: All write operations (insert/update/delete) are protected by
+ * Row Level Security (RLS) in Supabase. Only users in the `admins` table
+ * can perform these operations. The client-side admin check is for UI only.
  */
 
 export const adminApi = {
+  /**
+   * Check if current user is an admin (database check, not client-side)
+   * This matches the RLS is_admin() function in Supabase
+   * @returns {Promise<boolean>} True if user is admin
+   */
+  async isAdmin() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return false
+
+      const { data, error } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking admin status:', error)
+        return false
+      }
+
+      return !!data
+    } catch (error) {
+      console.error('Error checking admin status:', error)
+      return false
+    }
+  },
+
   /**
    * Get recent dishes
    * @param {number} limit - Number of recent dishes to fetch

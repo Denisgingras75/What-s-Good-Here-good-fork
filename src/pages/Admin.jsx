@@ -6,9 +6,6 @@ import { CATEGORY_IMAGES } from '../constants/categoryImages'
 
 const CATEGORIES = Object.keys(CATEGORY_IMAGES)
 
-// Admin emails - comma-separated list from env var
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-
 export function Admin() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
@@ -17,6 +14,10 @@ export function Admin() {
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState(null)
   const [recentDishes, setRecentDishes] = useState([])
+
+  // Admin status from database (matches RLS)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminCheckDone, setAdminCheckDone] = useState(false)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -32,6 +33,22 @@ export function Admin() {
   const [category, setCategory] = useState('')
   const [price, setPrice] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
+
+  // Check admin status from database (matches RLS policies)
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false)
+      setAdminCheckDone(true)
+      return
+    }
+
+    async function checkAdmin() {
+      const result = await adminApi.isAdmin()
+      setIsAdmin(result)
+      setAdminCheckDone(true)
+    }
+    checkAdmin()
+  }, [user])
 
   // Fetch restaurants on mount
   useEffect(() => {
@@ -175,11 +192,8 @@ export function Admin() {
     }
   }
 
-  // Check if user is an admin
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())
-
-  // Show loading while checking auth
-  if (authLoading || loading) {
+  // Show loading while checking auth or admin status
+  if (authLoading || loading || !adminCheckDone) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
         <div className="text-center">
