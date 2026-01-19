@@ -457,6 +457,9 @@ export function Profile() {
               {/* How Photos Work */}
               <PhotosInfoSection />
 
+              {/* Our Mission */}
+              <MissionSection />
+
               {/* Privacy Policy */}
               <a
                 href="/privacy"
@@ -836,6 +839,70 @@ function PhotosInfoSection() {
           <p className="text-xs text-neutral-400 mt-3 text-center">
             This keeps the app trustworthy and makes dishes easier to recognize.
           </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Our Mission section with expandable details
+function MissionSection() {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div className="border-t border-neutral-100">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
+            💡
+          </div>
+          <span className="font-medium text-neutral-900">Our Mission</span>
+        </div>
+        <svg
+          className={`w-5 h-5 text-neutral-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4">
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 mb-4">
+            <p className="text-lg font-semibold text-neutral-900 mb-2">
+              Restaurants have all the data.
+            </p>
+            <p className="text-neutral-700">
+              Finally, here's some for you.
+            </p>
+          </div>
+
+          <p className="text-sm text-neutral-600 mb-4">
+            Think about it: restaurants know what you ordered, when you came, how long you stayed, and whether you came back. They have dashboards, analytics, and insights.
+          </p>
+
+          <p className="text-sm text-neutral-600 mb-4">
+            But what do you have when you sit down at a new place? A menu with no context. No idea what's actually good. You're guessing.
+          </p>
+
+          <p className="text-sm font-medium text-neutral-800 mb-4">
+            Not anymore.
+          </p>
+
+          <p className="text-sm text-neutral-600 mb-4">
+            What's Good Here flips the script. Real people vote on real dishes. The best rises to the top. Now you have data that helps <span className="font-semibold">you</span> order with confidence.
+          </p>
+
+          <div className="bg-neutral-50 rounded-lg p-3 mt-4">
+            <p className="text-xs text-neutral-500 text-center">
+              Every vote you cast helps someone else eat better. That's the mission.
+            </p>
+          </div>
         </div>
       )}
     </div>
