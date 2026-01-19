@@ -1,0 +1,4 @@
+# Vercel ignore - allows presentation files to deploy
+node_modules
+.git
+.env*.local
