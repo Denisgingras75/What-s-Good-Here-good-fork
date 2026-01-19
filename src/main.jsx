@@ -8,8 +8,8 @@ import App from './App.jsx'
 // Initialize PostHog for user analytics
 if (import.meta.env.VITE_PUBLIC_POSTHOG_KEY && import.meta.env.PROD) {
   posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
-    // Use reverse proxy to avoid ad blockers (serverless function at /api/ingest)
-    api_host: '/api/ingest',
+    // Use reverse proxy to avoid ad blockers (middleware at /ingest)
+    api_host: '/ingest',
     ui_host: 'https://us.posthog.com',
     capture_pageview: true,        // Auto-track page views
     capture_pageleave: true,       // Track when users leave
