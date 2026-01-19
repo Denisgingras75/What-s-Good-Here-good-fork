@@ -57,6 +57,29 @@ const CATEGORY_INFO = {
 }
 
 /**
+ * Major categories eligible for profile rank display
+ * Sub-categories like fries, apps, tendys, breakfast sandwich are excluded
+ */
+const MAJOR_CATEGORIES = new Set([
+  'pizza',
+  'burger',
+  'taco',
+  'wings',
+  'sushi',
+  'sandwich',
+  'pasta',
+  'pokebowl',
+  'lobster roll',
+  'seafood',
+  'chowder',
+  'soup',
+  'breakfast',
+  'salad',
+  'fried chicken',
+  'entree',
+])
+
+/**
  * Get tier for a vote count
  */
 function getTierForCount(count) {
@@ -91,11 +114,15 @@ function getNextTierInfo(count) {
 
 /**
  * Calculate progress towards next tier for each category
+ * Only includes major categories
  */
 function calculateCategoryProgress(categoryCounts) {
   const progress = []
 
   for (const [category, count] of Object.entries(categoryCounts)) {
+    // Only show major categories
+    if (!MAJOR_CATEGORIES.has(category)) continue
+
     const nextInfo = getNextTierInfo(count)
 
     // Only show progress if there's a next tier to reach
@@ -143,11 +170,15 @@ function getRatingPersonality(avgRating) {
 
 /**
  * Calculate category tiers from vote counts
+ * Only includes major categories
  */
 function calculateCategoryTiers(categoryCounts) {
   const tiers = []
 
   for (const [category, count] of Object.entries(categoryCounts)) {
+    // Only show major categories
+    if (!MAJOR_CATEGORIES.has(category)) continue
+
     const tier = getTierForCount(count)
     if (tier) {
       const info = CATEGORY_INFO[category] || { emoji: '🍽️', label: category }
