@@ -41,6 +41,7 @@ export function Profile() {
   const [selectedDish, setSelectedDish] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [expandedTabs, setExpandedTabs] = useState({}) // Track which tabs show all dishes
 
   // Check admin status from database (matches RLS policies)
   useEffect(() => {
@@ -139,6 +140,13 @@ export function Profile() {
   const tabDishes = getTabDishes()
   const isLoading = activeTab === 'saved' ? savedLoading :
                     activeTab === 'unrated' ? unratedLoading : votesLoading
+
+  // Limit to 5 dishes unless expanded
+  const MAX_VISIBLE_DISHES = 5
+  const isTabExpanded = expandedTabs[activeTab] || false
+  const visibleDishes = isTabExpanded ? tabDishes : tabDishes.slice(0, MAX_VISIBLE_DISHES)
+  const hiddenCount = tabDishes.length - MAX_VISIBLE_DISHES
+  const hasMoreDishes = hiddenCount > 0
 
   // Handle vote from unrated dish
   const handleVote = async () => {
@@ -399,7 +407,7 @@ export function Profile() {
               <div className="space-y-3">
                 {activeTab === 'unrated' ? (
                   // Unrated dishes - clickable to rate
-                  tabDishes.map((dish) => (
+                  visibleDishes.map((dish) => (
                     <UnratedDishCard
                       key={dish.dish_id}
                       dish={dish}
@@ -408,7 +416,7 @@ export function Profile() {
                   ))
                 ) : (
                   // Other tabs
-                  tabDishes.map((dish) => (
+                  visibleDishes.map((dish) => (
                     <ProfileDishCard
                       key={dish.dish_id}
                       dish={dish}
@@ -416,6 +424,21 @@ export function Profile() {
                       onUnsave={activeTab === 'saved' ? () => unsaveDish(dish.dish_id) : null}
                     />
                   ))
+                )}
+
+                {/* View more / View less button */}
+                {hasMoreDishes && (
+                  <button
+                    onClick={() => setExpandedTabs(prev => ({ ...prev, [activeTab]: !isTabExpanded }))}
+                    className="w-full py-3 text-center rounded-xl border-2 border-dashed border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+                  >
+                    <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
+                      {isTabExpanded
+                        ? 'Show less'
+                        : `View ${hiddenCount} more ${hiddenCount === 1 ? 'dish' : 'dishes'}`
+                      }
+                    </span>
+                  </button>
                 )}
               </div>
             ) : (
