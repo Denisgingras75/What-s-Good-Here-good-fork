@@ -578,18 +578,7 @@ export function Browse() {
         <div
           className="px-4 py-6"
           style={{
-            background: `
-              linear-gradient(90deg, rgba(30,25,20,0.3) 0%, transparent 2%, transparent 98%, rgba(30,25,20,0.3) 100%),
-              repeating-linear-gradient(
-                90deg,
-                #1a1612 0px,
-                #1f1a15 3px,
-                #1a1612 6px,
-                #181410 12px,
-                #1c1814 18px,
-                #1a1612 24px
-              )
-            `,
+            background: `radial-gradient(ellipse at center, #1a1a1a 0%, #0f0f0f 100%)`,
           }}
         >
           <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
