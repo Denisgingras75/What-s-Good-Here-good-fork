@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import posthog from 'posthog-js'
 import { useAuth } from '../context/AuthContext'
 import { restaurantsApi } from '../api'
@@ -16,6 +16,8 @@ const TOP_DISHES_COUNT = 5
 
 export function Restaurants() {
   const { user } = useAuth()
+  const { restaurantId } = useParams()
+  const navigate = useNavigate()
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(null)
@@ -50,6 +52,16 @@ export function Restaurants() {
     }
     fetchRestaurants()
   }, [])
+
+  // Auto-select restaurant from URL param
+  useEffect(() => {
+    if (restaurantId && restaurants.length > 0 && !selectedRestaurant) {
+      const restaurant = restaurants.find(r => r.id === restaurantId)
+      if (restaurant) {
+        setSelectedRestaurant(restaurant)
+      }
+    }
+  }, [restaurantId, restaurants, selectedRestaurant])
 
   const handleVote = () => {
     refetch()
@@ -245,6 +257,10 @@ export function Restaurants() {
                 onClick={() => {
                   setSelectedRestaurant(null)
                   setDishSearchQuery('')
+                  // Clear URL param if present
+                  if (restaurantId) {
+                    navigate('/restaurants', { replace: true })
+                  }
                 }}
                 className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition-colors flex-shrink-0"
               >

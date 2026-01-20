@@ -61,6 +61,7 @@ function App() {
               <Route path="/browse" element={<Layout><Browse /></Layout>} />
               <Route path="/dish/:dishId" element={<Layout><Dish /></Layout>} />
               <Route path="/restaurants" element={<Layout><Restaurants /></Layout>} />
+              <Route path="/restaurants/:restaurantId" element={<Layout><Restaurants /></Layout>} />
               <Route path="/profile" element={<Layout><Profile /></Layout>} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<Admin />} />
