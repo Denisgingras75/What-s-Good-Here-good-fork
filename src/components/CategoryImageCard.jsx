@@ -40,7 +40,7 @@ export function CategoryImageCard({
         active:scale-[0.97]
       "
     >
-      {/* Plate - circular like a real plate with rim */}
+      {/* Plate - realistic ceramic plate look */}
       <div
         className="
           relative w-[85%] aspect-square
@@ -49,10 +49,23 @@ export function CategoryImageCard({
           transition-all duration-200
         "
         style={{
-          border: '2px solid rgba(60, 60, 60, 0.8)',
+          border: '3px solid #2a2a2a',
+          background: 'linear-gradient(145deg, #1f1f1f, #171717)',
           boxShadow: isActive
-            ? '0 8px 24px rgba(0,0,0,0.5), 0 0 0 2px var(--color-primary), 0 0 20px rgba(244, 162, 97, 0.3), inset 0 2px 4px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.3)'
-            : '0 8px 24px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.3)',
+            ? `
+              0 12px 32px rgba(0,0,0,0.6),
+              0 4px 8px rgba(0,0,0,0.4),
+              0 0 0 2px var(--color-primary),
+              0 0 24px rgba(244, 162, 97, 0.4),
+              inset 0 2px 3px rgba(255,255,255,0.08),
+              inset 0 -3px 6px rgba(0,0,0,0.4)
+            `
+            : `
+              0 12px 32px rgba(0,0,0,0.6),
+              0 4px 8px rgba(0,0,0,0.4),
+              inset 0 2px 3px rgba(255,255,255,0.08),
+              inset 0 -3px 6px rgba(0,0,0,0.4)
+            `,
         }}
       >
         {imageSrc ? (
