@@ -574,26 +574,15 @@ export function Browse() {
 
       {/* Main Content */}
       {!showingDishes ? (
-        /* Category Grid - Default View - Plates on a dark wood table */
+        /* Category Grid - Default View - Plates on a premium dark surface */
         <div
           className="px-4 py-6"
           style={{
             background: `
-              radial-gradient(ellipse at 50% 30%, rgba(60,48,40,0.35) 0%, transparent 55%),
-              linear-gradient(180deg, rgba(18,18,18,0.85) 0%, transparent 4%, transparent 96%, rgba(18,18,18,0.85) 100%),
-              repeating-linear-gradient(
-                90deg,
-                #1a1512 0px,
-                #2a221c 3px,
-                #1e1814 7px,
-                #2d251e 12px,
-                #1c1610 18px,
-                #28201a 24px,
-                #1a1410 31px,
-                #2c241c 38px,
-                #1b1512 46px
-              ),
-              linear-gradient(180deg, #28211a 0%, #0e0c0a 100%)
+              radial-gradient(ellipse at 50% 20%, rgba(45,40,38,0.25) 0%, transparent 50%),
+              radial-gradient(ellipse at 30% 80%, rgba(35,30,28,0.15) 0%, transparent 40%),
+              radial-gradient(ellipse at 70% 60%, rgba(40,35,32,0.12) 0%, transparent 35%),
+              linear-gradient(180deg, #1a1918 0%, #141312 50%, #0f0e0d 100%)
             `,
           }}
         >
