@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import posthog from 'posthog-js'
+import { checkVoteRateLimit } from '../lib/rateLimiter'
 
 /**
  * Votes API - Centralized data fetching and mutation for votes
@@ -16,6 +17,12 @@ export const votesApi = {
    */
   async submitVote({ dishId, wouldOrderAgain, rating10 = null }) {
     try {
+      // Check rate limit before processing
+      const rateLimit = checkVoteRateLimit()
+      if (!rateLimit.allowed) {
+        throw new Error(rateLimit.message)
+      }
+
       // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser()
 

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { checkPhotoUploadRateLimit } from '../lib/rateLimiter'
 
 /**
  * Dish Photos API - Centralized data fetching and mutation for dish photos
@@ -15,6 +16,12 @@ export const dishPhotosApi = {
    */
   async uploadPhoto({ dishId, file, analysisResults }) {
     try {
+      // Check rate limit before processing
+      const rateLimit = checkPhotoUploadRateLimit()
+      if (!rateLimit.allowed) {
+        throw new Error(rateLimit.message)
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {

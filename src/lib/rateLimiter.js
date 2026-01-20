@@ -1,0 +1,76 @@
+/**
+ * Client-side rate limiter to prevent abuse
+ * Tracks actions in memory and blocks if limits are exceeded
+ */
+
+const actionTimestamps = {}
+
+/**
+ * Check if an action is allowed based on rate limits
+ * @param {string} action - Action identifier (e.g., 'vote', 'photo-upload')
+ * @param {Object} options - Rate limit options
+ * @param {number} options.maxAttempts - Max attempts allowed in the window
+ * @param {number} options.windowMs - Time window in milliseconds
+ * @returns {Object} { allowed: boolean, retryAfterMs: number | null }
+ */
+export function checkRateLimit(action, { maxAttempts = 10, windowMs = 60000 } = {}) {
+  const now = Date.now()
+  const key = action
+
+  // Initialize if needed
+  if (!actionTimestamps[key]) {
+    actionTimestamps[key] = []
+  }
+
+  // Remove timestamps outside the window
+  actionTimestamps[key] = actionTimestamps[key].filter(
+    (timestamp) => now - timestamp < windowMs
+  )
+
+  // Check if limit exceeded
+  if (actionTimestamps[key].length >= maxAttempts) {
+    const oldestTimestamp = actionTimestamps[key][0]
+    const retryAfterMs = windowMs - (now - oldestTimestamp)
+    return {
+      allowed: false,
+      retryAfterMs,
+      message: `Too many attempts. Please wait ${Math.ceil(retryAfterMs / 1000)} seconds.`,
+    }
+  }
+
+  // Record this attempt
+  actionTimestamps[key].push(now)
+
+  return { allowed: true, retryAfterMs: null }
+}
+
+/**
+ * Rate limit presets for different actions
+ */
+export const RATE_LIMITS = {
+  vote: { maxAttempts: 10, windowMs: 60000 },       // 10 votes per minute
+  photoUpload: { maxAttempts: 5, windowMs: 60000 }, // 5 uploads per minute
+  search: { maxAttempts: 30, windowMs: 60000 },     // 30 searches per minute
+  auth: { maxAttempts: 5, windowMs: 300000 },       // 5 auth attempts per 5 minutes
+}
+
+/**
+ * Convenience function to check vote rate limit
+ */
+export function checkVoteRateLimit() {
+  return checkRateLimit('vote', RATE_LIMITS.vote)
+}
+
+/**
+ * Convenience function to check photo upload rate limit
+ */
+export function checkPhotoUploadRateLimit() {
+  return checkRateLimit('photo-upload', RATE_LIMITS.photoUpload)
+}
+
+/**
+ * Clear rate limit history for an action (useful for testing)
+ */
+export function clearRateLimit(action) {
+  delete actionTimestamps[action]
+}
