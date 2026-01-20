@@ -40,11 +40,11 @@ export function CategoryImageCard({
         active:scale-[0.97]
       "
     >
-      {/* Plate - image looks like a plate resting on the table */}
+      {/* Plate - circular like a real plate */}
       <div
         className="
           relative w-[85%] aspect-square
-          rounded-2xl
+          rounded-full
           overflow-hidden
           transition-all duration-200
         "
