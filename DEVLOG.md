@@ -5,6 +5,48 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ---
 
+## 2025-01-20 - Daniel
+
+### Dark Mode Overhaul
+- New color system: #121212 background, warm orange accent (#F4A261)
+- Updated design tokens in index.css for dark theme
+- Migrated all pages (Home, Browse, Restaurants, Profile) to dark mode
+- Updated all components (BottomNav, BrowseCard, DishSearch, LocationPicker)
+- Food photos now pop as visual hero against dark backgrounds
+
+### Premium Category Tiles
+- Created new `CategoryIconTile` component with custom line icons
+- Horizontal scrollable row replaces emoji grid
+- 14 hand-drawn SVG icons matching Dribbble inspiration:
+  - Pizza, Burgers, Tacos, Wings, Sushi, Breakfast
+  - Lobster Rolls, Seafood, Chowder, Pasta
+  - Steak, Sandwiches, Salads, Tendys
+- Single-select with warm orange highlight
+- Toggle behavior: tap again to deselect
+- Design philosophy: "emoji = cheap signal, designed icons = intentional signal"
+
+### Design Philosophy
+- "Sleek earns trust. Simplicity earns participation."
+- Dark mode = premium feel, but UX stays casual and low-friction
+- Voting remains the loudest action on screen
+
+---
+
+## 2025-01-19 - Daniel
+
+### Profile Page Polish
+- Limited "Your Rated Dishes" to top 5 with expand/collapse
+- Prevents messy long lists for power users
+
+### PostHog Analytics for Restaurant Pitch
+- Added detailed `vote_cast` event with properties:
+  - dish_id, dish_name, restaurant_id, restaurant_name
+  - vote_type (worth_it/not_worth_it), rating_1_to_10
+  - is_first_vote, resulting_avg_rating, resulting_total_votes
+- Data ready for restaurant sales pitch dashboard
+
+---
+
 ## 2025-01-16 - Daniel
 
 ### Header & Brand Polish
