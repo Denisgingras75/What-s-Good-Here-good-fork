@@ -27,45 +27,42 @@ export function CategoryImageCard({
   category,
   isActive = false,
   onClick,
-  size = 'default', // 'default' | 'compact'
 }) {
   const imageSrc = CATEGORY_IMAGES[category.id] || null
-  const isCompact = size === 'compact'
 
   return (
     <button
       onClick={onClick}
-      className={`
-        flex flex-col items-center
-        w-full
+      className="
+        flex flex-col items-center gap-2
+        w-full py-1
         transition-all duration-200
         active:scale-[0.97]
-        ${isCompact ? 'gap-1' : 'gap-1.5'}
-      `}
+      "
     >
-      {/* Circular container - warm-neutral shadows for grounded feel */}
+      {/* Circular plate - isolated place setting */}
       <div
-        className={`
+        className="
           relative aspect-square
           rounded-full
           overflow-hidden
           transition-all duration-200
-          ${isCompact ? 'w-[90%]' : 'w-[85%]'}
-        `}
+          w-[75%]
+        "
         style={{
-          border: isCompact ? '1.5px solid #1a1816' : '2px solid #1a1816',
+          border: '2px solid #1a1816',
           background: '#131211',
           boxShadow: isActive
             ? `
-              0 6px 16px rgba(30,25,20,0.6),
-              0 2px 4px rgba(25,20,15,0.4),
+              0 8px 20px rgba(30,25,20,0.5),
+              0 2px 6px rgba(25,20,15,0.3),
               0 0 0 2px var(--color-primary),
-              0 0 16px rgba(244, 162, 97, 0.3),
+              0 0 20px rgba(244, 162, 97, 0.25),
               inset 0 1px 2px rgba(255,250,245,0.05)
             `
             : `
-              0 6px 16px rgba(30,25,20,0.6),
-              0 2px 4px rgba(25,20,15,0.4),
+              0 8px 20px rgba(30,25,20,0.5),
+              0 2px 6px rgba(25,20,15,0.3),
               inset 0 1px 2px rgba(255,250,245,0.05)
             `,
         }}
@@ -84,9 +81,9 @@ export function CategoryImageCard({
         )}
       </div>
 
-      {/* Label below image */}
+      {/* Label below plate */}
       <span
-        className={`font-medium ${isCompact ? 'text-[10px]' : 'text-xs'}`}
+        className="text-[11px] font-medium"
         style={{
           color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)'
         }}

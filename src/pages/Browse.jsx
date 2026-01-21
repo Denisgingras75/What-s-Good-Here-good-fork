@@ -448,12 +448,12 @@ export function Browse() {
 
       {/* Main Content */}
       {!showingDishes ? (
-        /* Category Grid - Table surface integrated with page */
+        /* Category Grid - Plates on a dining table */
         <div
-          className="px-3 pt-3 pb-3 relative"
+          className="px-6 pt-5 pb-6 relative"
           style={{
-            /* Surface matches page but slightly darker */
             background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #121212 100%)',
+            minHeight: 'calc(100vh - 80px)',
           }}
         >
           {/* Table edge - top bevel/rim catching light */}
@@ -463,18 +463,11 @@ export function Browse() {
               background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.08) 80%, transparent 100%)',
             }}
           />
-          {/* Table edge - bottom thickness/shadow */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-[8px]"
-            style={{
-              background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 60%, #0a0a0a 100%)',
-            }}
-          />
 
-          {/* Reservation card style header - TOP */}
-          <div className="flex justify-center mb-2">
+          {/* Reservation card style header */}
+          <div className="flex justify-center mb-6">
             <div
-              className="px-5 py-1 rounded-sm"
+              className="px-6 py-1.5 rounded-sm"
               style={{
                 background: 'transparent',
                 border: '1px solid rgba(244, 162, 97, 0.4)',
@@ -482,7 +475,7 @@ export function Browse() {
               }}
             >
               <span
-                className="text-[10px] font-medium tracking-[0.2em] uppercase"
+                className="text-[11px] font-medium tracking-[0.2em] uppercase"
                 style={{ color: 'var(--color-primary)' }}
               >
                 Categories
@@ -490,26 +483,37 @@ export function Browse() {
             </div>
           </div>
 
-          {/* Category grid - smaller icons */}
-          <div className="grid grid-cols-4 gap-2 mb-3">
-            {CATEGORIES.map((category) => (
+          {/* Category grid - generous spacing like place settings */}
+          <div className="grid grid-cols-3 gap-x-6 gap-y-5 mb-8">
+            {CATEGORIES.slice(0, 9).map((category) => (
               <CategoryImageCard
                 key={category.id}
                 category={category}
                 isActive={selectedCategory === category.id}
                 onClick={() => handleCategoryChange(category.id)}
-                size="compact"
               />
             ))}
           </div>
 
-          {/* Search bar at BOTTOM */}
-          <div className="relative">
+          {/* Second table / More categories */}
+          <div className="grid grid-cols-3 gap-x-6 gap-y-5 mb-8">
+            {CATEGORIES.slice(9).map((category) => (
+              <CategoryImageCard
+                key={category.id}
+                category={category}
+                isActive={selectedCategory === category.id}
+                onClick={() => handleCategoryChange(category.id)}
+              />
+            ))}
+          </div>
+
+          {/* Search bar at bottom - subtle */}
+          <div className="relative mt-auto pt-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth={2}
+              strokeWidth={1.5}
               stroke="currentColor"
               className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 z-10"
               style={{ color: 'var(--color-text-tertiary)' }}
@@ -536,10 +540,10 @@ export function Browse() {
                 }
               }}
               onKeyDown={handleSearchKeyDown}
-              className="w-full pl-9 pr-9 py-1.5 rounded-lg border focus:ring-1 transition-all text-xs"
+              className="w-full pl-9 pr-9 py-2 rounded-lg border focus:ring-1 transition-all text-xs"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                borderColor: 'rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.03)',
+                borderColor: 'rgba(255,255,255,0.08)',
                 color: 'var(--color-text-primary)',
                 '--tw-ring-color': 'var(--color-primary)'
               }}
@@ -547,7 +551,7 @@ export function Browse() {
             {searchQuery && (
               <button
                 onClick={clearSearch}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-colors z-10"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-colors z-10"
                 style={{ background: 'var(--color-divider)' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3" style={{ color: 'var(--color-text-secondary)' }}>
@@ -567,7 +571,7 @@ export function Browse() {
                   <button
                     key={`${suggestion.type}-${suggestion.id}`}
                     onClick={() => handleAutocompleteSelect(suggestion)}
-                    className="w-full px-3 py-2 text-left flex items-center gap-2 transition-colors"
+                    className="w-full px-3 py-2.5 text-left flex items-center gap-2 transition-colors"
                     style={{
                       background: index === autocompleteIndex ? 'var(--color-primary-muted)' : 'transparent'
                     }}
