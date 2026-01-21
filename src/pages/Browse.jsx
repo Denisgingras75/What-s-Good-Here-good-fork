@@ -60,6 +60,7 @@ export function Browse() {
 
   // Autocomplete state
   const [autocompleteOpen, setAutocompleteOpen] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
   const [autocompleteIndex, setAutocompleteIndex] = useState(-1)
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
@@ -493,59 +494,75 @@ export function Browse() {
             ))}
           </div>
 
-          {/* Search bar at bottom - subtle */}
+          {/* Search bar at bottom - matches Home page style */}
           <div className="mt-auto pt-4">
             <div className="relative">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 z-10"
-                style={{ color: 'var(--color-text-tertiary)' }}
+              <div
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
+                style={{
+                  background: 'var(--color-bg)',
+                  border: `1px solid ${searchFocused ? 'var(--color-primary)' : 'var(--color-divider)'}`,
+                  boxShadow: searchFocused ? '0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent)' : 'none',
+                }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-              <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Find the best ___ near you"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                if (e.target.value.length >= 2) {
-                  setAutocompleteOpen(true)
-                } else {
-                  setAutocompleteOpen(false)
-                }
-                setAutocompleteIndex(-1)
-              }}
-              onFocus={() => {
-                if (searchQuery.length >= 2 && autocompleteSuggestions.length > 0) {
-                  setAutocompleteOpen(true)
-                }
-              }}
-              onKeyDown={handleSearchKeyDown}
-              className="w-full pl-9 pr-9 py-2 rounded-lg border focus:ring-1 transition-all text-xs"
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                borderColor: 'rgba(255,255,255,0.08)',
-                color: 'var(--color-text-primary)',
-                '--tw-ring-color': 'var(--color-primary)'
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-colors z-10"
-                style={{ background: 'var(--color-divider)' }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3" style={{ color: 'var(--color-text-secondary)' }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5 flex-shrink-0"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-            )}
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Find the best ___ near you"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    if (e.target.value.length >= 2) {
+                      setAutocompleteOpen(true)
+                    } else {
+                      setAutocompleteOpen(false)
+                    }
+                    setAutocompleteIndex(-1)
+                  }}
+                  onFocus={() => {
+                    setSearchFocused(true)
+                    if (searchQuery.length >= 2 && autocompleteSuggestions.length > 0) {
+                      setAutocompleteOpen(true)
+                    }
+                  }}
+                  onBlur={() => setSearchFocused(false)}
+                  onKeyDown={handleSearchKeyDown}
+                  className="flex-1 bg-transparent outline-none text-sm"
+                  style={{ color: 'var(--color-text-primary)' }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      clearSearch()
+                      searchInputRef.current?.focus()
+                    }}
+                    className="p-1 rounded-full transition-colors"
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      style={{ color: 'var(--color-text-tertiary)' }}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
 
             {/* Autocomplete dropdown */}
             {autocompleteOpen && autocompleteSuggestions.length > 0 && (
