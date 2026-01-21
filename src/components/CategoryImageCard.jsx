@@ -1,8 +1,11 @@
 /**
  * CategoryImageCard - Premium image-based category selector
  *
- * Design: Circular containers on warm charcoal surface
- * Warm-neutral shadows create grounded "resting on surface" feel
+ * Design: Scalloped dinner plate silhouette
+ * - 12 shallow, soft scallops (classic porcelain)
+ * - Subtle inner rim, slightly lighter than plate body
+ * - No shadows, highlights, bevels, or gradients
+ * - Reads as plate via silhouette + rim only
  */
 
 // Category image mappings
@@ -40,7 +43,7 @@ export function CategoryImageCard({
         active:scale-[0.97]
       "
     >
-      {/* Fancy plate - pronounced scalloped edge */}
+      {/* Scalloped dinner plate silhouette */}
       <div
         className="
           relative aspect-square
@@ -49,59 +52,59 @@ export function CategoryImageCard({
           w-[85%]
         "
         style={{
-          background: '#131211',
-          /* Scalloped plate shape - 8 pronounced curves */
+          background: '#0f0f0f',
+          /* 12 shallow, soft scallops - classic porcelain plate */
           clipPath: `polygon(
             50% 0%,
-            65% 4%, 75% 8%,
-            85% 15%, 92% 25%,
-            96% 35%, 100% 50%,
-            96% 65%, 92% 75%,
-            85% 85%, 75% 92%,
-            65% 96%, 50% 100%,
-            35% 96%, 25% 92%,
-            15% 85%, 8% 75%,
-            4% 65%, 0% 50%,
-            4% 35%, 8% 25%,
-            15% 15%, 25% 8%,
-            35% 4%
+            58% 0.5%, 66% 2%, 73% 4.5%,
+            79% 8%, 85% 13%, 90% 19%,
+            94% 27%, 97% 35%, 99% 43%,
+            100% 50%,
+            99% 57%, 97% 65%, 94% 73%,
+            90% 81%, 85% 87%, 79% 92%,
+            73% 95.5%, 66% 98%, 58% 99.5%,
+            50% 100%,
+            42% 99.5%, 34% 98%, 27% 95.5%,
+            21% 92%, 15% 87%, 10% 81%,
+            6% 73%, 3% 65%, 1% 57%,
+            0% 50%,
+            1% 43%, 3% 35%, 6% 27%,
+            10% 19%, 15% 13%, 21% 8%,
+            27% 4.5%, 34% 2%, 42% 0.5%
           )`,
-          boxShadow: isActive
-            ? `
-              0 8px 20px rgba(30,25,20,0.5),
-              0 2px 6px rgba(25,20,15,0.3),
-              0 0 20px rgba(244, 162, 97, 0.25),
-              inset 0 1px 2px rgba(255,250,245,0.05)
-            `
-            : `
-              0 8px 20px rgba(30,25,20,0.5),
-              0 2px 6px rgba(25,20,15,0.3),
-              inset 0 1px 2px rgba(255,250,245,0.05)
-            `,
         }}
       >
-        {/* Active ring - follows plate shape */}
-        {isActive && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              border: '2px solid var(--color-primary)',
-              clipPath: 'inherit',
-            }}
-          />
-        )}
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={category.label}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.style.display = 'none'
-            }}
-          />
-        ) : (
-          <div className="w-full h-full" style={{ background: '#131211' }} />
-        )}
+        {/* Inner rim - follows scalloped contour, 6% inset */}
+        <div
+          className="absolute inset-[6%] pointer-events-none"
+          style={{
+            background: isActive ? 'var(--color-primary)' : '#1c1c1c',
+            clipPath: 'inherit',
+            opacity: isActive ? 0.3 : 1,
+          }}
+        />
+
+        {/* Plate interior - where food icon sits */}
+        <div
+          className="absolute inset-[8%] overflow-hidden"
+          style={{
+            background: '#0f0f0f',
+            clipPath: 'inherit',
+          }}
+        >
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={category.label}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none'
+              }}
+            />
+          ) : (
+            <div className="w-full h-full" style={{ background: '#0f0f0f' }} />
+          )}
+        </div>
       </div>
 
       {/* Label below plate */}
