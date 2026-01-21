@@ -122,14 +122,14 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
 
         {/* Rating display overlaid */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
-          <span className="text-4xl font-bold text-neutral-900">{value.toFixed(1)}</span>
-          <span className="text-xl text-neutral-400">/10</span>
+          <span className="text-4xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{value.toFixed(1)}</span>
+          <span className="text-xl" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
         </div>
       </div>
 
       {/* Label based on rating */}
       <div className="text-center">
-        <span className="text-sm font-medium text-neutral-500">
+        <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
           {getRatingLabel(value, category)}
         </span>
       </div>
@@ -153,7 +153,7 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
             [&::-moz-range-thumb]:shadow-xl [&::-moz-range-thumb]:border-4
             [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:cursor-pointer"
         />
-        <div className="flex justify-between text-xs text-neutral-400 mt-2 px-1">
+        <div className="flex justify-between text-xs mt-2 px-1" style={{ color: 'var(--color-text-tertiary)' }}>
           <span>0</span>
           <span>5</span>
           <span>10</span>

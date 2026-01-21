@@ -197,8 +197,8 @@ export function Admin() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-500">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto" style={{ borderColor: 'var(--color-primary)' }}></div>
+          <p className="mt-2 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Loading...</p>
         </div>
       </div>
     )
@@ -209,7 +209,7 @@ export function Admin() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
         <div className="text-center max-w-md px-6">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--color-danger) 20%, var(--color-bg))' }}>
             <span className="text-2xl">🔒</span>
           </div>
           <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
@@ -241,7 +241,8 @@ export function Admin() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-neutral-100 transition-colors"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              style={{ color: 'var(--color-text-primary)' }}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -254,8 +255,8 @@ export function Admin() {
           {editingDishId && (
             <button
               onClick={handleCancelEdit}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg bg-neutral-100 hover:bg-neutral-200 transition-colors"
-              style={{ color: 'var(--color-text-secondary)' }}
+              className="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+              style={{ color: 'var(--color-text-secondary)', background: 'var(--color-surface-elevated)' }}
             >
               Cancel Edit
             </button>
@@ -267,9 +268,11 @@ export function Admin() {
         {/* Message */}
         {message && (
           <div
-            className={`mb-4 p-3 rounded-lg text-sm font-medium ${
-              message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-            }`}
+            className="mb-4 p-3 rounded-lg text-sm font-medium"
+            style={message.type === 'error'
+              ? { background: 'color-mix(in srgb, var(--color-danger) 15%, var(--color-surface-elevated))', color: 'var(--color-danger)' }
+              : { background: 'color-mix(in srgb, var(--color-success) 15%, var(--color-surface-elevated))', color: 'var(--color-success)' }
+            }
           >
             {message.text}
           </div>

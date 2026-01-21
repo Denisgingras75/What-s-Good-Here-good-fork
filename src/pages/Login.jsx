@@ -102,11 +102,11 @@ export function Login() {
         {/* Messages */}
         {message && (
           <div
-            className={`w-full max-w-sm mb-6 p-4 rounded-xl text-sm font-medium ${
-              message.type === 'error'
-                ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            }`}
+            className="w-full max-w-sm mb-6 p-4 rounded-xl text-sm font-medium"
+            style={message.type === 'error'
+              ? { background: 'color-mix(in srgb, var(--color-danger) 15%, var(--color-surface-elevated))', color: 'var(--color-danger)', border: '1px solid color-mix(in srgb, var(--color-danger) 30%, transparent)' }
+              : { background: 'color-mix(in srgb, var(--color-success) 15%, var(--color-surface-elevated))', color: 'var(--color-success)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)' }
+            }
           >
             {message.text}
           </div>
@@ -117,7 +117,8 @@ export function Login() {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-neutral-200 rounded-xl font-semibold text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold active:scale-[0.98] transition-all disabled:opacity-50"
+            style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -170,7 +171,8 @@ export function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:border-orange-400 focus:outline-none transition-colors placeholder:text-neutral-400"
+                className="w-full px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                style={{ background: 'var(--color-bg)', border: '2px solid var(--color-divider)', color: 'var(--color-text-primary)' }}
               />
               <button
                 type="submit"

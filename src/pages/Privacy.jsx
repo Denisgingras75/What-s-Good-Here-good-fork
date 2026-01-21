@@ -4,9 +4,9 @@ export function Privacy() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200 px-4 py-4">
+      <header className="px-4 py-4" style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-divider)' }}>
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -26,14 +26,14 @@ export function Privacy() {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-6">
-          <p className="text-sm text-neutral-500">Last updated: January 2025</p>
+        <div className="rounded-2xl p-6 space-y-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Last updated: January 2025</p>
 
           <section>
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Overview
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               What's Good Here ("we", "our", or "the app") is a community-driven food discovery platform
               for Martha's Vineyard. This Privacy Policy explains how we collect, use, and protect your
               information when you use our service.
@@ -44,31 +44,31 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Information We Collect
             </h2>
-            <div className="space-y-4 text-neutral-600 leading-relaxed">
+            <div className="space-y-4 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               <div>
-                <h3 className="font-medium text-neutral-800 mb-1">Account Information</h3>
+                <h3 className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Account Information</h3>
                 <p>When you create an account, we collect your email address and display name.
                 If you sign in with Google, we receive your name and email from Google.</p>
               </div>
               <div>
-                <h3 className="font-medium text-neutral-800 mb-1">User Content</h3>
+                <h3 className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>User Content</h3>
                 <p>We store the votes and ratings you submit for dishes, as well as any dishes
                 you save to your favorites.</p>
               </div>
               <div>
-                <h3 className="font-medium text-neutral-800 mb-1">Location Data</h3>
+                <h3 className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Location Data</h3>
                 <p>With your permission, we access your device's location to show nearby restaurants
                 and dishes. This data is used only to provide location-based features and is not
                 stored on our servers.</p>
               </div>
               <div>
-                <h3 className="font-medium text-neutral-800 mb-1">Usage Analytics</h3>
+                <h3 className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Usage Analytics</h3>
                 <p>We use PostHog to understand how people use the app. This includes pages visited,
                 features used, and session recordings (with sensitive data automatically masked).
                 This helps us improve the app experience.</p>
               </div>
               <div>
-                <h3 className="font-medium text-neutral-800 mb-1">Error Tracking</h3>
+                <h3 className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Error Tracking</h3>
                 <p>We use Sentry to track errors and crashes. This helps us fix bugs quickly.
                 Error reports may include technical information about your device and browser.</p>
               </div>
@@ -79,7 +79,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               How We Use Your Information
             </h2>
-            <ul className="list-disc list-inside space-y-2 text-neutral-600">
+            <ul className="list-disc list-inside space-y-2" style={{ color: 'var(--color-text-secondary)' }}>
               <li>To provide and improve the app's features</li>
               <li>To display community ratings and rankings</li>
               <li>To show you relevant dishes and restaurants near you</li>
@@ -93,10 +93,10 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Data Sharing
             </h2>
-            <p className="text-neutral-600 leading-relaxed mb-3">
+            <p className="leading-relaxed mb-3" style={{ color: 'var(--color-text-secondary)' }}>
               We do not sell your personal information. We share data only with:
             </p>
-            <ul className="list-disc list-inside space-y-2 text-neutral-600">
+            <ul className="list-disc list-inside space-y-2" style={{ color: 'var(--color-text-secondary)' }}>
               <li><strong>Supabase</strong> - Our database and authentication provider</li>
               <li><strong>PostHog</strong> - For product analytics</li>
               <li><strong>Sentry</strong> - For error tracking</li>
@@ -108,7 +108,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Your Votes Are Public
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               When you rate a dish, your vote contributes to the public ranking. While we don't
               display your name next to individual votes, your overall statistics (like total
               dishes rated) are visible on your profile.
@@ -119,7 +119,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Data Retention
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               We retain your account information and votes as long as your account is active.
               You can delete your account by contacting us, which will remove your personal
               information. Aggregated voting data (like dish rankings) may be retained.
@@ -130,7 +130,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Your Rights
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               You can access, update, or delete your profile information at any time through
               the app. For data deletion requests or questions about your data, contact us
               at the email below.
@@ -141,7 +141,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Changes to This Policy
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               We may update this Privacy Policy from time to time. We'll notify you of any
               significant changes by posting a notice in the app.
             </p>
@@ -151,7 +151,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
               Contact Us
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               If you have questions about this Privacy Policy, please contact us at:{' '}
               <a
                 href="mailto:hello@whatsgoodhere.app"

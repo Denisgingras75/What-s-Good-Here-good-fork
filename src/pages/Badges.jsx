@@ -12,9 +12,9 @@ export function Badges() {
   const publicBadges = badges.filter(b => b.is_public_eligible)
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200 px-4 py-4">
+      <header className="px-4 py-4" style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-divider)' }}>
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -38,8 +38,8 @@ export function Badges() {
         <div
           className="rounded-2xl p-6 overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
-            border: '1px solid #FED7AA',
+            background: 'var(--color-primary-muted)',
+            border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
           }}
         >
           <div className="flex items-center gap-4 mb-4">
@@ -58,7 +58,7 @@ export function Badges() {
               </p>
             </div>
           </div>
-          <p className="text-neutral-700 leading-relaxed">
+          <p style={{ color: 'var(--color-text-secondary)' }} className="leading-relaxed">
             As you rate dishes and explore restaurants, you'll unlock badges that celebrate your
             contributions to the community. Some badges are personal milestones, while others
             are prestigious achievements that display on your public profile.
@@ -66,57 +66,57 @@ export function Badges() {
         </div>
 
         {/* How It Works */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
             How It Works
           </h2>
           <div className="space-y-4">
             <div className="flex gap-4">
-              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-primary-muted)' }}>
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>1</span>
               </div>
               <div>
                 <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Rate dishes</h3>
-                <p className="text-sm text-neutral-500">Vote on dishes you've tried and rate them honestly</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Vote on dishes you've tried and rate them honestly</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-primary-muted)' }}>
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>2</span>
               </div>
               <div>
                 <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Build progress</h3>
-                <p className="text-sm text-neutral-500">Each vote counts toward multiple badge goals</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Each vote counts toward multiple badge goals</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-primary-muted)' }}>
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>3</span>
               </div>
               <div>
                 <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Unlock badges</h3>
-                <p className="text-sm text-neutral-500">Get notified when you earn a new achievement</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Get notified when you earn a new achievement</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Private Badges */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">🔒</span>
             <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               Personal Milestones
             </h2>
           </div>
-          <p className="text-sm text-neutral-500 mb-4">
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
             These badges celebrate your journey and are visible only to you.
           </p>
 
           {loading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-neutral-100 rounded-xl animate-pulse" />
+                <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--color-bg)' }} />
               ))}
             </div>
           ) : (
@@ -129,21 +129,21 @@ export function Badges() {
         </div>
 
         {/* Public Badges */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">⭐</span>
             <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               Prestigious Badges
             </h2>
           </div>
-          <p className="text-sm text-neutral-500 mb-4">
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
             These elite achievements are displayed on your public profile for everyone to see.
           </p>
 
           {loading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-neutral-100 rounded-xl animate-pulse" />
+                <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--color-bg)' }} />
               ))}
             </div>
           ) : (
@@ -156,75 +156,75 @@ export function Badges() {
         </div>
 
         {/* Category Expertise */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">🍕</span>
             <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               Category Expertise
             </h2>
           </div>
-          <p className="text-sm text-neutral-600 mb-4">
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
             Beyond badges, you also earn expertise titles in specific food categories. Rate enough
             dishes in a category and you'll become recognized as an expert in that cuisine.
           </p>
           <div className="space-y-2">
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50">
+            <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--color-bg)' }}>
               <span className="text-xl">🌱</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-900">Explorer</span>
-                  <span className="text-xs px-2 py-0.5 bg-neutral-200 rounded-full text-neutral-600">5+ votes</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Explorer</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-divider)', color: 'var(--color-text-secondary)' }}>5+ votes</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50">
+            <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--color-bg)' }}>
               <span className="text-xl">🔥</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-900">Fan</span>
-                  <span className="text-xs px-2 py-0.5 bg-neutral-200 rounded-full text-neutral-600">10+ votes</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Fan</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-divider)', color: 'var(--color-text-secondary)' }}>10+ votes</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50">
+            <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--color-bg)' }}>
               <span className="text-xl">💎</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-900">Connoisseur</span>
-                  <span className="text-xs px-2 py-0.5 bg-neutral-200 rounded-full text-neutral-600">20+ votes</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Connoisseur</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-divider)', color: 'var(--color-text-secondary)' }}>20+ votes</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50">
+            <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--color-bg)' }}>
               <span className="text-xl">⭐</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-900">Expert</span>
-                  <span className="text-xs px-2 py-0.5 bg-neutral-200 rounded-full text-neutral-600">30+ votes</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Expert</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-divider)', color: 'var(--color-text-secondary)' }}>30+ votes</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50">
+            <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--color-bg)' }}>
               <span className="text-xl">👑</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-900">Master</span>
-                  <span className="text-xs px-2 py-0.5 bg-neutral-200 rounded-full text-neutral-600">50+ votes</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Master</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-divider)', color: 'var(--color-text-secondary)' }}>50+ votes</span>
                 </div>
               </div>
             </div>
           </div>
-          <p className="text-xs text-neutral-400 mt-4 text-center">
+          <p className="text-xs mt-4 text-center" style={{ color: 'var(--color-text-tertiary)' }}>
             Your category titles are displayed on your profile as you earn them.
           </p>
         </div>
 
         {/* Tips */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
             Tips for Earning Badges
           </h2>
-          <ul className="space-y-3 text-neutral-600">
+          <ul className="space-y-3" style={{ color: 'var(--color-text-secondary)' }}>
             <li className="flex gap-3">
               <span>🍽️</span>
               <span>Rate dishes at new restaurants to unlock explorer badges faster</span>
@@ -252,15 +252,20 @@ export function Badges() {
 function BadgeRow({ badge, isPublic }) {
   const isUnlocked = badge.unlocked
 
+  const getBackgroundStyle = () => {
+    if (isUnlocked) {
+      if (isPublic) {
+        return { background: 'color-mix(in srgb, var(--color-primary) 15%, var(--color-bg))', border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)' }
+      }
+      return { background: 'color-mix(in srgb, var(--color-success) 15%, var(--color-bg))', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)' }
+    }
+    return { background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }
+  }
+
   return (
     <div
-      className={`flex items-center gap-4 p-4 rounded-xl transition-all ${
-        isUnlocked
-          ? isPublic
-            ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200'
-            : 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200'
-          : 'bg-neutral-50 border border-neutral-200'
-      }`}
+      className="flex items-center gap-4 p-4 rounded-xl transition-all"
+      style={getBackgroundStyle()}
     >
       {/* Icon */}
       <div className={`text-2xl ${!isUnlocked && 'opacity-40'}`}>
@@ -271,29 +276,29 @@ function BadgeRow({ badge, isPublic }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3
-            className={`font-semibold ${isUnlocked ? '' : 'text-neutral-500'}`}
-            style={isUnlocked ? { color: 'var(--color-text-primary)' } : {}}
+            className="font-semibold"
+            style={{ color: isUnlocked ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
           >
             {badge.name}
           </h3>
           {isUnlocked && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'color-mix(in srgb, var(--color-success) 20%, transparent)', color: 'var(--color-success)' }}>
               Unlocked
             </span>
           )}
         </div>
-        <p className={`text-sm ${isUnlocked ? 'text-neutral-600' : 'text-neutral-400'}`}>
+        <p className="text-sm" style={{ color: isUnlocked ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)' }}>
           {badge.description}
         </p>
 
         {/* Progress bar for locked badges */}
         {!isUnlocked && badge.target > 0 && (
           <div className="mt-2">
-            <div className="flex justify-between text-xs text-neutral-400 mb-1">
+            <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--color-text-tertiary)' }}>
               <span>{badge.progress}/{badge.target}</span>
               <span>{badge.percentage}%</span>
             </div>
-            <div className="h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-divider)' }}>
               <div
                 className="h-full rounded-full transition-all"
                 style={{

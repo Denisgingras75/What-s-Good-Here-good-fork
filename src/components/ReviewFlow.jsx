@@ -229,20 +229,20 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   if (userVote !== null && userRating !== null && step === 1) {
     return (
       <div className="space-y-3">
-        <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200">
-          <p className="text-sm text-emerald-800 font-medium text-center mb-2">Your review</p>
+        <div className="p-4 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-success) 15%, var(--color-surface-elevated))', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)' }}>
+          <p className="text-sm font-medium text-center mb-2" style={{ color: 'var(--color-success)' }}>Your review</p>
           <div className="flex items-center justify-center gap-4">
             <span className="text-2xl">{userVote ? '👍' : '👎'}</span>
-            <span className="text-xl font-bold text-emerald-700">{Number(userRating).toFixed(1)}</span>
+            <span className="text-xl font-bold" style={{ color: 'var(--color-success)' }}>{Number(userRating).toFixed(1)}</span>
           </div>
         </div>
         <div className="flex items-center justify-center gap-4 text-sm">
-          <span className="flex items-center gap-1.5 text-emerald-600 font-semibold">
-            <span>👍</span> {localYesVotes} <span className="text-emerald-500 font-normal">({yesPercent}%)</span>
+          <span className="flex items-center gap-1.5 font-semibold" style={{ color: 'var(--color-success)' }}>
+            <span>👍</span> {localYesVotes} <span className="font-normal opacity-80">({yesPercent}%)</span>
           </span>
-          <span className="text-neutral-300">|</span>
-          <span className="flex items-center gap-1.5 text-red-500 font-semibold">
-            <span>👎</span> {noVotes} <span className="text-red-400 font-normal">({noPercent}%)</span>
+          <span style={{ color: 'var(--color-divider)' }}>|</span>
+          <span className="flex items-center gap-1.5 font-semibold" style={{ color: 'var(--color-danger)' }}>
+            <span>👎</span> {noVotes} <span className="font-normal opacity-80">({noPercent}%)</span>
           </span>
         </div>
         <button
@@ -253,7 +253,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             setUserRating(null)
             setStep(1)
           }}
-          className="w-full py-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+          className="w-full py-2 text-sm transition-colors"
+          style={{ color: 'var(--color-text-tertiary)' }}
         >
           Update your review
         </button>
@@ -269,11 +270,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
     return (
       <div className="space-y-3">
-        <p className="text-sm font-medium text-neutral-600 text-center">Would you order this again?</p>
+        <p className="text-sm font-medium text-center" style={{ color: 'var(--color-text-secondary)' }}>Would you order this again?</p>
 
         {/* Show "sign in to continue" note when awaiting login */}
         {awaitingLogin && pendingVote !== null && (
-          <div className="p-3 rounded-xl text-center" style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, white)' }}>
+          <div className="p-3 rounded-xl text-center" style={{ background: 'var(--color-primary-muted)' }}>
             <p className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
               {pendingVote ? '👍' : '👎'} Vote selected — sign in to save it
             </p>
@@ -282,31 +283,29 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
         {localTotalVotes > 0 && !awaitingLogin ? (
           <div className="flex items-center justify-center gap-4 text-sm">
-            <span className="flex items-center gap-1.5 text-emerald-600 font-semibold">
-              <span>👍</span> {localYesVotes} <span className="text-emerald-500 font-normal">({yesPercent}%)</span>
+            <span className="flex items-center gap-1.5 font-semibold" style={{ color: 'var(--color-success)' }}>
+              <span>👍</span> {localYesVotes} <span className="font-normal opacity-80">({yesPercent}%)</span>
             </span>
-            <span className="text-neutral-300">|</span>
-            <span className="flex items-center gap-1.5 text-red-500 font-semibold">
-              <span>👎</span> {noVotes} <span className="text-red-400 font-normal">({noPercent}%)</span>
+            <span style={{ color: 'var(--color-divider)' }}>|</span>
+            <span className="flex items-center gap-1.5 font-semibold" style={{ color: 'var(--color-danger)' }}>
+              <span>👎</span> {noVotes} <span className="font-normal opacity-80">({noPercent}%)</span>
             </span>
           </div>
         ) : !awaitingLogin ? (
-          <p className="text-xs text-neutral-400 text-center">Help rank this dish — be first to vote!</p>
+          <p className="text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>Help rank this dish — be first to vote!</p>
         ) : null}
 
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => handleVoteClick(true)}
             disabled={showConfirmation}
-            className={`relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95
-              ${(showConfirmation && confirmationType === 'yes') || showPendingYes
-                ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                : 'bg-white text-neutral-700 border-2 border-neutral-200 hover:border-emerald-400 hover:bg-emerald-50 shadow-sm'}`}
+            className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
+            style={(showConfirmation && confirmationType === 'yes') || showPendingYes
+              ? { background: 'linear-gradient(to bottom right, #10B981, #059669)', color: 'white', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)', transform: 'scale(1.05)' }
+              : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'yes' ? (
               <span className="text-2xl text-white animate-pulse">✓</span>
-            ) : showPendingYes ? (
-              <><span className="text-xl">👍</span><span>Yes</span></>
             ) : (
               <><span className="text-xl">👍</span><span>Yes</span></>
             )}
@@ -314,15 +313,13 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
           <button
             onClick={() => handleVoteClick(false)}
             disabled={showConfirmation}
-            className={`relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95
-              ${(showConfirmation && confirmationType === 'no') || showPendingNo
-                ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30 scale-105'
-                : 'bg-white text-neutral-700 border-2 border-neutral-200 hover:border-red-400 hover:bg-red-50 shadow-sm'}`}
+            className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
+            style={(showConfirmation && confirmationType === 'no') || showPendingNo
+              ? { background: 'linear-gradient(to bottom right, #EF4444, #DC2626)', color: 'white', boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3)', transform: 'scale(1.05)' }
+              : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'no' ? (
               <span className="text-2xl text-white animate-pulse">✓</span>
-            ) : showPendingNo ? (
-              <><span className="text-xl">👎</span><span>No</span></>
             ) : (
               <><span className="text-xl">👎</span><span>No</span></>
             )}
@@ -337,10 +334,10 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     return (
       <div className="space-y-4 animate-fadeIn">
         <div className="flex items-center justify-between">
-          <button onClick={() => setStep(1)} className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors flex items-center gap-1">
+          <button onClick={() => setStep(1)} className="text-sm transition-colors flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
             <span>←</span> Back
           </button>
-          <p className="text-sm font-medium text-neutral-600">How good was it?</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>How good was it?</p>
           <div className="w-12" />
         </div>
 
@@ -356,8 +353,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
         <button
           onClick={handleRatingNext}
-          className="w-full py-4 px-6 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 ease-out focus-ring active:scale-98 hover:shadow-xl hover:opacity-90"
-          style={{ background: 'var(--color-primary)' }}
+          className="w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ease-out focus-ring active:scale-98 hover:shadow-xl hover:opacity-90"
+          style={{ background: 'var(--color-primary)', color: '#1A1A1A' }}
         >
           Next
         </button>
@@ -368,32 +365,34 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   // Step 3: Preview & Confirm
   return (
     <div className="space-y-4 animate-fadeIn">
-      <p className="text-sm font-medium text-neutral-600 text-center">Review your answers</p>
+      <p className="text-sm font-medium text-center" style={{ color: 'var(--color-text-secondary)' }}>Review your answers</p>
 
       {/* Preview card */}
-      <div className="p-4 bg-gradient-to-br from-neutral-50 to-stone-100 rounded-xl border border-neutral-200 space-y-3">
+      <div className="p-4 rounded-xl space-y-3" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
         {/* Yes/No answer */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-neutral-500">Would order again?</span>
+          <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Would order again?</span>
           <button
             onClick={() => setStep(1)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-neutral-200 hover:border-neutral-300 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors"
+            style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}
           >
             <span className="text-lg">{pendingVote ? '👍' : '👎'}</span>
-            <span className="text-sm font-medium text-neutral-700">{pendingVote ? 'Yes' : 'No'}</span>
-            <span className="text-xs text-neutral-400">Edit</span>
+            <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{pendingVote ? 'Yes' : 'No'}</span>
+            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Edit</span>
           </button>
         </div>
 
         {/* Rating answer */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-neutral-500">Rating</span>
+          <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Rating</span>
           <button
             onClick={() => setStep(2)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-neutral-200 hover:border-neutral-300 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors"
+            style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}
           >
-            <span className="text-sm font-bold text-neutral-700">{sliderValue.toFixed(1)}</span>
-            <span className="text-xs text-neutral-400">Edit</span>
+            <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{sliderValue.toFixed(1)}</span>
+            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Edit</span>
           </button>
         </div>
       </div>
@@ -402,8 +401,9 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className={`w-full py-4 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30 transition-all duration-200 ease-out focus-ring
+        className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ease-out focus-ring
           ${submitting ? 'opacity-50 cursor-not-allowed' : 'active:scale-98 hover:shadow-xl'}`}
+        style={{ background: 'linear-gradient(to right, #10B981, #14B8A6)', color: 'white', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)' }}
       >
         {submitting ? 'Adding vote...' : 'Add Your Vote'}
       </button>
@@ -411,7 +411,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       {/* Back button */}
       <button
         onClick={() => setStep(2)}
-        className="w-full py-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+        className="w-full py-2 text-sm transition-colors"
+        style={{ color: 'var(--color-text-tertiary)' }}
       >
         ← Go back
       </button>

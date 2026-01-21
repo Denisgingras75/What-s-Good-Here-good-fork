@@ -251,7 +251,7 @@ export function Profile() {
 
                 {/* Contributor Badge */}
                 {stats.totalVotes >= 10 && (
-                  <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'color-mix(in srgb, var(--color-rating) 20%, white)', color: 'var(--color-text-primary)' }}>
+                  <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'color-mix(in srgb, var(--color-rating) 20%, white)', color: '#1A1A1A' }}>
                     <span>🏝️</span>
                     <span>MV Contributor</span>
                   </div>
