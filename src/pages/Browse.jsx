@@ -590,6 +590,7 @@ export function Browse() {
               </div>
             )}
           </div>
+          </div>
         </div>
       ) : (
         /* Dish List View */
