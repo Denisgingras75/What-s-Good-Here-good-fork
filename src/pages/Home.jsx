@@ -83,11 +83,59 @@ export function Home() {
       {/* Header */}
       <header className="py-3" style={{ background: 'var(--color-bg)' }}>
         <div className="flex justify-center">
-          <img
-            src="/logo.png"
-            alt="What's Good Here"
-            className="h-[72px] md:h-[84px] lg:h-24 w-auto"
-          />
+          {/* Logo in scalloped plate frame - matches category icons */}
+          <div
+            className="relative w-[80px] h-[80px] md:w-[96px] md:h-[96px] lg:w-[112px] lg:h-[112px]"
+            style={{
+              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+            }}
+          >
+            {/* Outer plate edge */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #252525 100%)',
+                clipPath: `polygon(
+                  50% 0%, 68% 2%, 80% 10%, 95% 20%, 100% 35%, 100% 50%,
+                  100% 65%, 95% 80%, 80% 90%, 68% 98%, 50% 100%,
+                  32% 98%, 20% 90%, 5% 80%, 0% 65%, 0% 50%,
+                  0% 35%, 5% 20%, 20% 10%, 32% 2%
+                )`,
+              }}
+            />
+            {/* Inner rim */}
+            <div
+              className="absolute inset-[4%]"
+              style={{
+                background: 'linear-gradient(145deg, #333 0%, #222 100%)',
+                clipPath: `polygon(
+                  50% 0%, 68% 2%, 80% 10%, 95% 20%, 100% 35%, 100% 50%,
+                  100% 65%, 95% 80%, 80% 90%, 68% 98%, 50% 100%,
+                  32% 98%, 20% 90%, 5% 80%, 0% 65%, 0% 50%,
+                  0% 35%, 5% 20%, 20% 10%, 32% 2%
+                )`,
+              }}
+            />
+            {/* Logo inside plate */}
+            <div
+              className="absolute inset-[8%] overflow-hidden flex items-center justify-center"
+              style={{
+                background: '#121212',
+                clipPath: `polygon(
+                  50% 0%, 68% 2%, 80% 10%, 95% 20%, 100% 35%, 100% 50%,
+                  100% 65%, 95% 80%, 80% 90%, 68% 98%, 50% 100%,
+                  32% 98%, 20% 90%, 5% 80%, 0% 65%, 0% 50%,
+                  0% 35%, 5% 20%, 20% 10%, 32% 2%
+                )`,
+              }}
+            >
+              <img
+                src="/logo.png"
+                alt="What's Good Here"
+                className="w-full h-full object-contain p-2"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
