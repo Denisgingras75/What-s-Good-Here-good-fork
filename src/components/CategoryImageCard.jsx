@@ -1,12 +1,13 @@
 /**
- * CategoryImageCard - Premium image-based category selector
+ * CategoryImageCard - Category selector using PlateIcon
  *
- * Design: Pronounced scalloped dinner plate
- * - 10 dramatic, clearly visible scallops
- * - Visible rim with depth and dimension
- * - Subtle drop shadow to ground on table
- * - Instantly recognizable as a plate
+ * Design Philosophy:
+ * - PlateIcon provides the realistic matte ceramic plate
+ * - Food image glows (alive), plate stays quiet (neutral)
+ * - Consistent grid spacing with centered labels
  */
+
+import { PlateIcon } from './PlateIcon'
 
 // Category image mappings
 const CATEGORY_IMAGES = {
@@ -26,77 +27,33 @@ const CATEGORY_IMAGES = {
   tendys: '/categories/tendys.webp',
 }
 
-// 10-point scalloped plate shape - dramatic, clearly visible scallops
-const PLATE_CLIP_PATH = `polygon(
-  50% 0%,
-  68% 2%, 80% 10%,
-  95% 20%, 100% 35%,
-  100% 50%,
-  100% 65%, 95% 80%,
-  80% 90%, 68% 98%,
-  50% 100%,
-  32% 98%, 20% 90%,
-  5% 80%, 0% 65%,
-  0% 50%,
-  0% 35%, 5% 20%,
-  20% 10%, 32% 2%
-)`
-
 export function CategoryImageCard({
   category,
   isActive = false,
   onClick,
+  size = 80,
 }) {
   const imageSrc = CATEGORY_IMAGES[category.id] || null
 
   return (
     <button
       onClick={onClick}
-      className="
-        flex flex-col items-center gap-2
-        w-full py-1
-        transition-all duration-200
-        active:scale-[0.97]
-      "
+      className="flex flex-col items-center transition-all duration-200 active:scale-[0.97]"
+      style={{ gap: '18px' }}
     >
-      {/* Plate container with drop shadow */}
-      <div
-        className="relative aspect-square w-[85%]"
-        style={{
-          filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
-        }}
-      >
-        {/* Outer plate edge - the scalloped rim */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isActive
-              ? 'linear-gradient(145deg, var(--color-primary) 0%, #c87f4a 100%)'
-              : 'linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #252525 100%)',
-            clipPath: PLATE_CLIP_PATH,
-          }}
-        />
-
-        {/* Inner rim highlight - creates depth */}
-        <div
-          className="absolute inset-[4%]"
-          style={{
-            background: isActive
-              ? 'linear-gradient(145deg, #d4956a 0%, var(--color-primary) 100%)'
-              : 'linear-gradient(145deg, #333 0%, #222 100%)',
-            clipPath: PLATE_CLIP_PATH,
-          }}
-        />
-
-        {/* Plate well - where food sits */}
-        <div
-          className="absolute inset-[8%] overflow-hidden"
-          style={{
-            background: '#0f0f0f',
-            clipPath: PLATE_CLIP_PATH,
-          }}
-        >
-          {imageSrc ? (
+      {/* Plate with food icon */}
+      <PlateIcon size={size}>
+        {imageSrc ? (
+          <div
+            className="w-full h-full rounded-full overflow-hidden"
+            style={{
+              // Food glow - the "alive" element
+              // Neon glow ONLY on the food, not the plate
+              boxShadow: isActive
+                ? '0 0 14px rgba(244, 162, 97, 0.45), 0 0 6px rgba(244, 162, 97, 0.25)'
+                : '0 0 8px rgba(244, 162, 97, 0.12)',
+            }}
+          >
             <img
               src={imageSrc}
               alt={category.label}
@@ -105,17 +62,20 @@ export function CategoryImageCard({
                 e.target.style.display = 'none'
               }}
             />
-          ) : (
-            <div className="w-full h-full" style={{ background: '#0f0f0f' }} />
-          )}
-        </div>
-      </div>
+          </div>
+        ) : (
+          <div
+            className="w-full h-full rounded-full"
+            style={{ background: '#141414' }}
+          />
+        )}
+      </PlateIcon>
 
-      {/* Label below plate */}
+      {/* Label - secondary to plate */}
       <span
-        className="text-[11px] font-medium"
+        className="text-[12px] font-medium text-center leading-none"
         style={{
-          color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)'
+          color: isActive ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.5)',
         }}
       >
         {category.label}

@@ -94,9 +94,9 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
 
       {/* Modal */}
       <div
-        className="relative bg-white rounded-3xl max-w-md w-full shadow-xl overflow-hidden"
+        className="relative rounded-3xl max-w-md w-full shadow-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{ animationDelay: '0.1s' }}
+        style={{ animationDelay: '0.1s', background: 'var(--color-surface-elevated)' }}
       >
         {/* Decorative gradient header */}
         <div className="h-2" style={{ background: 'var(--color-primary)' }} />
@@ -105,11 +105,12 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors focus-ring"
+            className="absolute top-6 right-6 w-8 h-8 rounded-full flex items-center justify-center transition-colors focus-ring"
+            style={{ background: 'var(--color-divider)', color: 'var(--color-text-secondary)' }}
             aria-label="Close"
           >
             <svg
-              className="w-4 h-4 text-neutral-600"
+              className="w-4 h-4"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -128,10 +129,10 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
 
           {/* Header - contextual based on pending action */}
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
               {hasPendingVote ? 'Sign in to save your vote' : 'Sign in to vote'}
             </h2>
-            <p className="text-neutral-600 text-sm">
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               {hasPendingVote
                 ? `Your ${pendingVote.vote ? '"Yes"' : '"No"'} vote is ready — just sign in to record it`
                 : 'Join the community and help others discover the best dishes'
@@ -142,11 +143,11 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
           {/* Messages */}
           {message && (
             <div
-              className={`mb-6 p-4 rounded-xl text-sm font-medium ${
-                message.type === 'error'
-                  ? 'bg-red-50 text-red-700 border border-red-200'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-              }`}
+              className="mb-6 p-4 rounded-xl text-sm font-medium"
+              style={message.type === 'error'
+                ? { background: 'color-mix(in srgb, var(--color-danger) 15%, var(--color-bg))', color: 'var(--color-danger)' }
+                : { background: 'color-mix(in srgb, var(--color-success) 15%, var(--color-bg))', color: 'var(--color-success)' }
+              }
             >
               {message.text}
             </div>
@@ -158,7 +159,8 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-neutral-200 rounded-xl font-semibold text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold active:scale-[0.98] transition-all disabled:opacity-50"
+              style={{ background: 'var(--color-bg)', border: '2px solid var(--color-divider)', color: 'var(--color-text-primary)' }}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -183,16 +185,17 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
 
             {/* Divider */}
             <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-neutral-200" />
-              <span className="text-xs font-medium text-neutral-400">or</span>
-              <div className="flex-1 h-px bg-neutral-200" />
+              <div className="flex-1 h-px" style={{ background: 'var(--color-divider)' }} />
+              <span className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>or</span>
+              <div className="flex-1 h-px" style={{ background: 'var(--color-divider)' }} />
             </div>
 
             {/* Magic Link Option */}
             {!showEmailForm ? (
               <button
                 onClick={() => setShowEmailForm(true)}
-                className="w-full px-6 py-4 rounded-xl font-semibold text-neutral-600 bg-neutral-100 hover:bg-neutral-200 active:scale-[0.98] transition-all"
+                className="w-full px-6 py-4 rounded-xl font-semibold active:scale-[0.98] transition-all"
+                style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
               >
                 Sign in with email
               </button>
@@ -205,13 +208,14 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
                   placeholder="you@example.com"
                   required
                   autoFocus
-                  className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:border-orange-400 focus:outline-none transition-colors placeholder:text-neutral-400"
+                  className="w-full px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                  style={{ background: 'var(--color-bg)', border: '2px solid var(--color-divider)', color: 'var(--color-text-primary)' }}
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-4 text-white font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
-                  style={{ background: 'var(--color-primary)' }}
+                  className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+                  style={{ background: 'var(--color-primary)', color: '#1A1A1A' }}
                 >
                   {loading ? 'Sending...' : 'Send magic link'}
                 </button>
@@ -221,7 +225,8 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
                     setShowEmailForm(false)
                     setMessage(null)
                   }}
-                  className="w-full text-sm py-2 text-neutral-500 hover:text-neutral-700"
+                  className="w-full text-sm py-2"
+                  style={{ color: 'var(--color-text-tertiary)' }}
                 >
                   Cancel
                 </button>
@@ -230,11 +235,11 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
           </div>
 
           {/* Footer */}
-          <p className="mt-6 text-xs text-center text-neutral-500">
+          <p className="mt-6 text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>
             By continuing, you agree to our{' '}
-            <a href="/terms" className="underline hover:text-neutral-600">Terms of Service</a>
+            <a href="/terms" className="underline" style={{ color: 'var(--color-text-secondary)' }}>Terms of Service</a>
             {' '}and{' '}
-            <a href="/privacy" className="underline hover:text-neutral-600">Privacy Policy</a>
+            <a href="/privacy" className="underline" style={{ color: 'var(--color-text-secondary)' }}>Privacy Policy</a>
           </p>
         </div>
       </div>

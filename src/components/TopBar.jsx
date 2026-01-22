@@ -1,11 +1,12 @@
+import { NotificationBell } from './NotificationBell'
+
 /**
- * TopBar - Subtle brand anchor for the top safe-area region
- * Purely decorative, no interactions
+ * TopBar - Brand anchor with notification bell
  */
 export function TopBar() {
   return (
     <div className="top-bar">
-      <div className="top-bar-content">
+      <div className="top-bar-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 12px' }}>
         {/* Fork-checkmark logo mark - simplified SVG */}
         <svg
           className="top-bar-icon"
@@ -47,6 +48,9 @@ export function TopBar() {
             strokeLinecap="round"
           />
         </svg>
+
+        {/* Notification Bell */}
+        <NotificationBell />
       </div>
     </div>
   )

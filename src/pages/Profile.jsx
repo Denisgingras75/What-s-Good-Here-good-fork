@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { authApi, adminApi } from '../api'
+import { authApi, adminApi, followsApi } from '../api'
 import { useProfile } from '../hooks/useProfile'
 import { useUserVotes } from '../hooks/useUserVotes'
 import { useSavedDishes } from '../hooks/useSavedDishes'
@@ -12,6 +12,8 @@ import { getCategoryImage } from '../constants/categoryImages'
 import { PHOTO_TIERS_LIST } from '../constants/photoQuality'
 import { DishModal } from '../components/DishModal'
 import { LoginModal } from '../components/Auth/LoginModal'
+import { UserSearch } from '../components/UserSearch'
+import { FollowListModal } from '../components/FollowListModal'
 
 const TABS = [
   { id: 'unrated', label: 'Unrated', emoji: '📷' },
@@ -42,6 +44,9 @@ export function Profile() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [expandedTabs, setExpandedTabs] = useState({}) // Track which tabs show all dishes
+  const [showFindFriends, setShowFindFriends] = useState(false)
+  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 })
+  const [followListModal, setFollowListModal] = useState(null) // 'followers' | 'following' | null
 
   // Check admin status from database (matches RLS policies)
   useEffect(() => {
@@ -50,6 +55,12 @@ export function Profile() {
       return
     }
     adminApi.isAdmin().then(setIsAdmin)
+  }, [user])
+
+  // Fetch follow counts
+  useEffect(() => {
+    if (!user) return
+    followsApi.getFollowCounts(user.id).then(setFollowCounts)
   }, [user])
 
   // Load remembered email on mount (for logged-out state)
@@ -249,6 +260,28 @@ export function Profile() {
                   {memberSince && ` · Since ${memberSince}`}
                 </p>
 
+                {/* Follow Stats */}
+                <div className="flex items-center gap-3 mt-2 text-sm">
+                  <button
+                    onClick={() => setFollowListModal('followers')}
+                    className="hover:underline"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {followCounts.followers}
+                    </span> followers
+                  </button>
+                  <button
+                    onClick={() => setFollowListModal('following')}
+                    className="hover:underline"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {followCounts.following}
+                    </span> following
+                  </button>
+                </div>
+
                 {/* Contributor Badge */}
                 {stats.totalVotes >= 10 && (
                   <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'color-mix(in srgb, var(--color-rating) 20%, white)', color: '#1A1A1A' }}>
@@ -278,6 +311,37 @@ export function Profile() {
                 </div>
               </div>
             )}
+
+            {/* Find Friends Section */}
+            <div className="mt-4">
+              <button
+                onClick={() => setShowFindFriends(!showFindFriends)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors"
+                style={{ background: 'var(--color-surface-elevated)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">👥</span>
+                  <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    Find Friends
+                  </span>
+                </div>
+                <svg
+                  className={`w-5 h-5 transition-transform ${showFindFriends ? 'rotate-180' : ''}`}
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showFindFriends && (
+                <div className="mt-3">
+                  <UserSearch onClose={() => setShowFindFriends(false)} />
+                </div>
+              )}
+            </div>
 
             {/* Achievements Section */}
             {!badgesLoading && badges.length > 0 && (
@@ -465,6 +529,15 @@ export function Profile() {
           {/* Login Modal */}
           {showLoginModal && (
             <LoginModal onClose={() => setShowLoginModal(false)} />
+          )}
+
+          {/* Follow List Modal */}
+          {followListModal && (
+            <FollowListModal
+              userId={user.id}
+              type={followListModal}
+              onClose={() => setFollowListModal(null)}
+            />
           )}
 
           {/* Settings */}

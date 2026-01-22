@@ -96,7 +96,7 @@ export const dishesApi = {
         )
       `)
       .eq('restaurants.is_open', true)
-      .ilike('name', `%${query}%`)
+      .or(`name.ilike.%${query}%,category.ilike.%${query}%`)
       .order('avg_rating', { ascending: false, nullsFirst: false })
       .limit(limit)
 

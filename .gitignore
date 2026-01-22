@@ -30,3 +30,6 @@ restaurant-presentation.html
 presentation-style-1-corporate.html
 presentation-style-2-dashboard.html
 presentation-style-3-friendly.html
+
+# Local Netlify folder
+.netlify

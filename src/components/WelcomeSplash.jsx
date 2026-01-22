@@ -1,160 +1,124 @@
 import { useState, useEffect } from 'react'
 
-const STORAGE_KEY = 'wgh_has_seen_splash'
+const STORAGE_KEY = 'wgh-splash-seen'
 
-const SLIDES = [
-  {
-    id: 'purpose-1',
-    emoji: '🍽️',
-    headline: 'At a restaurant?',
-    subhead: 'Find the best thing on the menu.',
-    description: 'See what dishes are actually worth ordering, ranked by real people.',
-  },
-  {
-    id: 'purpose-2',
-    emoji: '🔍',
-    headline: 'Craving something?',
-    subhead: 'Find the best version near you.',
-    description: 'Best pizza, burger, lobster roll — we\'ll show you where to go.',
-  },
-  {
-    id: 'how-it-works',
-    emoji: '👍',
-    headline: 'Tried something?',
-    subhead: 'Vote and help others decide.',
-    description: 'Your votes help rank every dish. The more you vote, the better it gets.',
-  },
-]
+export function WelcomeSplash({ onComplete }) {
+  const [phase, setPhase] = useState('pre-entry')
+  const [shouldShow, setShouldShow] = useState(false)
 
-/**
- * WelcomeSplash - Multi-step welcome for first-time visitors
- * Explains the two core purposes + how voting works
- */
-export function WelcomeSplash() {
-  const [isVisible, setIsVisible] = useState(false)
-  const [isFading, setIsFading] = useState(false)
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [slideDirection, setSlideDirection] = useState('next')
-
-  // Check if user has seen splash before
   useEffect(() => {
+    // Check localStorage - only show once ever (first time only)
     try {
-      const hasSeenSplash = localStorage.getItem(STORAGE_KEY)
-      if (!hasSeenSplash) {
-        setIsVisible(true)
+      const seen = localStorage.getItem(STORAGE_KEY)
+      if (seen) {
+        onComplete?.()
+        return
       }
-    } catch {
-      // localStorage unavailable, show splash anyway
-      setIsVisible(true)
+    } catch (error) {
+      // localStorage not available, show splash anyway
     }
-  }, [])
 
-  const handleDismiss = () => {
-    setIsFading(true)
-    setTimeout(() => {
+    setShouldShow(true)
+    const timers = []
+
+    // Animation timeline
+    timers.push(setTimeout(() => setPhase('glow-in'), 300))      // Image fades in with glow
+    timers.push(setTimeout(() => setPhase('glow-peak'), 1000))   // Glow intensifies
+    timers.push(setTimeout(() => setPhase('settle'), 1500))      // Glow settles, slight scale
+    timers.push(setTimeout(() => setPhase('tagline'), 2000))     // Tagline appears
+    timers.push(setTimeout(() => setPhase('done'), 3000))        // Hold for a moment
+    timers.push(setTimeout(() => setPhase('fade-out'), 3300))    // Fade out splash
+    timers.push(setTimeout(() => {
       try {
         localStorage.setItem(STORAGE_KEY, 'true')
-      } catch {
-        // localStorage unavailable
+      } catch (error) {
+        // localStorage not available
       }
-      setIsVisible(false)
-    }, 400)
-  }
+      setShouldShow(false)
+      onComplete?.()
+    }, 3800))
 
-  const handleNext = () => {
-    if (currentSlide < SLIDES.length - 1) {
-      setSlideDirection('next')
-      setCurrentSlide(currentSlide + 1)
-    } else {
-      handleDismiss()
+    return () => timers.forEach(clearTimeout)
+  }, [onComplete])
+
+  if (!shouldShow) return null
+
+  const isVisible = phase !== 'pre-entry'
+  const isGlowPeak = phase === 'glow-peak'
+  const isSettled = phase === 'settle' || phase === 'tagline' || phase === 'done'
+  const showTagline = phase === 'tagline' || phase === 'done'
+  const isFadingOut = phase === 'fade-out'
+
+  const handleClick = () => {
+    if (isVisible && !isFadingOut) {
+      try {
+        localStorage.setItem(STORAGE_KEY, 'true')
+      } catch (error) {
+        // localStorage not available
+      }
+      setShouldShow(false)
+      onComplete?.()
     }
   }
-
-  const handleBack = () => {
-    if (currentSlide > 0) {
-      setSlideDirection('prev')
-      setCurrentSlide(currentSlide - 1)
-    }
-  }
-
-  const handleSkip = () => {
-    handleDismiss()
-  }
-
-  if (!isVisible) return null
-
-  const slide = SLIDES[currentSlide]
-  const isLastSlide = currentSlide === SLIDES.length - 1
 
   return (
     <div
-      className={`welcome-splash ${isFading ? 'welcome-splash--fading' : ''}`}
-      role="dialog"
-      aria-label="Welcome to What's Good Here"
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center transition-opacity duration-500 cursor-pointer"
+      style={{
+        background: '#121212',
+        opacity: isFadingOut ? 0 : 1,
+      }}
+      onClick={handleClick}
     >
-      <div className="welcome-splash__content">
-        {/* Progress dots */}
-        <div className="welcome-splash__progress">
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setSlideDirection(i > currentSlide ? 'next' : 'prev')
-                setCurrentSlide(i)
-              }}
-              className={`welcome-splash__dot ${i === currentSlide ? 'welcome-splash__dot--active' : ''}`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Slide content */}
-        <div
-          key={slide.id}
-          className={`welcome-splash__slide welcome-splash__slide--${slideDirection}`}
-        >
-          {/* Emoji icon */}
-          <div className="welcome-splash__icon">
-            <span className="welcome-splash__emoji">{slide.emoji}</span>
-          </div>
-
-          {/* Headlines */}
-          <h1 className="welcome-splash__headline">{slide.headline}</h1>
-          <p className="welcome-splash__subhead">{slide.subhead}</p>
-          <p className="welcome-splash__description">{slide.description}</p>
-        </div>
-
-        {/* Navigation buttons */}
-        <div className="welcome-splash__nav">
-          {currentSlide > 0 ? (
-            <button
-              onClick={handleBack}
-              className="welcome-splash__btn welcome-splash__btn--secondary"
-            >
-              Back
-            </button>
-          ) : (
-            <button
-              onClick={handleSkip}
-              className="welcome-splash__btn welcome-splash__btn--skip"
-            >
-              Skip
-            </button>
-          )}
-
-          <button
-            onClick={handleNext}
-            className="welcome-splash__btn welcome-splash__btn--primary"
-          >
-            {isLastSlide ? "Let's go!" : 'Next'}
-          </button>
-        </div>
-
-        {/* Slide counter */}
-        <p className="welcome-splash__counter">
-          {currentSlide + 1} of {SLIDES.length}
-        </p>
+      {/* Main WGH Image */}
+      <div
+        className="transition-all ease-out"
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible
+            ? isSettled
+              ? 'scale(0.95)'
+              : 'scale(1)'
+            : 'scale(0.9)',
+          filter: isGlowPeak
+            ? 'drop-shadow(0 0 40px rgba(244, 162, 97, 0.8)) drop-shadow(0 0 80px rgba(244, 162, 97, 0.4))'
+            : isSettled
+              ? 'drop-shadow(0 0 25px rgba(244, 162, 97, 0.5)) drop-shadow(0 0 50px rgba(244, 162, 97, 0.2))'
+              : 'drop-shadow(0 0 30px rgba(244, 162, 97, 0.6))',
+          transitionDuration: isGlowPeak ? '500ms' : '700ms',
+        }}
+      >
+        <img
+          src="/wgh-splash.png"
+          alt="What's Good Here"
+          className="w-[320px] md:w-[420px] lg:w-[500px] h-auto"
+          draggable={false}
+        />
       </div>
+
+      {/* Tagline */}
+      <p
+        className="mt-6 text-sm md:text-base transition-all duration-500"
+        style={{
+          color: 'rgba(244, 162, 97, 0.8)',
+          opacity: showTagline ? 1 : 0,
+          transform: showTagline ? 'translateY(0)' : 'translateY(10px)',
+        }}
+      >
+        Discover the best dishes on Martha's Vineyard
+      </p>
+
+      {/* Tap to continue hint */}
+      <p
+        className="absolute bottom-10 text-xs transition-all duration-700"
+        style={{
+          color: 'rgba(244, 162, 97, 0.4)',
+          opacity: showTagline ? 1 : 0,
+          transform: showTagline ? 'translateY(0)' : 'translateY(10px)',
+        }}
+      >
+        Tap anywhere to continue
+      </p>
     </div>
   )
 }

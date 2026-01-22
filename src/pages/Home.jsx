@@ -80,63 +80,13 @@ export function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
-      {/* Header */}
-      <header className="py-3" style={{ background: 'var(--color-bg)' }}>
-        <div className="flex justify-center">
-          {/* Logo in scalloped plate frame - matches category icons */}
-          <div
-            className="relative w-[112px] h-[112px] md:w-[134px] md:h-[134px] lg:w-[156px] lg:h-[156px]"
-            style={{
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
-            }}
-          >
-            {/* Outer plate edge */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #252525 100%)',
-                clipPath: `polygon(
-                  50% 0%, 68% 2%, 80% 10%, 95% 20%, 100% 35%, 100% 50%,
-                  100% 65%, 95% 80%, 80% 90%, 68% 98%, 50% 100%,
-                  32% 98%, 20% 90%, 5% 80%, 0% 65%, 0% 50%,
-                  0% 35%, 5% 20%, 20% 10%, 32% 2%
-                )`,
-              }}
-            />
-            {/* Inner rim */}
-            <div
-              className="absolute inset-[4%]"
-              style={{
-                background: 'linear-gradient(145deg, #333 0%, #222 100%)',
-                clipPath: `polygon(
-                  50% 0%, 68% 2%, 80% 10%, 95% 20%, 100% 35%, 100% 50%,
-                  100% 65%, 95% 80%, 80% 90%, 68% 98%, 50% 100%,
-                  32% 98%, 20% 90%, 5% 80%, 0% 65%, 0% 50%,
-                  0% 35%, 5% 20%, 20% 10%, 32% 2%
-                )`,
-              }}
-            />
-            {/* Logo inside plate */}
-            <div
-              className="absolute inset-[8%] overflow-hidden flex items-center justify-center"
-              style={{
-                background: '#121212',
-                clipPath: `polygon(
-                  50% 0%, 68% 2%, 80% 10%, 95% 20%, 100% 35%, 100% 50%,
-                  100% 65%, 95% 80%, 80% 90%, 68% 98%, 50% 100%,
-                  32% 98%, 20% 90%, 5% 80%, 0% 65%, 0% 50%,
-                  0% 35%, 5% 20%, 20% 10%, 32% 2%
-                )`,
-              }}
-            >
-              <img
-                src="/logo.png"
-                alt="What's Good Here"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
+      {/* Header - hero logo with presence */}
+      <header className="px-4 pt-8 pb-4 flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <img
+          src="/logo.png"
+          alt="What's Good Here"
+          className="h-[100px] md:h-[120px] lg:h-[140px] w-auto object-contain"
+        />
       </header>
 
       {/* Location Picker */}
@@ -154,7 +104,7 @@ export function Home() {
 
       {/* Search Bar */}
       <div className="px-4 py-3" style={{ background: 'var(--color-bg)' }}>
-        <DishSearch dishes={dishes} loading={loading} />
+        <DishSearch loading={loading} />
         <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
           Real votes from real guests. Make better decisions.
         </p>

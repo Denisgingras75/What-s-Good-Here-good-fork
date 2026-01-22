@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import posthog from 'posthog-js'
 import { useAuth } from '../context/AuthContext'
-import { dishesApi } from '../api'
+import { dishesApi, followsApi } from '../api'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { useSavedDishes } from '../hooks/useSavedDishes'
 import { ReviewFlow } from '../components/ReviewFlow'
@@ -28,6 +28,7 @@ export function Dish() {
   const [showAllPhotos, setShowAllPhotos] = useState(false)
   const [lightboxPhoto, setLightboxPhoto] = useState(null)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [friendsVotes, setFriendsVotes] = useState([])
 
   const { isSaved, toggleSave } = useSavedDishes(user?.id)
 
@@ -84,6 +85,21 @@ export function Dish() {
 
     fetchDish()
   }, [dishId])
+
+  // Fetch friends' votes for this dish
+  useEffect(() => {
+    if (!dishId || !user) {
+      setFriendsVotes([])
+      return
+    }
+
+    const fetchFriendsVotes = async () => {
+      const votes = await followsApi.getFriendsVotesForDish(dishId)
+      setFriendsVotes(votes)
+    }
+
+    fetchFriendsVotes()
+  }, [dishId, user])
 
   // Fetch photos
   useEffect(() => {
@@ -345,6 +361,50 @@ export function Dish() {
                 }
               </p>
             </div>
+
+            {/* Friends who rated this */}
+            {friendsVotes.length > 0 && (
+              <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}>
+                <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
+                  Friends who rated this
+                </h3>
+                <div className="space-y-3">
+                  {friendsVotes.map((vote) => (
+                    <Link
+                      key={vote.user_id}
+                      to={`/user/${vote.user_id}`}
+                      className="flex items-center gap-3 p-2 -mx-2 rounded-lg transition-colors hover:bg-[color:var(--color-surface-elevated)]"
+                    >
+                      {/* Avatar */}
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                        style={{ background: 'var(--color-primary)' }}
+                      >
+                        {vote.display_name?.charAt(0).toUpperCase() || '?'}
+                      </div>
+
+                      {/* Name and verdict */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                          {vote.display_name || 'Anonymous'}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                          {vote.would_order_again ? '👍 Would order again' : '👎 Would skip'}
+                        </p>
+                      </div>
+
+                      {/* Rating */}
+                      <div className="text-right">
+                        <span className="text-lg font-bold" style={{ color: getRatingColor(vote.rating_10) }}>
+                          {vote.rating_10}
+                        </span>
+                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Community Photos */}
             {displayPhotos.length > 0 && (

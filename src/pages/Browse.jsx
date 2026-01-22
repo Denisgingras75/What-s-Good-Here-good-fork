@@ -170,9 +170,13 @@ export function Browse() {
   // Only fetch dishes when we have a category selected OR when searching
   const shouldFetchDishes = selectedCategory || debouncedSearchQuery.trim()
 
+  // When text searching, use island-wide radius (30 miles covers all of MV)
+  // so users can find dishes regardless of their location
+  const searchRadius = debouncedSearchQuery.trim() ? 30 : radius
+
   const { dishes, loading, error, refetch } = useDishes(
     shouldFetchDishes ? location : null, // Pass null location to skip fetch
-    radius,
+    searchRadius,
     debouncedSearchQuery.trim() ? null : selectedCategory, // Search across all categories
     null
   )
@@ -289,7 +293,8 @@ export function Browse() {
       const query = debouncedSearchQuery.toLowerCase()
       return (
         dish.dish_name?.toLowerCase().includes(query) ||
-        dish.restaurant_name?.toLowerCase().includes(query)
+        dish.restaurant_name?.toLowerCase().includes(query) ||
+        dish.category?.toLowerCase().includes(query)
       )
     })
 
@@ -468,39 +473,31 @@ export function Browse() {
             }}
           />
 
-          {/* Reservation card style header */}
-          <div className="flex justify-center mb-6">
-            <div
-              className="px-6 py-1.5 rounded-sm"
-              style={{
-                background: 'transparent',
-                border: '1px solid rgba(244, 162, 97, 0.4)',
-                boxShadow: '0 0 12px rgba(244, 162, 97, 0.1)',
-              }}
+          {/* Section title - anchors the grid */}
+          <div className="flex justify-center pt-4 pb-10">
+            <span
+              className="text-[11px] font-semibold tracking-[0.2em] uppercase"
+              style={{ color: 'rgba(255, 255, 255, 0.45)' }}
             >
-              <span
-                className="text-[11px] font-medium tracking-[0.2em] uppercase"
-                style={{ color: 'var(--color-primary)' }}
-              >
-                Categories
-              </span>
-            </div>
+              Categories
+            </span>
           </div>
 
-          {/* Category grid - 12 items, 4 rows of 3 */}
-          <div className="grid grid-cols-3 gap-x-6 gap-y-5">
+          {/* Category grid - 12 items, 4 rows of 3, shelf-like rhythm */}
+          <div className="grid grid-cols-3 gap-x-4 gap-y-7 justify-items-center">
             {CATEGORIES.map((category) => (
               <CategoryImageCard
                 key={category.id}
                 category={category}
                 isActive={selectedCategory === category.id}
                 onClick={() => handleCategoryChange(category.id)}
+                size={72}
               />
             ))}
           </div>
 
-          {/* Search bar at bottom - matches Home page style */}
-          <div className="mt-auto pt-4">
+          {/* Search bar - escape hatch, visually separate from categories */}
+          <div className="mt-auto pt-10">
             <div className="relative">
               <div
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
