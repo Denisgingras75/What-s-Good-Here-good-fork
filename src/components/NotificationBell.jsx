@@ -63,6 +63,8 @@ export function NotificationBell() {
       if (unreadCount > 0) {
         await notificationsApi.markAllAsRead()
         setUnreadCount(0)
+        // Update local notifications to show as read
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       }
     }
   }

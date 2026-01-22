@@ -36,15 +36,18 @@ export const notificationsApi = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return 0
 
-    const { data, error } = await supabase
-      .rpc('get_unread_notification_count', { p_user_id: user.id })
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('read', false)
 
     if (error) {
       console.error('Error fetching unread count:', error)
       return 0
     }
 
-    return data || 0
+    return count || 0
   },
 
   /**
@@ -56,7 +59,10 @@ export const notificationsApi = {
     if (!user) return false
 
     const { error } = await supabase
-      .rpc('mark_all_notifications_read', { p_user_id: user.id })
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.id)
+      .eq('read', false)
 
     if (error) {
       console.error('Error marking notifications as read:', error)
