@@ -126,8 +126,8 @@ export function NotificationBell() {
       {/* Dropdown */}
       {showDropdown && (
         <div
-          className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl shadow-xl border z-50"
-          style={{ background: 'var(--color-bg)', borderColor: 'var(--color-divider)' }}
+          className="fixed top-14 right-4 w-80 max-h-96 overflow-y-auto rounded-xl shadow-xl border z-50"
+          style={{ background: 'var(--color-surface-elevated)', borderColor: 'rgba(255,255,255,0.1)' }}
         >
           {/* Header */}
           <div
