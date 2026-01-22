@@ -5,6 +5,62 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ---
 
+## 2026-01-22 - Daniel + Claude
+
+### Social Features - Major Overhaul
+Complete social system replacing global leaderboards with friend-based discovery:
+
+#### Follows System
+- Created `follows` table with one-way Twitter-style following
+- Denormalized `follower_count` and `following_count` on profiles for performance
+- Database trigger auto-updates counts on follow/unfollow
+- Created `followsApi.js` with follow/unfollow/isFollowing methods
+
+#### Public User Profiles (`/user/:id`)
+- New `UserProfile.jsx` page showing any user's public profile
+- Stats: dishes rated, Worth It count, Avoid count, avg rating
+- Rating personality based on avg rating (Loves Everything, Generous Rater, Fair Judge, Tough Critic)
+- Recent ratings with dish photos and community comparison
+- Follow/unfollow button with real-time count updates
+
+#### User Search
+- `UserSearch.jsx` component with debounced search
+- Search users by display name
+- Shows follower count, follow status, quick follow button
+- Expandable "Find Friends" section on Profile page
+
+#### Followers/Following Modal
+- `FollowListModal.jsx` shows full lists when tapping follower/following counts
+- Click any user to visit their profile
+
+#### In-App Notifications
+- `notifications` table with trigger on new follows
+- `NotificationBell.jsx` with unread count badge (polls every 30s)
+- Dropdown showing recent notifications
+- Auto-marks as read when viewed
+
+#### Rating Comparisons on Friend Profiles
+- When viewing a friend's recent ratings, shows your rating of the same dish
+- Shows community average with delta (how friend rated vs community)
+- "You: 8/10 (+2)" style comparison
+
+#### Bug Fixes
+- Fixed floating point display errors (was showing "-0.6000000000000005")
+- Added `Math.round((value) * 10) / 10` for clean decimal display
+- Share button now only shows on your OWN profile, not others'
+- Fixed `badge_key` → `key` mapping for badges on friend profiles
+
+#### Database Migrations
+- `add-follows-table.sql` - follows table, triggers, RPC functions
+- `add-notifications.sql` - notifications table and follow trigger
+
+#### Known Issues Being Fixed
+- Badges showing on friend profiles (data is there, rendering issue)
+- Historical follow counts need manual sync (trigger added after some follows existed)
+- Historical badges need evaluation for existing users
+
+---
+
 ## 2025-01-20 - Daniel
 
 ### Dark Mode Overhaul
