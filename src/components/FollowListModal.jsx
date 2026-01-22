@@ -40,14 +40,21 @@ export function FollowListModal({ userId, type, onClose }) {
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md rounded-2xl overflow-hidden flex flex-col"
-        style={{ background: 'var(--color-bg)', maxHeight: 'calc(100vh - 120px)' }}
+        className="relative w-full max-w-md rounded-2xl overflow-hidden flex flex-col shadow-2xl border"
+        style={{
+          background: 'var(--color-surface-elevated)',
+          maxHeight: 'calc(100vh - 120px)',
+          borderColor: 'rgba(255,255,255,0.1)'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-4 py-3 border-b"
-          style={{ borderColor: 'var(--color-divider)' }}
+          className="flex items-center justify-between px-4 py-4 border-b"
+          style={{
+            borderColor: 'rgba(255,255,255,0.1)',
+            background: 'rgba(244, 162, 97, 0.08)'
+          }}
         >
           <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
             {title}
@@ -82,15 +89,12 @@ export function FollowListModal({ userId, type, onClose }) {
               </p>
             </div>
           ) : (
-            <div className="divide-y" style={{ borderColor: 'var(--color-divider)' }}>
+            <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               {users.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => handleUserClick(user)}
-                  className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left"
-                  style={{ background: 'var(--color-bg)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg)'}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 transition-all text-left hover:bg-white/5 active:scale-[0.99]"
                 >
                   {/* Avatar */}
                   <div
