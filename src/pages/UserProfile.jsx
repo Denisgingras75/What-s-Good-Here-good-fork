@@ -407,28 +407,18 @@ function RecentVoteCard({ vote, myRating }) {
         <p className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>
           {dish.restaurant_name}
         </p>
-        {/* Community average with delta */}
+        {/* Community average */}
         {communityAvg && (
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-            Community: {communityAvg.toFixed(1)}
-            {communityDelta !== null && communityDelta !== 0 && (
-              <span style={{ color: communityDelta > 0 ? '#10b981' : '#ef4444', marginLeft: 4 }}>
-                ({communityDelta > 0 ? '+' : ''}{communityDelta.toFixed(1)})
-              </span>
-            )}
+          <p className="text-xs mt-0.5">
+            <span style={{ color: 'var(--color-text-tertiary)' }}>Community: </span>
+            <span style={{ color: getRatingColor(communityAvg) }}>{communityAvg.toFixed(1)}</span>
           </p>
         )}
         {/* Show if you also rated this */}
         {hasMyRating && (
-          <p className="text-xs mt-0.5 font-medium">
-            <span style={{ color: 'var(--color-text-secondary)' }}>You: </span>
+          <p className="text-xs mt-0.5">
+            <span style={{ color: 'var(--color-text-tertiary)' }}>You: </span>
             <span style={{ color: getRatingColor(myRatingNum) }}>{myRatingNum}</span>
-            {myRatingNum !== theirRating && (
-              <span style={{ color: myRatingNum > theirRating ? '#10b981' : '#ef4444', marginLeft: 4 }}>
-                ({myRatingNum > theirRating ? '+' : ''}{Math.round((myRatingNum - theirRating) * 10) / 10})
-              </span>
-            )}
-            {myRatingNum === theirRating && <span style={{ color: 'var(--color-primary)', marginLeft: 4 }}>(Same!)</span>}
           </p>
         )}
       </div>
