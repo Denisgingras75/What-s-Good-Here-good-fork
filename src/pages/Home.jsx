@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
+import { useProfile } from '../hooks/useProfile'
 import { LocationPicker } from '../components/LocationPicker'
 import { DishSearch } from '../components/DishSearch'
 import { getCategoryImage } from '../constants/categoryImages'
@@ -19,6 +21,9 @@ const FEATURED_CATEGORIES = [
 
 export function Home() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { profile } = useProfile(user?.id)
+  const [top10Tab, setTop10Tab] = useState('mv') // 'mv' or 'personal'
 
   const {
     location,
@@ -77,6 +82,32 @@ export function Home() {
       return (b.avg_rating || 0) - (a.avg_rating || 0)
     }).slice(0, 10)
   }, [dishes])
+
+  // Personal Top 10 based on user's preferred categories
+  const personalTop10Dishes = useMemo(() => {
+    if (!dishes?.length || !profile?.preferred_categories?.length) return []
+
+    const preferredCats = profile.preferred_categories.map(c => c.toLowerCase())
+
+    return dishes
+      .filter(dish => preferredCats.includes(dish.category?.toLowerCase()))
+      .toSorted((a, b) => {
+        const aRanked = (a.total_votes || 0) >= MIN_VOTES_FOR_RANKING
+        const bRanked = (b.total_votes || 0) >= MIN_VOTES_FOR_RANKING
+        if (aRanked && !bRanked) return -1
+        if (!aRanked && bRanked) return 1
+        return (b.avg_rating || 0) - (a.avg_rating || 0)
+      })
+      .slice(0, 10)
+  }, [dishes, profile?.preferred_categories])
+
+  // Whether to show the toggle (user is logged in and has preferences)
+  const showPersonalToggle = user && profile?.preferred_categories?.length > 0
+
+  // Which dishes to show in sidebar based on active tab
+  const activeDishes = top10Tab === 'personal' && showPersonalToggle
+    ? personalTop10Dishes
+    : top10Dishes
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
@@ -185,8 +216,13 @@ export function Home() {
             </div>
 
             {/* Right: Top 10 Sidebar (desktop) / Below (mobile) */}
-            {top10Dishes.length > 0 && (
-              <Top10Sidebar dishes={top10Dishes} />
+            {activeDishes.length > 0 && (
+              <Top10Sidebar
+                dishes={activeDishes}
+                showToggle={showPersonalToggle}
+                activeTab={top10Tab}
+                onTabChange={setTop10Tab}
+              />
             )}
           </div>
         )}
@@ -367,7 +403,7 @@ function CategorySkeleton() {
 }
 
 // Top 10 Sidebar
-function Top10Sidebar({ dishes }) {
+function Top10Sidebar({ dishes, showToggle, activeTab, onTabChange }) {
   const navigate = useNavigate()
 
   return (
@@ -379,18 +415,65 @@ function Top10Sidebar({ dishes }) {
           border: '1px solid var(--color-divider)',
         }}
       >
-        <h3 className="font-bold text-base mb-4" style={{ color: 'var(--color-text-primary)' }}>
-          Top 10 on the Island
-        </h3>
+        {/* Toggle Buttons (only when user has preferences) */}
+        {showToggle ? (
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => onTabChange('mv')}
+              className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === 'mv' ? 'shadow-md' : ''
+              }`}
+              style={{
+                background: activeTab === 'mv' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
+                color: activeTab === 'mv' ? 'white' : 'var(--color-text-secondary)',
+              }}
+            >
+              MV Top 10
+            </button>
+            <button
+              onClick={() => onTabChange('personal')}
+              className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === 'personal' ? 'shadow-md' : ''
+              }`}
+              style={{
+                background: activeTab === 'personal' ? '#FCD34D' : 'var(--color-surface-elevated)',
+                color: activeTab === 'personal' ? '#1F1F1F' : 'var(--color-text-secondary)',
+              }}
+            >
+              My Top 10
+            </button>
+          </div>
+        ) : (
+          <h3 className="font-bold text-base mb-4" style={{ color: 'var(--color-text-primary)' }}>
+            Top 10 on the Island
+          </h3>
+        )}
+
+        {/* Dishes list */}
         <div className="space-y-1">
-          {dishes.map((dish, index) => (
-            <Top10Row
-              key={dish.dish_id}
-              dish={dish}
-              rank={index + 1}
-              onClick={() => navigate(`/dish/${dish.dish_id}`)}
-            />
-          ))}
+          {dishes.length > 0 ? (
+            dishes.map((dish, index) => (
+              <Top10Row
+                key={dish.dish_id}
+                dish={dish}
+                rank={index + 1}
+                onClick={() => navigate(`/dish/${dish.dish_id}`)}
+              />
+            ))
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                No dishes found in your categories yet
+              </p>
+              <button
+                onClick={() => navigate('/profile')}
+                className="mt-2 text-xs font-medium"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                Edit favorites →
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </aside>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useProfile } from '../../hooks/useProfile'
+import { CategoryPicker } from '../CategoryPicker'
 import posthog from 'posthog-js'
 
 const STEPS = [
@@ -25,6 +26,13 @@ const STEPS = [
     subtitle: 'Join the community',
     description: null,
   },
+  {
+    id: 'favorites',
+    emoji: '❤️',
+    title: 'Pick your favorites',
+    subtitle: 'We\'ll build your personal Top 10',
+    description: 'Choose up to 3 categories you love most.',
+  },
 ]
 
 export function WelcomeModal() {
@@ -32,6 +40,7 @@ export function WelcomeModal() {
   const { profile, updateProfile, loading } = useProfile(user?.id)
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState([])
   const [saving, setSaving] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -58,24 +67,43 @@ export function WelcomeModal() {
     }
   }
 
-  const handleSubmit = async (e) => {
+  // Handle name step submission - moves to favorites
+  const handleNameSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) return
+    // Save name and move to favorites step
+    await updateProfile({ display_name: name.trim() })
+    setStep(step + 1)
+  }
 
+  const handleSkipName = () => {
+    // Move to favorites without setting name
+    setStep(step + 1)
+  }
+
+  // Final submit on favorites step
+  const handleFinish = async () => {
     setSaving(true)
     await updateProfile({
-      display_name: name.trim(),
-      has_onboarded: true
+      has_onboarded: true,
+      preferred_categories: selectedCategories,
     })
-    posthog.capture('onboarding_completed', { name_set: true })
+    posthog.capture('onboarding_completed', {
+      name_set: !!name.trim(),
+      categories_selected: selectedCategories.length,
+      categories: selectedCategories,
+    })
     setSaving(false)
     setIsOpen(false)
   }
 
-  const handleSkipName = async () => {
+  const handleSkipFavorites = async () => {
     setSaving(true)
     await updateProfile({ has_onboarded: true })
-    posthog.capture('onboarding_completed', { name_set: false })
+    posthog.capture('onboarding_completed', {
+      name_set: !!name.trim(),
+      categories_selected: 0,
+    })
     setSaving(false)
     setIsOpen(false)
   }
@@ -84,6 +112,7 @@ export function WelcomeModal() {
 
   const currentStep = STEPS[step]
   const isNameStep = currentStep.id === 'name'
+  const isFavoritesStep = currentStep.id === 'favorites'
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 animate-fade-in-up">
@@ -158,9 +187,9 @@ export function WelcomeModal() {
             </div>
           )}
 
-          {/* Name input - only on last step */}
+          {/* Name input step */}
           {isNameStep ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleNameSubmit} className="space-y-4">
               <input
                 type="text"
                 value={name}
@@ -172,21 +201,44 @@ export function WelcomeModal() {
               />
               <button
                 type="submit"
-                disabled={saving || !name.trim()}
+                disabled={!name.trim()}
                 className="w-full px-6 py-4 text-white font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
                 style={{ background: 'var(--color-primary)' }}
               >
-                {saving ? 'Saving...' : "Let's go! 🎉"}
+                Continue
               </button>
               <button
                 type="button"
                 onClick={handleSkipName}
-                disabled={saving}
                 className="w-full py-2 text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
               >
                 Skip for now
               </button>
             </form>
+          ) : isFavoritesStep ? (
+            <div className="space-y-4">
+              <CategoryPicker
+                selectedCategories={selectedCategories}
+                onSelectionChange={setSelectedCategories}
+                showHeader={false}
+              />
+              <button
+                onClick={handleFinish}
+                disabled={saving}
+                className="w-full px-6 py-4 text-white font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+                style={{ background: 'var(--color-primary)' }}
+              >
+                {saving ? 'Saving...' : selectedCategories.length > 0 ? "Let's go! 🎉" : "Let's go!"}
+              </button>
+              <button
+                type="button"
+                onClick={handleSkipFavorites}
+                disabled={saving}
+                className="w-full py-2 text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                Skip for now
+              </button>
+            </div>
           ) : (
             <div className="space-y-3">
               <button

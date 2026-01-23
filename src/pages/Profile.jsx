@@ -11,12 +11,14 @@ import { useUnratedDishes } from '../hooks/useUnratedDishes'
 import { useBadges } from '../hooks/useBadges'
 import { isSoundMuted, toggleSoundMute } from '../lib/sounds'
 import { getCategoryImage } from '../constants/categoryImages'
+import { getCategoryById } from '../constants/categories'
 import { PHOTO_TIERS_LIST } from '../constants/photoQuality'
 import { DishModal } from '../components/DishModal'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { UserSearch } from '../components/UserSearch'
 import { FollowListModal } from '../components/FollowListModal'
 import { ProfileSkeleton } from '../components/Skeleton'
+import { CategoryPicker } from '../components/CategoryPicker'
 
 const TABS = [
   { id: 'unrated', label: 'Unrated', emoji: '📷' },
@@ -51,6 +53,8 @@ export function Profile() {
   const [showFindFriends, setShowFindFriends] = useState(false)
   const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 })
   const [followListModal, setFollowListModal] = useState(null) // 'followers' | 'following' | null
+  const [editingFavorites, setEditingFavorites] = useState(false)
+  const [editedCategories, setEditedCategories] = useState([])
 
   // Check admin status from database (matches RLS policies)
   useEffect(() => {
@@ -618,10 +622,28 @@ export function Profile() {
                 <h2 className="font-semibold text-[color:var(--color-text-primary)]">Settings</h2>
               </div>
 
+              {/* Edit Favorites */}
+              <EditFavoritesSection
+                currentCategories={profile?.preferred_categories || []}
+                editing={editingFavorites}
+                editedCategories={editedCategories}
+                onStartEdit={() => {
+                  setEditedCategories(profile?.preferred_categories || [])
+                  setEditingFavorites(true)
+                }}
+                onCancelEdit={() => setEditingFavorites(false)}
+                onSave={async () => {
+                  await updateProfile({ preferred_categories: editedCategories })
+                  setEditingFavorites(false)
+                }}
+                onCategoriesChange={setEditedCategories}
+              />
+
               {/* Sound Toggle */}
               <button
                 onClick={handleToggleSound}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t"
+                style={{ borderColor: 'var(--color-divider)' }}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
@@ -1219,6 +1241,101 @@ function AchievementsSection({ badges }) {
               ))}
             </div>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Edit Favorites Section for personalized Top 10
+function EditFavoritesSection({
+  currentCategories,
+  editing,
+  editedCategories,
+  onStartEdit,
+  onCancelEdit,
+  onSave,
+  onCategoriesChange,
+}) {
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    await onSave()
+    setSaving(false)
+  }
+
+  // Get category info for display
+  const displayCategories = currentCategories.map(id => getCategoryById(id)).filter(Boolean)
+
+  return (
+    <div className="border-b" style={{ borderColor: 'var(--color-divider)' }}>
+      <button
+        onClick={editing ? null : onStartEdit}
+        className={`w-full px-4 py-3 flex items-center justify-between transition-colors ${
+          editing ? '' : 'hover:bg-[color:var(--color-surface-elevated)]'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
+            ❤️
+          </div>
+          <div className="text-left">
+            <span className="font-medium text-[color:var(--color-text-primary)]">Favorite Categories</span>
+            {!editing && displayCategories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {displayCategories.map(cat => (
+                  <span
+                    key={cat.id}
+                    className="text-xs px-1.5 py-0.5 rounded"
+                    style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
+                  >
+                    {cat.emoji} {cat.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            {!editing && displayCategories.length === 0 && (
+              <p className="text-xs text-[color:var(--color-text-tertiary)]">
+                Set your favorites for a personalized Top 10
+              </p>
+            )}
+          </div>
+        </div>
+        {!editing && (
+          <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        )}
+      </button>
+
+      {/* Expanded editor */}
+      {editing && (
+        <div className="px-4 pb-4">
+          <CategoryPicker
+            selectedCategories={editedCategories}
+            onSelectionChange={onCategoriesChange}
+            showHeader={true}
+            compact={true}
+          />
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 px-4 py-2 text-white font-medium rounded-xl transition-colors disabled:opacity-50"
+              style={{ background: 'var(--color-primary)' }}
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={onCancelEdit}
+              disabled={saving}
+              className="px-4 py-2 font-medium rounded-xl"
+              style={{ color: 'var(--color-text-secondary)', background: 'var(--color-surface-elevated)' }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>
