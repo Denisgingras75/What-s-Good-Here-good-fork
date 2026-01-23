@@ -17,10 +17,10 @@ export const votesApi = {
    */
   async submitVote({ dishId, wouldOrderAgain, rating10 = null }) {
     try {
-      // Check rate limit before processing
-      const rateLimit = checkVoteRateLimit()
-      if (!rateLimit.allowed) {
-        throw new Error(rateLimit.message)
+      // Quick client-side check first (better UX)
+      const clientRateLimit = checkVoteRateLimit()
+      if (!clientRateLimit.allowed) {
+        throw new Error(clientRateLimit.message)
       }
 
       // Check if user is authenticated
@@ -28,6 +28,16 @@ export const votesApi = {
 
       if (!user) {
         throw new Error('You must be logged in to vote')
+      }
+
+      // Server-side rate limit check (authoritative)
+      const { data: serverRateLimit, error: rateLimitError } = await supabase
+        .rpc('check_vote_rate_limit')
+
+      if (rateLimitError) {
+        // If server rate limit check fails, allow the vote (graceful degradation)
+      } else if (serverRateLimit && !serverRateLimit.allowed) {
+        throw new Error(serverRateLimit.message || 'Too many votes. Please wait.')
       }
 
       // Upsert vote with both fields
@@ -57,7 +67,6 @@ export const votesApi = {
 
       return { success: true }
     } catch (error) {
-      console.error('Error submitting vote:', error)
       throw error
     }
   },

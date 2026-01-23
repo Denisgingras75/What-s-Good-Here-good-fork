@@ -1,30 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { followsApi } from '../api'
 
 /**
- * Modal to display followers or following list
+ * Modal to display followers or following list with pagination
  */
 export function FollowListModal({ userId, type, onClose }) {
   const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [cursor, setCursor] = useState(null)
 
   const isFollowers = type === 'followers'
   const title = isFollowers ? 'Followers' : 'Following'
 
+  // Initial fetch
   useEffect(() => {
     async function fetchUsers() {
       setLoading(true)
       setError(null)
+      setUsers([])
+      setCursor(null)
       try {
-        const data = isFollowers
+        const result = isFollowers
           ? await followsApi.getFollowers(userId)
           : await followsApi.getFollowing(userId)
-        setUsers(data)
+        setUsers(result.users)
+        setHasMore(result.hasMore)
+        if (result.users.length > 0) {
+          setCursor(result.users[result.users.length - 1].followed_at)
+        }
       } catch (err) {
-        console.error('Failed to load users:', err)
         setError('Unable to load. Please try again.')
       } finally {
         setLoading(false)
@@ -32,6 +41,28 @@ export function FollowListModal({ userId, type, onClose }) {
     }
     fetchUsers()
   }, [userId, isFollowers])
+
+  // Load more handler
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !cursor) return
+
+    setLoadingMore(true)
+    try {
+      const result = isFollowers
+        ? await followsApi.getFollowers(userId, { cursor })
+        : await followsApi.getFollowing(userId, { cursor })
+
+      setUsers(prev => [...prev, ...result.users])
+      setHasMore(result.hasMore)
+      if (result.users.length > 0) {
+        setCursor(result.users[result.users.length - 1].followed_at)
+      }
+    } catch (err) {
+      // Silently fail on load more - user can retry
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [userId, isFollowers, cursor, hasMore, loadingMore])
 
   const handleUserClick = (user) => {
     onClose()
@@ -105,44 +136,74 @@ export function FollowListModal({ userId, type, onClose }) {
               </p>
             </div>
           ) : (
-            <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              {users.map((user) => (
-                <button
-                  key={user.id}
-                  onClick={() => handleUserClick(user)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 transition-all text-left hover:bg-white/5 active:scale-[0.99]"
-                >
-                  {/* Avatar */}
-                  <div
-                    className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-                    style={{ background: 'var(--color-primary)' }}
+            <div>
+              <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                {users.map((user) => (
+                  <button
+                    key={user.id}
+                    onClick={() => handleUserClick(user)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 transition-all text-left hover:bg-white/5 active:scale-[0.99]"
                   >
-                    {user.display_name?.charAt(0).toUpperCase() || '?'}
-                  </div>
+                    {/* Avatar */}
+                    <div
+                      className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                      style={{ background: 'var(--color-primary)' }}
+                    >
+                      {user.display_name?.charAt(0).toUpperCase() || '?'}
+                    </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
-                      {user.display_name || 'Anonymous'}
-                    </p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {user.follower_count || 0} followers
-                    </p>
-                  </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                        {user.display_name || 'Anonymous'}
+                      </p>
+                      <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {user.follower_count || 0} followers
+                      </p>
+                    </div>
 
-                  {/* Arrow */}
-                  <svg
-                    className="w-4 h-4 flex-shrink-0"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
+                    {/* Arrow */}
+                    <svg
+                      className="w-4 h-4 flex-shrink-0"
+                      style={{ color: 'var(--color-text-tertiary)' }}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {hasMore && (
+                <div className="p-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="w-full py-2.5 rounded-xl font-medium text-sm transition-all"
+                    style={{
+                      background: 'var(--color-primary)',
+                      color: 'white',
+                      opacity: loadingMore ? 0.7 : 1
+                    }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              ))}
+                    {loadingMore ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div
+                          className="w-4 h-4 border-2 rounded-full animate-spin"
+                          style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: 'white' }}
+                        />
+                        Loading...
+                      </span>
+                    ) : (
+                      'Load More'
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

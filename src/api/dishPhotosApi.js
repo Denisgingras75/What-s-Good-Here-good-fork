@@ -17,16 +17,26 @@ export const dishPhotosApi = {
    */
   async uploadPhoto({ dishId, file, analysisResults }) {
     try {
-      // Check rate limit before processing
-      const rateLimit = checkPhotoUploadRateLimit()
-      if (!rateLimit.allowed) {
-        throw new Error(rateLimit.message)
+      // Quick client-side check first (better UX)
+      const clientRateLimit = checkPhotoUploadRateLimit()
+      if (!clientRateLimit.allowed) {
+        throw new Error(clientRateLimit.message)
       }
 
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
         throw new Error('You must be logged in to upload photos')
+      }
+
+      // Server-side rate limit check (authoritative)
+      const { data: serverRateLimit, error: rateLimitError } = await supabase
+        .rpc('check_photo_upload_rate_limit')
+
+      if (rateLimitError) {
+        // If server rate limit check fails, allow the upload (graceful degradation)
+      } else if (serverRateLimit && !serverRateLimit.allowed) {
+        throw new Error(serverRateLimit.message || 'Too many uploads. Please wait.')
       }
 
       // Generate unique filename

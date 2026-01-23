@@ -86,103 +86,129 @@ export const followsApi = {
   },
 
   /**
-   * Get followers of a user
+   * Get followers of a user with cursor-based pagination
    * @param {string} userId - User ID
-   * @param {number} limit - Max results
-   * @returns {Promise<Array>}
+   * @param {Object} options - Pagination options
+   * @param {number} options.limit - Max results per page (default 20)
+   * @param {string} options.cursor - Cursor for pagination (created_at of last item)
+   * @returns {Promise<{users: Array, hasMore: boolean}>}
    */
-  async getFollowers(userId, limit = 50) {
+  async getFollowers(userId, { limit = 20, cursor = null } = {}) {
     try {
-      // Get follower IDs first
-      const { data: followData, error: followError } = await supabase
+      // Build query with cursor-based pagination
+      let query = supabase
         .from('follows')
         .select('follower_id, created_at')
         .eq('followed_id', userId)
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .limit(limit + 1) // Fetch one extra to check if there's more
+
+      // Apply cursor filter if provided
+      if (cursor) {
+        query = query.lt('created_at', cursor)
+      }
+
+      const { data: followData, error: followError } = await query
 
       if (followError) {
-        console.error('Error fetching followers:', followError)
         throw new Error('Failed to fetch followers')
       }
 
       if (!followData || followData.length === 0) {
-        return []
+        return { users: [], hasMore: false }
       }
 
+      // Check if there are more results
+      const hasMore = followData.length > limit
+      const results = hasMore ? followData.slice(0, limit) : followData
+
       // Get profile info for each follower
-      const followerIds = followData.map(f => f.follower_id)
+      const followerIds = results.map(f => f.follower_id)
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, display_name, follower_count')
         .in('id', followerIds)
 
       if (profileError) {
-        console.error('Error fetching follower profiles:', profileError)
+        // Continue without profile data
       }
 
       const profileMap = {}
       ;(profiles || []).forEach(p => { profileMap[p.id] = p })
 
-      return followData.map(f => ({
+      const users = results.map(f => ({
         id: f.follower_id,
         display_name: profileMap[f.follower_id]?.display_name || 'Anonymous',
         follower_count: profileMap[f.follower_id]?.follower_count || 0,
         followed_at: f.created_at,
       }))
+
+      return { users, hasMore }
     } catch (err) {
-      console.error('Unexpected error in getFollowers:', err)
       throw err
     }
   },
 
   /**
-   * Get users that a user follows
+   * Get users that a user follows with cursor-based pagination
    * @param {string} userId - User ID
-   * @param {number} limit - Max results
-   * @returns {Promise<Array>}
+   * @param {Object} options - Pagination options
+   * @param {number} options.limit - Max results per page (default 20)
+   * @param {string} options.cursor - Cursor for pagination (created_at of last item)
+   * @returns {Promise<{users: Array, hasMore: boolean}>}
    */
-  async getFollowing(userId, limit = 50) {
+  async getFollowing(userId, { limit = 20, cursor = null } = {}) {
     try {
-      // Get followed IDs first
-      const { data: followData, error: followError } = await supabase
+      // Build query with cursor-based pagination
+      let query = supabase
         .from('follows')
         .select('followed_id, created_at')
         .eq('follower_id', userId)
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .limit(limit + 1) // Fetch one extra to check if there's more
+
+      // Apply cursor filter if provided
+      if (cursor) {
+        query = query.lt('created_at', cursor)
+      }
+
+      const { data: followData, error: followError } = await query
 
       if (followError) {
-        console.error('Error fetching following:', followError)
         throw new Error('Failed to fetch following')
       }
 
       if (!followData || followData.length === 0) {
-        return []
+        return { users: [], hasMore: false }
       }
 
+      // Check if there are more results
+      const hasMore = followData.length > limit
+      const results = hasMore ? followData.slice(0, limit) : followData
+
       // Get profile info for each followed user
-      const followedIds = followData.map(f => f.followed_id)
+      const followedIds = results.map(f => f.followed_id)
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, display_name, follower_count')
         .in('id', followedIds)
 
       if (profileError) {
-        console.error('Error fetching following profiles:', profileError)
+        // Continue without profile data
       }
 
       const profileMap = {}
       ;(profiles || []).forEach(p => { profileMap[p.id] = p })
 
-      return followData.map(f => ({
+      const users = results.map(f => ({
         id: f.followed_id,
         display_name: profileMap[f.followed_id]?.display_name || 'Anonymous',
         follower_count: profileMap[f.followed_id]?.follower_count || 0,
         followed_at: f.created_at,
       }))
+
+      return { users, hasMore }
     } catch (err) {
-      console.error('Unexpected error in getFollowing:', err)
       throw err
     }
   },
