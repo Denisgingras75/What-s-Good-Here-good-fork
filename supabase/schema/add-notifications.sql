@@ -20,19 +20,22 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications(user_
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Users can only see their own notifications
+DROP POLICY IF EXISTS "notifications_select_own" ON notifications;
 CREATE POLICY "notifications_select_own" ON notifications
   FOR SELECT
   USING (auth.uid() = user_id);
 
 -- Users can only update (mark as read) their own notifications
+DROP POLICY IF EXISTS "notifications_update_own" ON notifications;
 CREATE POLICY "notifications_update_own" ON notifications
   FOR UPDATE
   USING (auth.uid() = user_id);
 
--- Only system can insert (via trigger)
+-- Only system can insert (via trigger or service role)
+DROP POLICY IF EXISTS "notifications_insert_system" ON notifications;
 CREATE POLICY "notifications_insert_system" ON notifications
   FOR INSERT
-  WITH CHECK (true); -- Trigger runs as definer
+  WITH CHECK (auth.role() = 'service_role');
 
 -- =============================================
 -- TRIGGER: Create notification on new follow
@@ -84,9 +87,16 @@ LANGUAGE SQL
 STABLE
 SECURITY DEFINER
 AS $$
-  SELECT COUNT(*)::INTEGER
-  FROM notifications
-  WHERE user_id = p_user_id AND read = FALSE;
+  SELECT CASE
+    WHEN auth.role() = 'service_role' OR auth.uid() = p_user_id THEN
+      (
+        SELECT COUNT(*)::INTEGER
+        FROM notifications
+        WHERE user_id = p_user_id AND read = FALSE
+      )
+    ELSE
+      0
+  END;
 $$;
 
 -- Mark all notifications as read
@@ -97,5 +107,7 @@ SECURITY DEFINER
 AS $$
   UPDATE notifications
   SET read = TRUE
-  WHERE user_id = p_user_id AND read = FALSE;
+  WHERE user_id = p_user_id
+    AND read = FALSE
+    AND (auth.role() = 'service_role' OR auth.uid() = p_user_id);
 $$;
