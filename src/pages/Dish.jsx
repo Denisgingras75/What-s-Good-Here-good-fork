@@ -452,7 +452,7 @@ export function Dish() {
                       {/* Rating */}
                       <div className="text-right">
                         <span className="text-lg font-bold" style={{ color: getRatingColor(vote.rating_10) }}>
-                          {vote.rating_10}
+                          {formatScore10(vote.rating_10)}
                         </span>
                         <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
                       </div>
