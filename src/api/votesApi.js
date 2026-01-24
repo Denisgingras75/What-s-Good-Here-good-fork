@@ -323,4 +323,52 @@ export const votesApi = {
       return null // Graceful degradation - don't break the UI
     }
   },
+
+  /**
+   * Get all reviews written by a user with dish info
+   * @param {string} userId - User ID
+   * @param {Object} options - Pagination options
+   * @returns {Promise<Array>} Array of reviews with dish info
+   */
+  async getReviewsForUser(userId, { limit = 20, offset = 0 } = {}) {
+    try {
+      if (!userId) {
+        return []
+      }
+
+      const { data, error } = await supabase
+        .from('votes')
+        .select(`
+          id,
+          review_text,
+          rating_10,
+          would_order_again,
+          review_created_at,
+          dish_id,
+          dishes (
+            id,
+            name,
+            photo_url,
+            category,
+            price,
+            restaurants (name)
+          )
+        `)
+        .eq('user_id', userId)
+        .not('review_text', 'is', null)
+        .neq('review_text', '')
+        .order('review_created_at', { ascending: false, nullsFirst: false })
+        .range(offset, offset + limit - 1)
+
+      if (error) {
+        console.error('Error fetching reviews for user:', error)
+        return []
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching reviews for user:', error)
+      return []
+    }
+  },
 }
