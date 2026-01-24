@@ -1297,10 +1297,11 @@ function EditFavoritesSection({
                 {displayCategories.map(cat => (
                   <span
                     key={cat.id}
-                    className="text-xs px-1.5 py-0.5 rounded"
+                    className="text-xs px-1.5 py-0.5 rounded flex items-center gap-1"
                     style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
                   >
-                    {cat.emoji} {cat.label}
+                    <CategoryIcon category={cat.id} size={14} />
+                    {cat.label}
                   </span>
                 ))}
               </div>
