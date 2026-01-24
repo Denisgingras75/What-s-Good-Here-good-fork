@@ -71,7 +71,7 @@ export function UserSearch({ onClose }) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name..."
+          placeholder="Find Friends"
           className="flex-1 bg-transparent outline-none text-sm"
           style={{ color: 'var(--color-text-primary)' }}
         />
