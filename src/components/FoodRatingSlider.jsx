@@ -129,7 +129,7 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
 
       {/* Label based on rating */}
       <div className="text-center">
-        <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+        <span className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           {getRatingLabel(value, category)}
         </span>
       </div>
@@ -224,12 +224,12 @@ function getCrumbColor(category) {
 }
 
 function getRatingLabel(value, category) {
-  if (value >= 9.5) return "🏆 Excellent Here"
-  if (value >= 8.5) return "🔥 Great Here"
-  if (value >= 7.5) return "👍 Good Here"
-  if (value >= 7) return "😊 Pretty Good Here"
-  if (value >= 6) return "😐 Not Bad Here"
-  if (value >= 0.1) return "👎 Bad Here"
+  if (value >= 9.5) return "EXCELLENT Here"
+  if (value >= 8.5) return "GREAT Here"
+  if (value >= 7.5) return "GOOD Here"
+  if (value >= 7) return "Pretty Good Here"
+  if (value >= 6) return "Not Bad Here"
+  if (value >= 0.1) return "Bad Here"
 
   // Category-specific "slide to rate" messages
   const categoryEmojis = {

@@ -175,7 +175,7 @@ export function PizzaRatingSlider({ value, onChange, min = 1, max = 10, step = 0
 
       {/* Label based on rating */}
       <div className="text-center">
-        <span className="text-sm font-medium text-neutral-500">
+        <span className="text-lg font-semibold text-neutral-900">
           {getRatingLabel(value)}
         </span>
       </div>
@@ -209,11 +209,11 @@ export function PizzaRatingSlider({ value, onChange, min = 1, max = 10, step = 0
 }
 
 function getRatingLabel(value) {
-  if (value >= 9.5) return "🏆 Excellent Here"
-  if (value >= 8.5) return "🔥 Great Here"
-  if (value >= 7.5) return "👍 Good Here"
-  if (value >= 7) return "😊 Pretty Good Here"
-  if (value >= 6) return "😐 Not Bad Here"
-  if (value >= 0.1) return "👎 Bad Here"
+  if (value >= 9.5) return "EXCELLENT Here"
+  if (value >= 8.5) return "GREAT Here"
+  if (value >= 7.5) return "GOOD Here"
+  if (value >= 7) return "Pretty Good Here"
+  if (value >= 6) return "Not Bad Here"
+  if (value >= 0.1) return "Bad Here"
   return "🍕 Slide to rate!"
 }
