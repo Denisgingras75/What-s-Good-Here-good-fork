@@ -292,10 +292,16 @@ export const followsApi = {
       // Get live follower counts for each user
       const usersWithCounts = await Promise.all(
         data.map(async (user) => {
-          const { count } = await supabase
+          const { count, error: countError } = await supabase
             .from('follows')
             .select('*', { count: 'exact', head: true })
             .eq('followed_id', user.id)
+
+          if (countError) {
+            console.error('Error counting followers for', user.display_name, countError)
+          }
+          console.log('Live follower count for', user.display_name, ':', count)
+
           return {
             ...user,
             follower_count: count || 0,
