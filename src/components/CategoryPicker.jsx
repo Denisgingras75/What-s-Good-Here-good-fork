@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from 'react'
 import { MAIN_CATEGORIES, matchCategories, getCategoryById } from '../constants/categories'
+import { CategoryIcon } from './CategoryIcon'
 
 const MAX_SELECTIONS = 3
 
@@ -81,7 +82,7 @@ export const CategoryPicker = memo(function CategoryPicker({
                 border: selected ? '2px solid var(--color-primary)' : '2px solid var(--color-divider)',
               }}
             >
-              <span>{category.emoji}</span>
+              <CategoryIcon category={category.id} size={18} />
               <span>{category.label}</span>
               {selected && (
                 <svg className="w-4 h-4 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -148,7 +149,7 @@ export const CategoryPicker = memo(function CategoryPicker({
                     border: selected ? '2px solid var(--color-primary)' : '2px solid var(--color-primary-muted)',
                   }}
                 >
-                  <span>{category.emoji}</span>
+                  <CategoryIcon category={category.id} size={18} />
                   <span>{category.label}</span>
                   {selected && (
                     <svg className="w-4 h-4 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -188,7 +189,8 @@ export const CategoryPicker = memo(function CategoryPicker({
                     color: 'var(--color-primary)',
                   }}
                 >
-                  {category.emoji} {category.label}
+                  <CategoryIcon category={catId} size={14} />
+                  {category.label}
                 </span>
               )
             })}
