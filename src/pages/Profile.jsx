@@ -324,7 +324,7 @@ export function Profile() {
                     ? { background: 'var(--color-primary)' }
                     : { background: 'var(--color-surface-elevated)' }}
                 >
-                  {tab.id === 'saved' ? <HeartIcon size={16} /> : <span>{tab.emoji}</span>}
+                  {tab.id === 'saved' ? <HeartIcon size={20} /> : <span>{tab.emoji}</span>}
                   <span>{tab.label}</span>
                   <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
                     activeTab === tab.id ? 'bg-white/20' : 'bg-black/20'
@@ -1289,7 +1289,7 @@ function EditFavoritesSection({
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-            <HeartIcon size={24} />
+            <HeartIcon size={28} />
           </div>
           <div className="text-left">
             <span className="font-medium text-[color:var(--color-text-primary)]">Favorite Categories</span>
