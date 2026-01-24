@@ -29,7 +29,7 @@ const TABS = [
   { id: 'unrated', label: 'Unrated', emoji: '📷' },
   { id: 'worth-it', label: "Good Here", emoji: '👍' },
   { id: 'avoid', label: "Not Good", emoji: '👎' },
-  { id: 'saved', label: 'Heard Good', emoji: '❤️' },
+  { id: 'saved', label: 'Heard Good Here', emoji: '❤️' },
   { id: 'reviews', label: 'Reviews', emoji: '📝' },
 ]
 
@@ -561,13 +561,13 @@ export function Profile() {
           </div>
 
           {/* Tabs */}
-          <div className="border-b px-4 py-2" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-divider)' }}>
-            <div className="flex gap-2">
+          <div className="border-b py-2" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-divider)' }}>
+            <div className="flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-white shadow-md'
                       : 'text-[color:var(--color-text-secondary)]'
