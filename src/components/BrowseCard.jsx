@@ -10,6 +10,9 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
     return null
   }
 
+  // Debug: log dish data to identify problematic entries
+  console.log('BrowseCard rendering:', { dish_id: dish.dish_id, dish_name: dish.dish_name, photo_url: dish.photo_url, category: dish.category })
+
   const {
     dish_id,
     dish_name,
@@ -27,7 +30,7 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
   } = dish
 
   const imgSrc = photo_url || getCategoryImage(category)
-  const imageProps = getResponsiveImageProps(imgSrc, [300, 400, 600])
+  const imageProps = getResponsiveImageProps(imgSrc, [300, 400, 600]) || { src: '' }
   const isRanked = total_votes >= MIN_VOTES_FOR_RANKING
 
   // For parent dishes with variants, show best variant's rating instead of aggregate
