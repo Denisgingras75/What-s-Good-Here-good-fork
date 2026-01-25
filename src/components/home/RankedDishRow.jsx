@@ -66,6 +66,7 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank }) {
         <img
           src={imgSrc}
           alt={dish_name}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
       </div>

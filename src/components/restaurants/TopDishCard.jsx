@@ -85,6 +85,7 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
           <img
             src={imgSrc}
             alt={dish_name}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         </div>

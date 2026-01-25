@@ -347,6 +347,7 @@ function DishResult({ dish, rank, onClick }) {
         <img
           src={imgSrc}
           alt={dish_name}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
       </div>
@@ -405,6 +406,7 @@ function CategoryResult({ category, onClick }) {
         <img
           src={getCategoryImage(category.id)}
           alt={category.label}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
       </div>

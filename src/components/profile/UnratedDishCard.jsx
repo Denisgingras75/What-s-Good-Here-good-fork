@@ -36,6 +36,7 @@ export function UnratedDishCard({ dish, onClick, onDelete }) {
         <img
           src={imageUrl}
           alt={dish.dish_name}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
         {dish.user_photo_url && (

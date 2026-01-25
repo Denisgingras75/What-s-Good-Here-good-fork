@@ -172,7 +172,7 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
                 onClick={() => setLightboxPhoto(featuredPhoto.photo_url)}
                 aria-label={`View featured photo of ${dish.dish_name}`}
               >
-                <img src={featuredPhoto.photo_url} alt={dish.dish_name} />
+                <img src={featuredPhoto.photo_url} alt={dish.dish_name} loading="lazy" />
                 {featuredPhoto.source_type === 'restaurant' && (
                   <span className="photo-badge restaurant">Official</span>
                 )}
@@ -193,7 +193,7 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
                       onClick={() => setLightboxPhoto(photo.photo_url)}
                       aria-label={`View photo of ${dish.dish_name}`}
                     >
-                      <img src={photo.photo_url} alt={dish.dish_name} />
+                      <img src={photo.photo_url} alt={dish.dish_name} loading="lazy" />
                     </button>
                   ))}
                 </div>

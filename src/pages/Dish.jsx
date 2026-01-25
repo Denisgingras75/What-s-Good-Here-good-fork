@@ -533,6 +533,7 @@ export function Dish() {
                       <img
                         src={photo.photo_url}
                         alt={dish.dish_name}
+                        loading="lazy"
                         className="w-full h-full object-cover"
                       />
                     </button>

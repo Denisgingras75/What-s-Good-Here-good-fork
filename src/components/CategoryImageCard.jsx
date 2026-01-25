@@ -57,6 +57,7 @@ export function CategoryImageCard({
             <img
               src={imageSrc}
               alt={category.label}
+              loading="lazy"
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.style.display = 'none'

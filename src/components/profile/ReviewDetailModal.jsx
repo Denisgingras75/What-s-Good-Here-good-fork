@@ -47,7 +47,7 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
         {/* Header with dish image */}
         <div className="relative">
           <div className="aspect-[16/9] w-full overflow-hidden" style={{ background: 'var(--color-surface)' }}>
-            <img src={imgSrc} alt={dish.name} className="w-full h-full object-cover" />
+            <img src={imgSrc} alt={dish.name} loading="lazy" className="w-full h-full object-cover" />
           </div>
 
           {/* Close button */}

@@ -72,6 +72,7 @@ export function VotedDishCard({
           <img
             src={imageUrl}
             alt={dishName}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         </div>
