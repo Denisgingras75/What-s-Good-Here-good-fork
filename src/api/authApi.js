@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import posthog from 'posthog-js'
 import { logger } from '../utils/logger'
+import { sanitizeSearchQuery } from '../utils/sanitize'
 
 /**
  * Auth API - Centralized authentication operations
@@ -73,10 +74,12 @@ export const authApi = {
       posthog.capture('signup_started', { method: 'password' })
 
       // Check if username is already taken
+      // Sanitize username for safe database query
+      const sanitizedUsername = sanitizeSearchQuery(username, 30)
       const { data: existingUser, error: usernameError } = await supabase
         .from('profiles')
         .select('id')
-        .ilike('display_name', username)
+        .ilike('display_name', sanitizedUsername)
         .single()
 
       if (usernameError && usernameError.code !== 'PGRST116') {
@@ -201,10 +204,12 @@ export const authApi = {
    */
   async isUsernameAvailable(username) {
     try {
+      // Sanitize username for safe database query
+      const sanitizedUsername = sanitizeSearchQuery(username, 30)
       const { data, error } = await supabase
         .from('profiles')
         .select('id')
-        .ilike('display_name', username)
+        .ilike('display_name', sanitizedUsername)
         .single()
 
       if (error && error.code !== 'PGRST116') {

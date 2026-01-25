@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { logger } from '../utils/logger'
+import { sanitizeSearchQuery } from '../utils/sanitize'
 
 /**
  * Restaurants API - Centralized data fetching for restaurants
@@ -74,11 +75,15 @@ export const restaurantsApi = {
   async search(query, limit = 5) {
     if (!query?.trim()) return []
 
+    // Sanitize query to prevent SQL injection via LIKE patterns
+    const sanitized = sanitizeSearchQuery(query, 50)
+    if (!sanitized) return []
+
     const { data, error } = await supabase
       .from('restaurants')
       .select('id, name, address')
       .eq('is_open', true)
-      .ilike('name', `%${query}%`)
+      .ilike('name', `%${sanitized}%`)
       .limit(limit)
 
     if (error) {
