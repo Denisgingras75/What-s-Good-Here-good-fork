@@ -1,38 +1,37 @@
-// Category to image URL mapping - v4.0 SUPABASE STORAGE
-// Using Supabase storage URLs instead of Unsplash (which is blocked on some networks)
-// Base URL for Supabase storage
-const SUPABASE_STORAGE = 'https://fzgbxwonitnqmeguqixn.supabase.co/storage/v1/object/public/dish-photos'
-
+// Category to image URL mapping - v3.0 CACHE BUST
+// ONE consistent, high-quality photo per category
+// ALL dishes in the same category show the EXACT SAME image
+const CACHE_BUST = 'v20260111'
 export const CATEGORY_IMAGES = {
-  'burger': `${SUPABASE_STORAGE}/burger.jpg`,
-  'sandwich': `${SUPABASE_STORAGE}/burger.jpg`,
-  'breakfast sandwich': `${SUPABASE_STORAGE}/breakfast-sandwich.jpg`,
-  'pizza': `${SUPABASE_STORAGE}/burger.jpg`,
-  'pasta': `${SUPABASE_STORAGE}/burger.jpg`,
-  'sushi': `${SUPABASE_STORAGE}/burger.jpg`,
-  'pokebowl': `${SUPABASE_STORAGE}/burger.jpg`,
-  'taco': `${SUPABASE_STORAGE}/burger.jpg`,
-  'wings': `${SUPABASE_STORAGE}/burger.jpg`,
-  'tendys': `${SUPABASE_STORAGE}/burger.jpg`,
-  'lobster roll': `${SUPABASE_STORAGE}/burger.jpg`,
-  'seafood': `${SUPABASE_STORAGE}/coconut-shrimp.jpg`,
-  'chowder': `${SUPABASE_STORAGE}/burger.jpg`,
-  'soup': `${SUPABASE_STORAGE}/chili.jpg`,
-  'breakfast': `${SUPABASE_STORAGE}/breakfast-sandwich.jpg`,
-  'salad': `${SUPABASE_STORAGE}/burger.jpg`,
-  'fries': `${SUPABASE_STORAGE}/burger.jpg`,
-  'apps': `${SUPABASE_STORAGE}/chips-queso.jpg`,
-  'fried chicken': `${SUPABASE_STORAGE}/burger.jpg`,
-  'entree': `${SUPABASE_STORAGE}/burger.jpg`,
-  'steak': `${SUPABASE_STORAGE}/burger.jpg`,
-  'chicken': `${SUPABASE_STORAGE}/chicken-pakora.jpg`,
-  'donuts': `${SUPABASE_STORAGE}/burger.jpg`,
-  'asian': `${SUPABASE_STORAGE}/burger.jpg`,
-  'quesadilla': `${SUPABASE_STORAGE}/burger.jpg`,
+  'burger': `https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&${CACHE_BUST}`,
+  'sandwich': `https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80&${CACHE_BUST}`,
+  'breakfast sandwich': `https://fzgbxwonitnqmeguqixn.supabase.co/storage/v1/object/public/dish-photos/breakfast-sandwich.jpg`,
+  'pizza': `https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&${CACHE_BUST}`,
+  'pasta': `https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&q=80&${CACHE_BUST}`,
+  'sushi': `https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800&q=80&${CACHE_BUST}`,
+  'pokebowl': `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&${CACHE_BUST}`,
+  'taco': `https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800&q=80&${CACHE_BUST}`,
+  'wings': `https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=800&q=80&${CACHE_BUST}`,
+  'tendys': `https://images.unsplash.com/photo-1562967914-608f82629710?w=800&q=80&${CACHE_BUST}`,
+  'lobster roll': `https://images.unsplash.com/photo-1603103750903-518e8bf57bf0?w=800&q=80&${CACHE_BUST}`,
+  'seafood': `https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&q=80&${CACHE_BUST}`,
+  'chowder': `https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80&${CACHE_BUST}`,
+  'soup': `https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=800&q=80&${CACHE_BUST}`,
+  'breakfast': `https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800&q=80&${CACHE_BUST}`,
+  'salad': `https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80&${CACHE_BUST}`,
+  'fries': `https://images.unsplash.com/photo-1518013431117-eb1465fa5752?w=800&q=80&${CACHE_BUST}`,
+  'apps': `https://images.unsplash.com/photo-1541529086526-db283c563270?w=800&q=80&${CACHE_BUST}`,
+  'fried chicken': `https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800&q=80&${CACHE_BUST}`,
+  'entree': `https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=800&q=80&${CACHE_BUST}`,
+  'steak': `https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80&${CACHE_BUST}`,
+  'chicken': `https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&q=80&${CACHE_BUST}`,
+  'donuts': `https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80&${CACHE_BUST}`,
+  'asian': `https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80&${CACHE_BUST}`,
+  'quesadilla': `https://images.unsplash.com/photo-1618040996337-56904b7850b9?w=800&q=80&${CACHE_BUST}`,
 }
 
-// Fallback image - burger from Supabase storage
-export const DEFAULT_DISH_IMAGE = `${SUPABASE_STORAGE}/burger.jpg`
+// Fallback image - PIZZA for testing
+export const DEFAULT_DISH_IMAGE = `https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80&${CACHE_BUST}`
 
 // Get image URL for a category (silently falls back to default)
 export function getCategoryImage(category) {
