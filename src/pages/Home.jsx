@@ -194,6 +194,13 @@ export function Home() {
                   <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
                     Try increasing your search radius
                   </p>
+                  <button
+                    onClick={() => navigate('/browse')}
+                    className="mt-4 px-6 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
+                    style={{ background: 'var(--color-primary)', color: 'white' }}
+                  >
+                    Browse All Dishes
+                  </button>
                 </div>
               )}
 
