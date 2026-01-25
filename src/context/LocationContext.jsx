@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { logger } from '../utils/logger'
 
 // Default location: Martha's Vineyard center (between Vineyard Haven, Oak Bluffs, Edgartown)
@@ -22,7 +22,7 @@ export function LocationProvider({ children }) {
   const setRadius = useCallback((newRadius) => {
     setRadiusState(prevRadius => {
       if (newRadius !== prevRadius) {
-        posthog.capture('filter_applied', {
+        capture('filter_applied', {
           filter_type: 'radius',
           radius_miles: newRadius,
           previous_radius: prevRadius,

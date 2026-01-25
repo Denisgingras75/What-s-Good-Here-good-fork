@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import posthog from 'posthog-js'
+import { capture, identify, reset } from '../lib/analytics'
 import { logger } from '../utils/logger'
 
 const AuthContext = createContext(null)
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
 
       if (sessionUser) {
         // Identify user in PostHog (no PII - just auth provider for segmentation)
-        posthog.identify(sessionUser.id, {
+        identify(sessionUser.id, {
           auth_provider: sessionUser.app_metadata?.provider || 'unknown',
         })
       }
@@ -38,24 +38,24 @@ export function AuthProvider({ children }) {
       // Handle different auth events
       if (event === 'SIGNED_IN' && newUser && !prevUserRef.current) {
         // User just signed in
-        posthog.identify(newUser.id, {
+        identify(newUser.id, {
           auth_provider: newUser.app_metadata?.provider || 'unknown',
         })
-        posthog.capture('login_completed', {
+        capture('login_completed', {
           method: newUser.app_metadata?.provider || 'unknown',
         })
       } else if (event === 'SIGNED_OUT') {
         // User signed out
-        posthog.capture('logout')
-        posthog.reset()
+        capture('logout')
+        reset()
       } else if (event === 'TOKEN_REFRESHED') {
         // Token was refreshed - session is still valid, user stays logged in
         // Update state to ensure we have fresh user data
       } else if (event === 'USER_DELETED' || !session) {
         // User was deleted or session is invalid - clear state
         if (prevUserRef.current) {
-          posthog.capture('session_expired')
-          posthog.reset()
+          capture('session_expired')
+          reset()
         }
       }
 

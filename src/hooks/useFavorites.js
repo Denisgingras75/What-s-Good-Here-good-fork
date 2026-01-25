@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { favoritesApi } from '../api/favoritesApi'
 import { logger } from '../utils/logger'
 
@@ -48,7 +48,7 @@ export function useFavorites(userId) {
 
       // Track dish saved - shows intent to try
       const favoriteDish = dishes.find(d => d.dish_id === dishId)
-      posthog.capture('dish_saved', {
+      capture('dish_saved', {
         dish_id: dishId,
         dish_name: favoriteDish?.dish_name,
         restaurant_name: favoriteDish?.restaurant_name,
@@ -73,7 +73,7 @@ export function useFavorites(userId) {
       setFavorites(prev => prev.filter(d => d.dish_id !== dishId))
 
       // Track dish unsaved
-      posthog.capture('dish_unsaved', {
+      capture('dish_unsaved', {
         dish_id: dishId,
         dish_name: dishToRemove?.dish_name,
         restaurant_name: dishToRemove?.restaurant_name,

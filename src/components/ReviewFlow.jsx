@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { useVote } from '../hooks/useVote'
 import { authApi } from '../api/authApi'
@@ -202,7 +202,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
     if (result.success) {
       // Track vote submission - the core conversion event
-      posthog.capture('vote_cast', {
+      capture('vote_cast', {
         dish_id: dishId,
         dish_name: dishName,
         restaurant_id: restaurantId,

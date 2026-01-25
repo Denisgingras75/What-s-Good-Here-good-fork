@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { analyzeImage } from '../utils/imageAnalysis'
 import { logger } from '../utils/logger'
@@ -30,7 +30,7 @@ export function useDishPhotos() {
     setError(null)
 
     // Track upload attempt
-    posthog.capture('photo_upload_attempt', {
+    capture('photo_upload_attempt', {
       dish_id: dishId,
       file_size_bytes: file.size,
       mime_type: file.type,
@@ -43,7 +43,7 @@ export function useDishPhotos() {
       // If rejected by quality checks, don't upload
       if (analysis.status === 'rejected') {
         // Track rejection with metrics for tuning
-        posthog.capture('photo_upload_rejected', {
+        capture('photo_upload_rejected', {
           dish_id: dishId,
           reason: analysis.rejectReason,
           avg_brightness: analysis.avgBrightness,
@@ -70,7 +70,7 @@ export function useDishPhotos() {
       })
 
       // Track accepted upload with full metrics
-      posthog.capture('photo_upload_accepted', {
+      capture('photo_upload_accepted', {
         dish_id: dishId,
         status: analysis.status,
         quality_score: analysis.qualityScore,

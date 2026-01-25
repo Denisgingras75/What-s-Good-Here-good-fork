@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { logger } from '../utils/logger'
 import { sanitizeSearchQuery } from '../utils/sanitize'
 
@@ -15,7 +15,7 @@ export const authApi = {
    */
   async signInWithGoogle(redirectUrl = null) {
     try {
-      posthog.capture('login_started', { method: 'google' })
+      capture('login_started', { method: 'google' })
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -24,7 +24,7 @@ export const authApi = {
         },
       })
       if (error) {
-        posthog.capture('login_failed', { method: 'google', error: error.message })
+        capture('login_failed', { method: 'google', error: error.message })
         throw error
       }
       return { success: true }
@@ -42,7 +42,7 @@ export const authApi = {
    */
   async signInWithMagicLink(email, redirectUrl = null) {
     try {
-      posthog.capture('login_started', { method: 'magic_link' })
+      capture('login_started', { method: 'magic_link' })
 
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -51,10 +51,10 @@ export const authApi = {
         },
       })
       if (error) {
-        posthog.capture('login_failed', { method: 'magic_link', error: error.message })
+        capture('login_failed', { method: 'magic_link', error: error.message })
         throw error
       }
-      posthog.capture('magic_link_sent')
+      capture('magic_link_sent')
       return { success: true }
     } catch (error) {
       logger.error('Error sending magic link:', error)
@@ -71,7 +71,7 @@ export const authApi = {
    */
   async signUpWithPassword(email, password, username) {
     try {
-      posthog.capture('signup_started', { method: 'password' })
+      capture('signup_started', { method: 'password' })
 
       // Check if username is already taken
       // Sanitize username for safe database query
@@ -101,7 +101,7 @@ export const authApi = {
       })
 
       if (error) {
-        posthog.capture('signup_failed', { method: 'password', error: error.message })
+        capture('signup_failed', { method: 'password', error: error.message })
         throw error
       }
 
@@ -117,7 +117,7 @@ export const authApi = {
         }
       }
 
-      posthog.capture('signup_completed', { method: 'password' })
+      capture('signup_completed', { method: 'password' })
       return { success: true, user: data.user }
     } catch (error) {
       logger.error('Error signing up:', error)
@@ -133,7 +133,7 @@ export const authApi = {
    */
   async signInWithPassword(email, password) {
     try {
-      posthog.capture('login_started', { method: 'password' })
+      capture('login_started', { method: 'password' })
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -141,11 +141,11 @@ export const authApi = {
       })
 
       if (error) {
-        posthog.capture('login_failed', { method: 'password', error: error.message })
+        capture('login_failed', { method: 'password', error: error.message })
         throw error
       }
 
-      posthog.capture('login_completed', { method: 'password' })
+      capture('login_completed', { method: 'password' })
       return { success: true, user: data.user }
     } catch (error) {
       logger.error('Error signing in:', error)

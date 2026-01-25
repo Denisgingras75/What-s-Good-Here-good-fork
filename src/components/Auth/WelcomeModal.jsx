@@ -5,7 +5,7 @@ import { CategoryPicker } from '../CategoryPicker'
 import { HeartIcon } from '../HeartIcon'
 import { ThumbsUpIcon } from '../ThumbsUpIcon'
 import { ThumbsDownIcon } from '../ThumbsDownIcon'
-import posthog from 'posthog-js'
+import { capture } from '../../lib/analytics'
 
 const STEPS = [
   {
@@ -55,7 +55,7 @@ export function WelcomeModal() {
       // Show if no display_name OR hasn't completed onboarding
       if (!profile.display_name || !profile.has_onboarded) {
         setIsOpen(true)
-        posthog.capture('onboarding_started')
+        capture('onboarding_started')
       }
     }
   }, [user, profile, loading])
@@ -93,7 +93,7 @@ export function WelcomeModal() {
       has_onboarded: true,
       preferred_categories: selectedCategories,
     })
-    posthog.capture('onboarding_completed', {
+    capture('onboarding_completed', {
       name_set: !!name.trim(),
       categories_selected: selectedCategories.length,
       categories: selectedCategories,
@@ -105,7 +105,7 @@ export function WelcomeModal() {
   const handleSkipFavorites = async () => {
     setSaving(true)
     await updateProfile({ has_onboarded: true })
-    posthog.capture('onboarding_completed', {
+    capture('onboarding_completed', {
       name_set: !!name.trim(),
       categories_selected: 0,
     })

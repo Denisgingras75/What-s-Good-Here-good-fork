@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { restaurantsApi } from '../api/restaurantsApi'
@@ -78,7 +78,7 @@ export function Restaurants() {
 
   const handleRestaurantSelect = (restaurant) => {
     const stats = restaurantStats[restaurant.id] || {}
-    posthog.capture('restaurant_viewed', {
+    capture('restaurant_viewed', {
       restaurant_id: restaurant.id,
       restaurant_name: restaurant.name,
       restaurant_address: restaurant.address,

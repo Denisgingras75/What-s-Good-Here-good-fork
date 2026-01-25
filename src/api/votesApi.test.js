@@ -11,10 +11,10 @@ vi.mock('../utils/logger', () => ({
   },
 }))
 
-vi.mock('posthog-js', () => ({
-  default: {
-    capture: vi.fn(),
-  },
+vi.mock('../lib/analytics', () => ({
+  capture: vi.fn(),
+  identify: vi.fn(),
+  reset: vi.fn(),
 }))
 
 vi.mock('../lib/rateLimiter', () => ({
@@ -38,7 +38,7 @@ vi.mock('../lib/supabase', () => ({
 import { supabase } from '../lib/supabase'
 import { checkVoteRateLimit } from '../lib/rateLimiter'
 import { containsBlockedContent } from '../lib/reviewBlocklist'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 
 describe('votesApi', () => {
   beforeEach(() => {
@@ -194,7 +194,7 @@ describe('votesApi', () => {
         reviewText: 'Great!',
       })
 
-      expect(posthog.capture).toHaveBeenCalledWith('vote_submitted', {
+      expect(capture).toHaveBeenCalledWith('vote_submitted', {
         dish_id: 'dish-1',
         would_order_again: true,
         rating: 8,

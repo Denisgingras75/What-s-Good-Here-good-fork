@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { dishesApi } from '../api/dishesApi'
@@ -85,7 +85,7 @@ export function Dish() {
         setDish(transformedDish)
 
         // Track dish view - valuable for restaurants!
-        posthog.capture('dish_viewed', {
+        capture('dish_viewed', {
           dish_id: transformedDish.dish_id,
           dish_name: transformedDish.dish_name,
           restaurant_id: transformedDish.restaurant_id,

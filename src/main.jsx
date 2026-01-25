@@ -29,8 +29,10 @@ if (import.meta.env.PROD) {
 // This keeps them off the critical path for faster TTI
 function initAnalytics() {
   // Initialize PostHog for user analytics
+  // Attached to window so analytics.js wrapper can access it without static imports
   if (import.meta.env.VITE_PUBLIC_POSTHOG_KEY && import.meta.env.PROD) {
     import('posthog-js').then(({ default: posthog }) => {
+      window.posthog = posthog
       posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
         // Use reverse proxy to avoid ad blockers (middleware at /ingest)
         api_host: '/ingest',

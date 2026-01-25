@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { dishesApi } from '../api/dishesApi'
 import { getCategoryImage } from '../constants/categoryImages'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
@@ -117,7 +117,7 @@ export function DishSearch({ loading = false }) {
   // Handle dish selection
   const handleDishSelect = (dish) => {
     // Track search -> dish selection
-    posthog.capture('search_performed', {
+    capture('search_performed', {
       query: query,
       result_type: 'dish',
       selected_dish_id: dish.dish_id,
@@ -134,7 +134,7 @@ export function DishSearch({ loading = false }) {
   // Handle category selection
   const handleCategorySelect = (category) => {
     // Track search -> category selection
-    posthog.capture('search_performed', {
+    capture('search_performed', {
       query: query,
       result_type: 'category',
       selected_category: category.id,
@@ -149,7 +149,7 @@ export function DishSearch({ loading = false }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && query.trim().length >= MIN_SEARCH_LENGTH) {
       // Track search submission
-      posthog.capture('search_performed', {
+      capture('search_performed', {
         query: query.trim(),
         result_type: 'full_search',
         dish_results_count: results.dishes.length,

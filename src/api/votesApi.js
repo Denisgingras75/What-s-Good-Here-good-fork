@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import posthog from 'posthog-js'
+import { capture } from '../lib/analytics'
 import { checkVoteRateLimit } from '../lib/rateLimiter'
 import { containsBlockedContent } from '../lib/reviewBlocklist'
 import { MAX_REVIEW_LENGTH } from '../constants/app'
@@ -93,7 +93,7 @@ export const votesApi = {
         throw createClassifiedError(error)
       }
 
-      posthog.capture('vote_submitted', {
+      capture('vote_submitted', {
         dish_id: dishId,
         would_order_again: wouldOrderAgain,
         rating: rating10,
