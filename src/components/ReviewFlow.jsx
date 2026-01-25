@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useRef } from 'react'
 import posthog from 'posthog-js'
 import { useAuth } from '../context/AuthContext'
@@ -15,9 +14,6 @@ import {
   setPendingVoteToStorage,
   clearPendingVoteStorage,
 } from '../lib/storage'
-
-// Re-export for backward compatibility
-export { getPendingVoteFromStorage, setPendingVoteToStorage, clearPendingVoteStorage }
 
 export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
   const { user } = useAuth()
