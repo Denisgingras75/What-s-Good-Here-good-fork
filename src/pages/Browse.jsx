@@ -17,6 +17,7 @@ import { LoginModal } from '../components/Auth/LoginModal'
 import { DishCardSkeleton } from '../components/Skeleton'
 import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
 import { SortDropdown, CategoryGrid } from '../components/browse'
+import { CategoryImageCard } from '../components/CategoryImageCard'
 
 // Use centralized browse categories
 const CATEGORIES = BROWSE_CATEGORIES
