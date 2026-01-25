@@ -29,19 +29,31 @@ export function getResponsiveImageProps(url, widths = [400, 600, 800]) {
 
   // Unsplash images support width parameter
   if (isUnsplashUrl(url)) {
-    // Remove existing w= parameter if present
-    const baseUrl = url.replace(/[?&]w=\d+/, '').replace(/[?&]q=\d+/, '')
-    const separator = baseUrl.includes('?') ? '&' : '?'
+    try {
+      // Use URL parsing for robust parameter handling
+      const urlObj = new URL(url)
+      urlObj.searchParams.delete('w')
+      urlObj.searchParams.delete('q')
 
-    const srcSet = widths
-      .map(w => `${baseUrl}${separator}w=${w}&q=80 ${w}w`)
-      .join(', ')
+      const srcSet = widths
+        .map(w => {
+          const u = new URL(urlObj.href)
+          u.searchParams.set('w', w)
+          u.searchParams.set('q', '80')
+          return `${u.href} ${w}w`
+        })
+        .join(', ')
 
-    // Default src uses middle width
-    const defaultWidth = widths[Math.floor(widths.length / 2)]
-    const src = `${baseUrl}${separator}w=${defaultWidth}&q=80`
+      // Default src uses middle width
+      const defaultWidth = widths[Math.floor(widths.length / 2)]
+      urlObj.searchParams.set('w', defaultWidth)
+      urlObj.searchParams.set('q', '80')
 
-    return { src, srcSet }
+      return { src: urlObj.href, srcSet }
+    } catch {
+      // If URL parsing fails, return original
+      return { src: url }
+    }
   }
 
   // Supabase storage with image transformation (if enabled)
@@ -67,9 +79,14 @@ export function getThumbnailUrl(url, width = 400) {
   if (!url) return ''
 
   if (isUnsplashUrl(url)) {
-    const baseUrl = url.replace(/[?&]w=\d+/, '').replace(/[?&]q=\d+/, '')
-    const separator = baseUrl.includes('?') ? '&' : '?'
-    return `${baseUrl}${separator}w=${width}&q=80`
+    try {
+      const urlObj = new URL(url)
+      urlObj.searchParams.set('w', width)
+      urlObj.searchParams.set('q', '80')
+      return urlObj.href
+    } catch {
+      return url
+    }
   }
 
   return url
