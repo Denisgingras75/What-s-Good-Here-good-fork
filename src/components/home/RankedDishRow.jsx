@@ -26,9 +26,15 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank }) {
     navigate(`/dish/${dish_id}`)
   }
 
+  // Build accessible label for screen readers
+  const accessibleLabel = isRanked
+    ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes${distance_miles ? `, ${Number(distance_miles).toFixed(1)} miles away` : ''}`
+    : `Rank ${rank}: ${dish_name} at ${restaurant_name}, ${total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'no votes yet'}${distance_miles ? `, ${Number(distance_miles).toFixed(1)} miles away` : ''}`
+
   return (
     <button
       onClick={handleClick}
+      aria-label={accessibleLabel}
       className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:shadow-md active:scale-[0.99] group stagger-item"
       style={{
         background: 'var(--color-bg)',
