@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
+import { useDishSearch } from '../hooks/useDishSearch'
 import { useFavorites } from '../hooks/useFavorites'
 import { restaurantsApi } from '../api/restaurantsApi'
 import { dishesApi } from '../api/dishesApi'
@@ -44,42 +45,9 @@ export function Browse() {
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
 
-  // Search results from API (for cuisine/tag searches that client-side can't do)
-  const [searchResults, setSearchResults] = useState([])
-  const [searchLoading, setSearchLoading] = useState(false)
-
-  // Fetch search results from API when search query changes
-  // This handles cuisine/tag searches that client-side filtering can't do
-  useEffect(() => {
-    if (!debouncedSearchQuery.trim()) {
-      setSearchResults([])
-      setSearchLoading(false)
-      return
-    }
-
-    let cancelled = false
-    const fetchSearchResults = async () => {
-      setSearchLoading(true)
-      try {
-        const results = await dishesApi.search(debouncedSearchQuery, 50)
-        if (!cancelled) {
-          setSearchResults(results)
-        }
-      } catch (error) {
-        logger.error('Search failed:', error)
-        if (!cancelled) {
-          setSearchResults([])
-        }
-      } finally {
-        if (!cancelled) {
-          setSearchLoading(false)
-        }
-      }
-    }
-
-    fetchSearchResults()
-    return () => { cancelled = true }
-  }, [debouncedSearchQuery])
+  // Search results from API using React Query hook
+  // Handles cuisine/tag searches with proper caching and error handling
+  const { results: searchResults, loading: searchLoading } = useDishSearch(debouncedSearchQuery, 50)
 
   const beforeVoteRef = useRef(null)
   const searchInputRef = useRef(null)
@@ -290,13 +258,9 @@ export function Browse() {
   const filteredDishes = useMemo(() => {
     // When searching, use search results from API (handles cuisine/tag searches)
     // When browsing by category, use dishes from useDishes()
-    // Ensure we always have an array to work with
-    let result = debouncedSearchQuery.trim()
-      ? (Array.isArray(searchResults) ? searchResults : [])
-      : (Array.isArray(dishes) ? dishes : [])
-
-    // Filter out any null/undefined entries and ensure each has required fields
-    result = result.filter(d => d && d.dish_id)
+    // Both hooks guarantee arrays, but filter for valid entries as extra safety
+    let result = (debouncedSearchQuery.trim() ? searchResults : dishes)
+      .filter(d => d && d.dish_id)
 
     // Then sort based on selected option
     switch (sortBy) {

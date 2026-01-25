@@ -25,7 +25,8 @@ export function useDishSearch(query, limit = 5) {
   }
 
   return {
-    results: data || [],
+    // Ensure we always return an array, even if API returns unexpected data
+    results: Array.isArray(data) ? data : [],
     loading: isLoading && trimmedQuery.length >= 2,
     error,
   }
