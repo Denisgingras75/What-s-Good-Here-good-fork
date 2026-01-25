@@ -12,7 +12,9 @@ export default defineConfig({
           // Vendor chunks - cached separately from app code
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-monitoring': ['@sentry/react', 'posthog-js'],
+          // Split monitoring tools so they can load independently
+          'vendor-sentry': ['@sentry/react'],
+          'vendor-posthog': ['posthog-js'],
         },
       },
     },
