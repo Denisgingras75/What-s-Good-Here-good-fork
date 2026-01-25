@@ -38,16 +38,27 @@ export function NotificationBell() {
     return () => clearInterval(interval)
   }, [user])
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setShowDropdown(false)
       }
     }
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showDropdown) {
+        setShowDropdown(false)
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showDropdown])
 
   // Fetch notifications when dropdown opens
   const handleBellClick = async () => {
@@ -122,6 +133,8 @@ export function NotificationBell() {
         className="relative p-2 rounded-full transition-all duration-150 active:scale-95 active:opacity-80"
         style={{ color: 'var(--color-text-secondary)' }}
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+        aria-expanded={showDropdown}
+        aria-haspopup="true"
       >
         <svg
           className="w-6 h-6"
@@ -151,6 +164,8 @@ export function NotificationBell() {
       {/* Dropdown */}
       {showDropdown && (
         <div
+          role="menu"
+          aria-label="Notifications menu"
           className="fixed top-14 right-4 w-80 max-h-96 overflow-y-auto rounded-xl shadow-xl border z-50"
           style={{ background: 'var(--color-surface-elevated)', borderColor: 'rgba(255,255,255,0.1)' }}
         >
@@ -184,6 +199,7 @@ export function NotificationBell() {
               {notifications.map((notification) => (
                 <button
                   key={notification.id}
+                  role="menuitem"
                   onClick={() => handleNotificationClick(notification)}
                   className="w-full px-4 py-3 flex items-start gap-3 text-left transition-all duration-150 active:scale-[0.98] active:opacity-80 border-b last:border-b-0"
                   style={{
