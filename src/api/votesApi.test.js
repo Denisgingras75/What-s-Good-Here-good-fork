@@ -1,0 +1,615 @@
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { votesApi } from './votesApi'
+
+// Mock dependencies
+vi.mock('../utils/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}))
+
+vi.mock('posthog-js', () => ({
+  default: {
+    capture: vi.fn(),
+  },
+}))
+
+vi.mock('../lib/rateLimiter', () => ({
+  checkVoteRateLimit: vi.fn(() => ({ allowed: true })),
+}))
+
+vi.mock('../lib/reviewBlocklist', () => ({
+  containsBlockedContent: vi.fn(() => false),
+}))
+
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn(),
+    },
+    rpc: vi.fn(),
+    from: vi.fn(),
+  },
+}))
+
+import { supabase } from '../lib/supabase'
+import { checkVoteRateLimit } from '../lib/rateLimiter'
+import { containsBlockedContent } from '../lib/reviewBlocklist'
+import posthog from 'posthog-js'
+
+describe('votesApi', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // Default: rate limit allows, no blocked content
+    checkVoteRateLimit.mockReturnValue({ allowed: true })
+    containsBlockedContent.mockReturnValue(false)
+  })
+
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
+  describe('submitVote', () => {
+    const mockUser = { id: 'user-1' }
+
+    beforeEach(() => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: mockUser } })
+      supabase.rpc.mockResolvedValue({ data: { allowed: true }, error: null })
+    })
+
+    it('should submit a basic vote successfully', async () => {
+      const upsertMock = vi.fn().mockResolvedValue({ error: null })
+      supabase.from.mockReturnValue({ upsert: upsertMock })
+
+      const result = await votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+        rating10: 8,
+      })
+
+      expect(upsertMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dish_id: 'dish-1',
+          user_id: 'user-1',
+          would_order_again: true,
+          rating_10: 8,
+        }),
+        { onConflict: 'dish_id,user_id' }
+      )
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should submit vote with review text', async () => {
+      const upsertMock = vi.fn().mockResolvedValue({ error: null })
+      supabase.from.mockReturnValue({ upsert: upsertMock })
+
+      await votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+        rating10: 9,
+        reviewText: 'Amazing lobster roll!',
+      })
+
+      expect(upsertMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          review_text: 'Amazing lobster roll!',
+          review_created_at: expect.any(String),
+        }),
+        { onConflict: 'dish_id,user_id' }
+      )
+    })
+
+    it('should trim review text and treat empty string as null', async () => {
+      const upsertMock = vi.fn().mockResolvedValue({ error: null })
+      supabase.from.mockReturnValue({ upsert: upsertMock })
+
+      await votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+        reviewText: '   ',
+      })
+
+      // Should NOT include review fields for empty/whitespace review
+      const callArg = upsertMock.mock.calls[0][0]
+      expect(callArg.review_text).toBeUndefined()
+    })
+
+    it('should throw if client rate limit exceeded', async () => {
+      checkVoteRateLimit.mockReturnValue({
+        allowed: false,
+        message: 'Too many votes, slow down!',
+      })
+
+      await expect(votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+      })).rejects.toThrow('Too many votes, slow down!')
+    })
+
+    it('should throw if review exceeds max length', async () => {
+      const longReview = 'a'.repeat(300) // MAX_REVIEW_LENGTH is 200
+
+      await expect(votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+        reviewText: longReview,
+      })).rejects.toThrow(/characters over limit/)
+    })
+
+    it('should throw if review contains blocked content', async () => {
+      containsBlockedContent.mockReturnValue(true)
+
+      await expect(votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+        reviewText: 'inappropriate content here',
+      })).rejects.toThrow('Review contains inappropriate content')
+    })
+
+    it('should throw if user not authenticated', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: null } })
+
+      await expect(votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+      })).rejects.toThrow('You must be logged in to vote')
+    })
+
+    it('should throw if server rate limit exceeded', async () => {
+      supabase.rpc.mockResolvedValue({
+        data: { allowed: false, message: 'Server rate limit exceeded' },
+        error: null,
+      })
+
+      await expect(votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+      })).rejects.toThrow('Server rate limit exceeded')
+    })
+
+    it('should allow vote if server rate limit check fails (graceful degradation)', async () => {
+      supabase.rpc.mockResolvedValue({ data: null, error: { message: 'RPC error' } })
+      const upsertMock = vi.fn().mockResolvedValue({ error: null })
+      supabase.from.mockReturnValue({ upsert: upsertMock })
+
+      const result = await votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+      })
+
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should track vote submission in PostHog', async () => {
+      const upsertMock = vi.fn().mockResolvedValue({ error: null })
+      supabase.from.mockReturnValue({ upsert: upsertMock })
+
+      await votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+        rating10: 8,
+        reviewText: 'Great!',
+      })
+
+      expect(posthog.capture).toHaveBeenCalledWith('vote_submitted', {
+        dish_id: 'dish-1',
+        would_order_again: true,
+        rating: 8,
+        has_review: true,
+      })
+    })
+
+    it('should throw classified error on database failure', async () => {
+      supabase.from.mockReturnValue({
+        upsert: vi.fn().mockResolvedValue({ error: { message: 'DB error', code: 'PGRST' } }),
+      })
+
+      await expect(votesApi.submitVote({
+        dishId: 'dish-1',
+        wouldOrderAgain: true,
+      })).rejects.toThrow('DB error')
+    })
+  })
+
+  describe('getUserVotes', () => {
+    it('should return empty object if user not logged in', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: null } })
+
+      const result = await votesApi.getUserVotes()
+
+      expect(result).toEqual({})
+    })
+
+    it('should return votes as a map keyed by dish_id', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+
+      const mockVotes = [
+        { dish_id: 'dish-1', would_order_again: true, rating_10: 9 },
+        { dish_id: 'dish-2', would_order_again: false, rating_10: 5 },
+      ]
+
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: mockVotes, error: null }),
+        }),
+      })
+
+      const result = await votesApi.getUserVotes()
+
+      expect(result).toEqual({
+        'dish-1': { wouldOrderAgain: true, rating10: 9 },
+        'dish-2': { wouldOrderAgain: false, rating10: 5 },
+      })
+    })
+
+    it('should return empty object when no votes exist', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      })
+
+      const result = await votesApi.getUserVotes()
+
+      expect(result).toEqual({})
+    })
+
+    it('should throw classified error on failure', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'Query failed' } }),
+        }),
+      })
+
+      await expect(votesApi.getUserVotes()).rejects.toThrow('Query failed')
+    })
+  })
+
+  describe('getDetailedVotesForUser', () => {
+    it('should return empty array if no userId', async () => {
+      const result = await votesApi.getDetailedVotesForUser(null)
+      expect(result).toEqual([])
+    })
+
+    it('should return detailed votes with dish info', async () => {
+      const mockVotes = [
+        {
+          id: 'vote-1',
+          would_order_again: true,
+          rating_10: 9,
+          created_at: '2024-01-01',
+          dishes: {
+            id: 'dish-1',
+            name: 'Lobster Roll',
+            category: 'seafood',
+            price: 28,
+            photo_url: 'url',
+            avg_rating: 9.2,
+            total_votes: 42,
+            restaurants: { name: "Nancy's" },
+          },
+        },
+      ]
+
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: mockVotes, error: null }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getDetailedVotesForUser('user-1')
+
+      expect(result).toEqual(mockVotes)
+    })
+
+    it('should throw classified error on failure', async () => {
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } }),
+          }),
+        }),
+      })
+
+      await expect(votesApi.getDetailedVotesForUser('user-1')).rejects.toThrow('Error')
+    })
+  })
+
+  describe('deleteVote', () => {
+    it('should throw if not authenticated', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: null } })
+
+      await expect(votesApi.deleteVote('dish-1')).rejects.toThrow('Not authenticated')
+    })
+
+    it('should delete vote successfully', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+      supabase.from.mockReturnValue({
+        delete: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.deleteVote('dish-1')
+
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should throw classified error on failure', async () => {
+      supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+      supabase.from.mockReturnValue({
+        delete: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: { message: 'Delete failed' } }),
+          }),
+        }),
+      })
+
+      await expect(votesApi.deleteVote('dish-1')).rejects.toThrow('Delete failed')
+    })
+  })
+
+  describe('getDishesHelpedRank', () => {
+    it('should return 0 if no userId', async () => {
+      const result = await votesApi.getDishesHelpedRank(null)
+      expect(result).toBe(0)
+    })
+
+    it('should return 0 if user has no votes', async () => {
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      })
+
+      const result = await votesApi.getDishesHelpedRank('user-1')
+
+      expect(result).toBe(0)
+    })
+
+    it('should count dishes with 5+ total votes', async () => {
+      // User voted on 3 dishes
+      const userVotes = [
+        { dish_id: 'dish-1' },
+        { dish_id: 'dish-2' },
+        { dish_id: 'dish-3' },
+      ]
+
+      // dish-1 has 5 votes (ranked), dish-2 has 7 votes (ranked), dish-3 has 3 votes (not ranked)
+      const allVotesOnUserDishes = [
+        { dish_id: 'dish-1' }, { dish_id: 'dish-1' }, { dish_id: 'dish-1' },
+        { dish_id: 'dish-1' }, { dish_id: 'dish-1' }, // 5 votes
+        { dish_id: 'dish-2' }, { dish_id: 'dish-2' }, { dish_id: 'dish-2' },
+        { dish_id: 'dish-2' }, { dish_id: 'dish-2' }, { dish_id: 'dish-2' },
+        { dish_id: 'dish-2' }, // 7 votes
+        { dish_id: 'dish-3' }, { dish_id: 'dish-3' }, { dish_id: 'dish-3' }, // 3 votes
+      ]
+
+      let callCount = 0
+      supabase.from.mockImplementation(() => {
+        callCount++
+        if (callCount === 1) {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: userVotes, error: null }),
+            }),
+          }
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            in: vi.fn().mockResolvedValue({ data: allVotesOnUserDishes, error: null }),
+          }),
+        }
+      })
+
+      const result = await votesApi.getDishesHelpedRank('user-1')
+
+      expect(result).toBe(2) // dish-1 and dish-2 have 5+ votes
+    })
+  })
+
+  describe('getReviewsForDish', () => {
+    it('should fetch paginated reviews for a dish', async () => {
+      const mockReviews = [
+        {
+          id: 'review-1',
+          review_text: 'Great!',
+          rating_10: 9,
+          would_order_again: true,
+          review_created_at: '2024-01-01',
+          user_id: 'user-1',
+          profiles: { id: 'user-1', display_name: 'John' },
+        },
+      ]
+
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({ data: mockReviews, error: null }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getReviewsForDish('dish-1', { limit: 10, offset: 0 })
+
+      expect(result).toEqual(mockReviews)
+    })
+
+    it('should return empty array on error (graceful degradation)', async () => {
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getReviewsForDish('dish-1')
+
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('getSmartSnippetForDish', () => {
+    it('should return best review sorted by rating then date', async () => {
+      const mockBestReview = {
+        review_text: 'Amazing!',
+        rating_10: 10,
+        review_created_at: '2024-01-01',
+        user_id: 'user-1',
+        profiles: { id: 'user-1', display_name: 'Foodie' },
+      }
+
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockResolvedValue({ data: [mockBestReview], error: null }),
+                  }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getSmartSnippetForDish('dish-1')
+
+      expect(result).toEqual(mockBestReview)
+    })
+
+    it('should return null when no reviews exist', async () => {
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+                  }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getSmartSnippetForDish('dish-1')
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null on error (graceful degradation)', async () => {
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } }),
+                  }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getSmartSnippetForDish('dish-1')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getReviewsForUser', () => {
+    it('should return empty array if no userId', async () => {
+      const result = await votesApi.getReviewsForUser(null)
+      expect(result).toEqual([])
+    })
+
+    it('should fetch paginated reviews with dish info', async () => {
+      const mockReviews = [
+        {
+          id: 'review-1',
+          review_text: 'Delicious!',
+          rating_10: 9,
+          would_order_again: true,
+          review_created_at: '2024-01-01',
+          dish_id: 'dish-1',
+          dishes: {
+            id: 'dish-1',
+            name: 'Lobster Roll',
+            photo_url: 'url',
+            category: 'seafood',
+            price: 28,
+            restaurants: { name: "Nancy's" },
+          },
+        },
+      ]
+
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({ data: mockReviews, error: null }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getReviewsForUser('user-1', { limit: 20, offset: 0 })
+
+      expect(result).toEqual(mockReviews)
+    })
+
+    it('should return empty array on error (graceful degradation)', async () => {
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            not: vi.fn().mockReturnValue({
+              neq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+
+      const result = await votesApi.getReviewsForUser('user-1')
+
+      expect(result).toEqual([])
+    })
+  })
+})
