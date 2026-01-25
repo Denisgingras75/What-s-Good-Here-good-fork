@@ -81,7 +81,7 @@ export const dishesApi = {
    * Search dishes by name, category, tags, or cuisine
    * Searches ALL dishes regardless of category - categories are shortcuts, not containers
    * Results sorted by avg_rating (highest first) so best matches rise to top
-   * For multi-word queries like "Mexican food", searches for ANY word matching
+   * For multi-word queries like "Mexican food", extracts the meaningful word
    * @param {string} query - Search query
    * @param {number} limit - Max results
    * @returns {Promise<Array>} Array of matching dishes sorted by rating
@@ -94,13 +94,13 @@ export const dishesApi = {
     const sanitized = sanitizeSearchQuery(query, 50)
     if (!sanitized) return []
 
-    // Split into words for multi-word searches (e.g., "Mexican food" -> ["Mexican", "food"])
-    // Filter out common words and short words that don't help search
-    const stopWords = new Set(['food', 'foods', 'the', 'a', 'an', 'and', 'or', 'for', 'of', 'at', 'to', 'in', 'on', 'best', 'good', 'great', 'near', 'me'])
+    // Extract meaningful search term by filtering out common filler words
+    // "Mexican food" -> "Mexican", "best pizza near me" -> "pizza"
+    const stopWords = new Set(['food', 'foods', 'the', 'a', 'an', 'and', 'or', 'for', 'of', 'at', 'to', 'on', 'best', 'good', 'great', 'near', 'me', 'find', 'get', 'want', 'looking'])
     const words = sanitized.split(/\s+/).filter(w => w.length >= 2 && !stopWords.has(w.toLowerCase()))
 
-    // Use the first significant word for cuisine/tag search, or fall back to full query
-    const searchTerm = words[0] || sanitized
+    // Use the first meaningful word, or fall back to full sanitized query
+    const searchTerm = words.length > 0 ? words[0] : sanitized
 
     const selectFields = `
       id,
@@ -119,23 +119,17 @@ export const dishesApi = {
       )
     `
 
-    // Build OR conditions for multi-word name/category search
-    // For "Mexican food" -> search for name containing "Mexican" OR "food"
-    const nameOrConditions = words.length > 0
-      ? words.map(w => `name.ilike.%${w}%,category.ilike.%${w}%`).join(',')
-      : `name.ilike.%${sanitized}%,category.ilike.%${sanitized}%`
-
     // Run all 3 search queries in parallel for better performance
     const [nameResult, cuisineResult, tagResult] = await Promise.all([
-      // Query 1: Search by dish name and category (any word)
+      // Query 1: Search by dish name and category
       supabase
         .from('dishes')
         .select(selectFields)
         .eq('restaurants.is_open', true)
-        .or(nameOrConditions)
+        .or(`name.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`)
         .order('avg_rating', { ascending: false, nullsFirst: false })
         .limit(limit),
-      // Query 2: Search by restaurant cuisine (first significant word)
+      // Query 2: Search by restaurant cuisine
       supabase
         .from('dishes')
         .select(selectFields)
@@ -143,7 +137,7 @@ export const dishesApi = {
         .ilike('restaurants.cuisine', `%${searchTerm}%`)
         .order('avg_rating', { ascending: false, nullsFirst: false })
         .limit(limit),
-      // Query 3: Search by dish tags (first significant word)
+      // Query 3: Search by dish tags
       supabase
         .from('dishes')
         .select(selectFields)
