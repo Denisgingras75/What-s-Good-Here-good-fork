@@ -11,6 +11,7 @@ import { ReviewFlow } from '../components/ReviewFlow'
 import { PhotoUploadButton } from '../components/PhotoUploadButton'
 import { PhotoUploadConfirmation } from '../components/PhotoUploadConfirmation'
 import { LoginModal } from '../components/Auth/LoginModal'
+import { VariantSelector } from '../components/VariantPicker'
 import { getCategoryImage } from '../constants/categoryImages'
 import { getRatingColor, formatScore10 } from '../utils/ranking'
 import { ThumbsUpIcon } from '../components/ThumbsUpIcon'
@@ -47,6 +48,11 @@ export function Dish() {
   const [dish, setDish] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Variant state
+  const [variants, setVariants] = useState([])
+  const [parentDish, setParentDish] = useState(null)
+  const [isVariant, setIsVariant] = useState(false)
 
   const [photoUploaded, setPhotoUploaded] = useState(null)
   const [featuredPhoto, setFeaturedPhoto] = useState(null)
@@ -114,6 +120,53 @@ export function Dish() {
 
     fetchDish()
   }, [dishId])
+
+  // Fetch variant data (if parent has variants, or if this dish is a variant)
+  useEffect(() => {
+    if (!dish) {
+      setVariants([])
+      setParentDish(null)
+      setIsVariant(false)
+      return
+    }
+
+    const fetchVariantData = async () => {
+      // Check if this dish has variants (is a parent)
+      if (dish.has_variants) {
+        try {
+          const variantData = await dishesApi.getVariants(dish.dish_id || dish.id)
+          setVariants(variantData)
+          setIsVariant(false)
+          setParentDish(null)
+        } catch (err) {
+          console.error('Failed to fetch variants:', err)
+          setVariants([])
+        }
+      }
+      // Check if this dish is a variant (has a parent)
+      else if (dish.parent_dish_id) {
+        try {
+          const [siblings, parent] = await Promise.all([
+            dishesApi.getSiblingVariants(dish.dish_id || dish.id),
+            dishesApi.getParentDish(dish.dish_id || dish.id),
+          ])
+          setVariants(siblings)
+          setParentDish(parent)
+          setIsVariant(true)
+        } catch (err) {
+          console.error('Failed to fetch sibling variants:', err)
+          setVariants([])
+          setParentDish(null)
+        }
+      } else {
+        setVariants([])
+        setParentDish(null)
+        setIsVariant(false)
+      }
+    }
+
+    fetchVariantData()
+  }, [dish?.dish_id, dish?.id, dish?.has_variants, dish?.parent_dish_id])
 
   // Fetch friends' votes for this dish
   useEffect(() => {
@@ -393,6 +446,20 @@ export function Dish() {
           <div className="p-4">
             {/* Dish Info */}
             <div className="mb-6">
+              {/* Parent dish breadcrumb if this is a variant */}
+              {isVariant && parentDish && (
+                <button
+                  onClick={() => navigate(`/dish/${parentDish.id}`)}
+                  className="flex items-center gap-1 text-xs font-medium mb-2 hover:underline"
+                  style={{ color: 'var(--color-primary)' }}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  {parentDish.name}
+                </button>
+              )}
+
               <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
                 {dish.dish_name}
               </h1>
@@ -418,6 +485,20 @@ export function Dish() {
                     : `Early · ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
                 }
               </p>
+
+              {/* Variant Selector - show for parents with variants or variants with siblings */}
+              {variants.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {isVariant ? 'Other flavors' : 'Available flavors'}
+                  </p>
+                  <VariantSelector
+                    variants={variants}
+                    currentDishId={dish.dish_id}
+                    onSelect={(variant) => navigate(`/dish/${variant.dish_id}`)}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Friends who rated this */}

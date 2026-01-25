@@ -164,6 +164,128 @@ export const dishesApi = {
   },
 
   /**
+   * Get variants for a parent dish
+   * @param {string} parentDishId - Parent dish ID
+   * @returns {Promise<Array>} Array of variant dishes with vote stats
+   * @throws {Error} With classified error type
+   */
+  async getVariants(parentDishId) {
+    try {
+      const { data, error } = await supabase.rpc('get_dish_variants', {
+        p_parent_dish_id: parentDishId,
+      })
+
+      if (error) {
+        const classifiedError = new Error(error.message)
+        classifiedError.type = classifyError(error)
+        classifiedError.originalError = error
+        throw classifiedError
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching dish variants:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Check if a dish has variants
+   * @param {string} dishId - Dish ID to check
+   * @returns {Promise<boolean>} True if dish has variants
+   */
+  async hasVariants(dishId) {
+    try {
+      const { count, error } = await supabase
+        .from('dishes')
+        .select('id', { count: 'exact', head: true })
+        .eq('parent_dish_id', dishId)
+
+      if (error) {
+        console.error('Error checking for variants:', error)
+        return false
+      }
+
+      return count > 0
+    } catch (error) {
+      console.error('Error checking for variants:', error)
+      return false
+    }
+  },
+
+  /**
+   * Get parent dish info for a variant
+   * @param {string} dishId - Child dish ID
+   * @returns {Promise<Object|null>} Parent dish info or null if no parent
+   */
+  async getParentDish(dishId) {
+    try {
+      // First get the dish to find its parent_dish_id
+      const { data: dish, error: dishError } = await supabase
+        .from('dishes')
+        .select('parent_dish_id')
+        .eq('id', dishId)
+        .single()
+
+      if (dishError || !dish?.parent_dish_id) {
+        return null
+      }
+
+      // Get parent dish info
+      const { data: parent, error: parentError } = await supabase
+        .from('dishes')
+        .select(`
+          id,
+          name,
+          category,
+          restaurant_id,
+          restaurants (
+            id,
+            name
+          )
+        `)
+        .eq('id', dish.parent_dish_id)
+        .single()
+
+      if (parentError) {
+        console.error('Error fetching parent dish:', parentError)
+        return null
+      }
+
+      return parent
+    } catch (error) {
+      console.error('Error getting parent dish:', error)
+      return null
+    }
+  },
+
+  /**
+   * Get sibling variants for a dish (other variants of the same parent)
+   * @param {string} dishId - Dish ID
+   * @returns {Promise<Array>} Array of sibling variant dishes
+   */
+  async getSiblingVariants(dishId) {
+    try {
+      // First get the dish to find its parent_dish_id
+      const { data: dish, error: dishError } = await supabase
+        .from('dishes')
+        .select('parent_dish_id')
+        .eq('id', dishId)
+        .single()
+
+      if (dishError || !dish?.parent_dish_id) {
+        return []
+      }
+
+      // Get all variants of this parent (including the current dish)
+      return this.getVariants(dish.parent_dish_id)
+    } catch (error) {
+      console.error('Error getting sibling variants:', error)
+      return []
+    }
+  },
+
+  /**
    * Get a single dish by ID with calculated vote stats
    * @param {string} dishId - Dish ID
    * @returns {Promise<Object>} Dish object with calculated avg_rating from votes
@@ -171,11 +293,13 @@ export const dishesApi = {
    */
   async getDishById(dishId) {
     try {
-      // Fetch dish with restaurant info (including cuisine)
+      // Fetch dish with restaurant info (including cuisine) and parent info
       const { data: dish, error: dishError } = await supabase
         .from('dishes')
         .select(`
           *,
+          parent_dish_id,
+          display_order,
           restaurants (
             id,
             name,
@@ -214,11 +338,15 @@ export const dishesApi = {
         ? Math.round((votes.reduce((sum, v) => sum + (v.rating_10 || 0), 0) / totalVotes) * 10) / 10
         : null
 
+      // Check if this dish has variants (is a parent)
+      const hasVariantsResult = await this.hasVariants(dishId)
+
       return {
         ...dish,
         total_votes: totalVotes,
         yes_votes: yesVotes,
         avg_rating: avgRating,
+        has_variants: hasVariantsResult,
       }
     } catch (error) {
       console.error('Error fetching dish:', error)

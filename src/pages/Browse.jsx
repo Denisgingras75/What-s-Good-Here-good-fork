@@ -283,11 +283,20 @@ export function Browse() {
     let result = dishes.filter(dish => {
       if (!debouncedSearchQuery.trim()) return true
       const query = debouncedSearchQuery.toLowerCase()
-      return (
+      // Check dish name, restaurant name, category, tags, and cuisine
+      const matchesBasic = (
         dish.dish_name?.toLowerCase().includes(query) ||
         dish.restaurant_name?.toLowerCase().includes(query) ||
         dish.category?.toLowerCase().includes(query)
       )
+      // Check tags array (e.g., "vegetarian", "caesar", "spicy")
+      const matchesTags = dish.tags?.some(tag =>
+        tag?.toLowerCase().includes(query)
+      )
+      // Check restaurant cuisine (e.g., "indian", "italian")
+      const matchesCuisine = dish.cuisine?.toLowerCase().includes(query)
+
+      return matchesBasic || matchesTags || matchesCuisine
     })
 
     // Then sort based on selected option

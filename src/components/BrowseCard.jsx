@@ -14,6 +14,10 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
     avg_rating,
     total_votes,
     distance_miles,
+    has_variants,
+    variant_count,
+    best_variant_name,
+    best_variant_rating,
   } = dish
 
   const imgSrc = photo_url || getCategoryImage(category)
@@ -133,6 +137,32 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
                 </>
               )}
             </div>
+
+            {/* Variant info badge */}
+            {has_variants && variant_count > 0 && (
+              <div className="mt-1.5">
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                  style={{
+                    background: 'var(--color-primary-muted)',
+                    color: 'var(--color-primary)'
+                  }}
+                >
+                  {variant_count} flavor{variant_count === 1 ? '' : 's'}
+                  {best_variant_name && (
+                    <>
+                      <span style={{ opacity: 0.5 }}>·</span>
+                      <span>Best: {best_variant_name}</span>
+                      {best_variant_rating && (
+                        <span className="font-bold" style={{ color: getRatingColor(best_variant_rating) }}>
+                          {best_variant_rating}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </span>
+              </div>
+            )}
 
             {/* Rating info line */}
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>

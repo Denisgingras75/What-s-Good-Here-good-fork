@@ -239,4 +239,61 @@ Defined in `src/constants/photoQuality.js`:
 
 ---
 
-*Last updated: Jan 17, 2026*
+## Dish Variants System
+
+Parent-child relationship for dishes with multiple flavors/styles (e.g., Wings → Buffalo, BBQ, Garlic Parm).
+
+### How It Works
+
+| Dish Type | `parent_dish_id` | Behavior |
+|-----------|------------------|----------|
+| Standalone | NULL | Shows normally with its own votes |
+| Parent | NULL (has children) | Shows aggregated stats from children |
+| Child variant | UUID (points to parent) | Hidden from main lists, shown when expanding parent |
+
+### Database Columns
+
+```sql
+dishes.parent_dish_id  -- NULL = parent/standalone, UUID = child variant
+dishes.display_order   -- Sort order within variant list (lower = first)
+```
+
+### Linking Variants
+
+```sql
+-- Find dishes to link
+SELECT id, name, restaurant_id FROM dishes WHERE name ILIKE '%wings%';
+
+-- Link children to parent
+UPDATE dishes SET parent_dish_id = 'PARENT_ID', display_order = 1 WHERE id = 'CHILD_ID';
+UPDATE dishes SET parent_dish_id = 'PARENT_ID', display_order = 2 WHERE id = 'ANOTHER_CHILD_ID';
+```
+
+### Key Functions
+
+| Function | Purpose |
+|----------|---------|
+| `get_restaurant_dishes(uuid)` | Returns parent dishes with aggregated variant stats |
+| `get_dish_variants(uuid)` | Returns all variants for a parent dish |
+| `get_ranked_dishes(...)` | Excludes child variants, shows parents only |
+
+### UI Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `VariantPicker` | `src/components/VariantPicker.jsx` | Expandable variant list |
+| `VariantBadge` | `src/components/VariantPicker.jsx` | "X flavors" badge |
+| `VariantSelector` | `src/components/VariantPicker.jsx` | Horizontal pill selector |
+
+### API Methods
+
+```js
+dishesApi.getVariants(parentDishId)     // Get variants for a parent
+dishesApi.hasVariants(dishId)           // Check if dish has variants
+dishesApi.getParentDish(dishId)         // Get parent info for a variant
+dishesApi.getSiblingVariants(dishId)    // Get other variants of same parent
+```
+
+---
+
+*Last updated: Jan 24, 2026*
