@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { ReviewFlow } from './ReviewFlow'
 import { PhotoUploadButton } from './PhotoUploadButton'
@@ -50,14 +50,45 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
     }
   }, [dish])
 
+  // Track if closing via back button to avoid double history.back()
+  const closingViaBackButton = useRef(false)
+
   // Animated close handler
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
+    if (isClosing) return // Prevent double close
     setIsClosing(true)
+
+    // If not closing via back button, go back in history to remove our pushed entry
+    if (!closingViaBackButton.current) {
+      window.history.back()
+    }
+    closingViaBackButton.current = false
+
     setTimeout(() => {
       setIsClosing(false)
       onClose?.()
     }, 200) // Match animation duration
-  }
+  }, [isClosing, onClose])
+
+  // Handle back button to close modal
+  useEffect(() => {
+    if (!dish) return
+
+    // Push a history entry when modal opens
+    window.history.pushState({ modal: 'dish', dishId: dish.dish_id }, '')
+
+    const handlePopState = () => {
+      // Back button was pressed - close the modal
+      closingViaBackButton.current = true
+      handleClose()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [dish?.dish_id, handleClose])
 
   // Fetch photos when modal opens
   useEffect(() => {
