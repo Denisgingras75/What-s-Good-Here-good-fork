@@ -71,6 +71,8 @@ export const CategoryPicker = memo(function CategoryPicker({
               key={category.id}
               onClick={() => !disabled && toggleCategory(category.id)}
               disabled={disabled}
+              aria-pressed={selected}
+              aria-label={`${category.label}${selected ? ', selected' : ''}`}
               className={`
                 flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium
                 transition-all duration-200 min-h-[44px]
@@ -85,7 +87,7 @@ export const CategoryPicker = memo(function CategoryPicker({
               <CategoryIcon category={category.id} size={18} />
               <span>{category.label}</span>
               {selected && (
-                <svg className="w-4 h-4 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg aria-hidden="true" className="w-4 h-4 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -102,6 +104,7 @@ export const CategoryPicker = memo(function CategoryPicker({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Don't see yours? Type it in..."
+            aria-label="Search for a food category"
             className="w-full px-4 py-3 pr-10 rounded-xl text-sm transition-colors focus:outline-none"
             style={{
               background: 'var(--color-surface-elevated)',
@@ -112,10 +115,11 @@ export const CategoryPicker = memo(function CategoryPicker({
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
+              aria-label="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 tap-target p-1"
               style={{ color: 'var(--color-text-tertiary)' }}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg aria-hidden="true" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -138,6 +142,8 @@ export const CategoryPicker = memo(function CategoryPicker({
                   key={category.id}
                   onClick={() => !disabled && toggleCategory(category.id)}
                   disabled={disabled}
+                  aria-pressed={selected}
+                  aria-label={`${category.label}${selected ? ', selected' : ''}`}
                   className={`
                     flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium
                     transition-all duration-200 animate-fade-in-up min-h-[44px]
@@ -152,7 +158,7 @@ export const CategoryPicker = memo(function CategoryPicker({
                   <CategoryIcon category={category.id} size={18} />
                   <span>{category.label}</span>
                   {selected && (
-                    <svg className="w-4 h-4 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <svg aria-hidden="true" className="w-4 h-4 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   )}

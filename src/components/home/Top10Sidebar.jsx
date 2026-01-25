@@ -8,7 +8,7 @@ export function Top10Sidebar({ dishes, showToggle, activeTab, onTabChange }) {
   const navigate = useNavigate()
 
   return (
-    <aside className="mt-8 lg:mt-0 lg:w-72 lg:flex-shrink-0">
+    <aside aria-label="Top 10 dishes" className="mt-8 lg:mt-0 lg:w-72 lg:flex-shrink-0">
       <div
         className="rounded-2xl p-4 lg:sticky lg:top-4"
         style={{
@@ -18,8 +18,10 @@ export function Top10Sidebar({ dishes, showToggle, activeTab, onTabChange }) {
       >
         {/* Toggle Buttons (only when user has preferences) */}
         {showToggle ? (
-          <div className="flex gap-2 mb-4">
+          <div role="tablist" aria-label="Top 10 list filter" className="flex gap-2 mb-4">
             <button
+              role="tab"
+              aria-selected={activeTab === 'mv'}
               onClick={() => onTabChange('mv')}
               className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                 activeTab === 'mv' ? 'shadow-md' : ''
@@ -32,6 +34,8 @@ export function Top10Sidebar({ dishes, showToggle, activeTab, onTabChange }) {
               MV Top 10
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === 'personal'}
               onClick={() => onTabChange('personal')}
               className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                 activeTab === 'personal' ? 'shadow-md' : ''
@@ -86,9 +90,15 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
   const { dish_name, restaurant_name, avg_rating, total_votes } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
 
+  // Build accessible label
+  const accessibleLabel = isRanked
+    ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes`
+    : `Rank ${rank}: ${dish_name} at ${restaurant_name}, ${total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'new dish'}`
+
   return (
     <button
       onClick={onClick}
+      aria-label={accessibleLabel}
       className="w-full flex items-center gap-2 py-2 px-2 rounded-lg transition-colors text-left group"
       style={{ '--hover-bg': 'var(--color-surface-elevated)' }}
       onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
@@ -96,13 +106,14 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
     >
       {/* Rank - medals for top 3 */}
       {rank <= 3 ? (
-        <span className="text-base flex-shrink-0 w-5 text-center">
+        <span aria-hidden="true" className="text-base flex-shrink-0 w-5 text-center">
           {rank === 1 && '🥇'}
           {rank === 2 && '🥈'}
           {rank === 3 && '🥉'}
         </span>
       ) : (
         <span
+          aria-hidden="true"
           className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
           style={{
             background: 'var(--color-surface)',
