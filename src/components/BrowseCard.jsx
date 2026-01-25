@@ -4,6 +4,12 @@ import { getRatingColor } from '../utils/ranking'
 import { getResponsiveImageProps } from '../utils/images'
 
 export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
+  // Defensive: ensure dish exists
+  if (!dish) {
+    console.error('BrowseCard received null/undefined dish')
+    return null
+  }
+
   const {
     dish_id,
     dish_name,

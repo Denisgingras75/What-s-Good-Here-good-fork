@@ -44,16 +44,22 @@ export function VirtualizedDishList({
     )
   }, [dishes, itemsPerRow, columns, onDishClick, isFavorite, onToggleFavorite])
 
+  // Defensive: ensure dishes is an array
+  if (!Array.isArray(dishes)) {
+    console.error('VirtualizedDishList received non-array dishes:', dishes)
+    return null
+  }
+
   // Don't virtualize small lists - overhead not worth it
   if (dishes.length <= 10) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {dishes.map((dish) => (
           <BrowseCard
-            key={dish.dish_id}
+            key={dish?.dish_id || Math.random()}
             dish={dish}
             onClick={() => onDishClick(dish)}
-            isFavorite={isFavorite ? isFavorite(dish.dish_id) : false}
+            isFavorite={isFavorite ? isFavorite(dish?.dish_id) : false}
             onToggleFavorite={onToggleFavorite}
           />
         ))}
