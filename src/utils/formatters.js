@@ -10,6 +10,8 @@
 export function formatRelativeTime(dateString) {
   if (!dateString) return ''
   const date = new Date(dateString)
+  // Guard against invalid dates
+  if (isNaN(date.getTime())) return ''
   const now = new Date()
   const diffMs = now - date
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))

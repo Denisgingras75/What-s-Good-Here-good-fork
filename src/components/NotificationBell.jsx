@@ -112,7 +112,10 @@ export function NotificationBell() {
 
   // Format time ago
   const timeAgo = (dateStr) => {
+    if (!dateStr) return ''
     const date = new Date(dateStr)
+    // Guard against invalid dates
+    if (isNaN(date.getTime())) return ''
     const now = new Date()
     const seconds = Math.floor((now - date) / 1000)
 
