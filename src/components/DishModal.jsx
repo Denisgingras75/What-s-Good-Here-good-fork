@@ -6,6 +6,7 @@ import { PhotoUploadConfirmation } from './PhotoUploadConfirmation'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { logger } from '../utils/logger'
 import { useFocusTrap } from '../hooks/useFocusTrap'
+import { getResponsiveImageProps } from '../utils/images'
 
 export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
   const [photoUploaded, setPhotoUploaded] = useState(null)
@@ -183,7 +184,12 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
                 onClick={() => setLightboxPhoto(featuredPhoto.photo_url)}
                 aria-label={`View featured photo of ${dish.dish_name}`}
               >
-                <img src={featuredPhoto.photo_url} alt={dish.dish_name} loading="lazy" />
+                <img
+                  {...getResponsiveImageProps(featuredPhoto.photo_url, [400, 600, 800])}
+                  alt={dish.dish_name}
+                  loading="lazy"
+                  sizes="(max-width: 640px) 100vw, 600px"
+                />
                 {featuredPhoto.source_type === 'restaurant' && (
                   <span className="photo-badge restaurant">Official</span>
                 )}
@@ -204,7 +210,12 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
                       onClick={() => setLightboxPhoto(photo.photo_url)}
                       aria-label={`View photo of ${dish.dish_name}`}
                     >
-                      <img src={photo.photo_url} alt={dish.dish_name} loading="lazy" />
+                      <img
+                        {...getResponsiveImageProps(photo.photo_url, [200, 300, 400])}
+                        alt={dish.dish_name}
+                        loading="lazy"
+                        sizes="150px"
+                      />
                     </button>
                   ))}
                 </div>
@@ -252,7 +263,11 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
           aria-label="Photo lightbox"
         >
           <button className="lightbox-close" aria-label="Close lightbox">×</button>
-          <img src={lightboxPhoto} alt={dish.dish_name} />
+          <img
+            {...getResponsiveImageProps(lightboxPhoto, [800, 1200, 1600])}
+            alt={dish.dish_name}
+            sizes="100vw"
+          />
         </div>
       )}
     </div>,

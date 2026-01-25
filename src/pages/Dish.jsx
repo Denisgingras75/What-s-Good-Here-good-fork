@@ -155,68 +155,57 @@ export function Dish() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only re-run on specific dish properties
   }, [dish?.dish_id, dish?.id, dish?.has_variants, dish?.parent_dish_id])
 
-  // Fetch friends' votes for this dish
-  useEffect(() => {
-    if (!dishId || !user) {
-      setFriendsVotes([])
-      return
-    }
-
-    const fetchFriendsVotes = async () => {
-      try {
-        const votes = await followsApi.getFriendsVotesForDish(dishId)
-        setFriendsVotes(votes)
-      } catch (err) {
-        logger.error('Failed to fetch friends votes:', err)
-        setFriendsVotes([]) // Graceful degradation
-      }
-    }
-
-    fetchFriendsVotes()
-  }, [dishId, user])
-
-  // Fetch reviews
+  // Fetch photos, reviews, and friends' votes in parallel (all independent of each other)
   useEffect(() => {
     if (!dishId) return
 
-    const fetchReviews = async () => {
+    const fetchSecondaryData = async () => {
       setReviewsLoading(true)
-      try {
-        const data = await votesApi.getReviewsForDish(dishId, { limit: 20 })
-        setReviews(data)
-      } catch (error) {
-        logger.error('Failed to fetch reviews:', error)
-        setReviews([])
-      } finally {
-        setReviewsLoading(false)
-      }
-    }
 
-    fetchReviews()
-  }, [dishId])
-
-  // Fetch photos
-  useEffect(() => {
-    if (!dishId) return
-
-    const fetchPhotos = async () => {
-      try {
-        const [featured, community, all] = await Promise.all([
+      // Run all independent fetches in parallel
+      const [photosResult, reviewsResult, friendsResult] = await Promise.allSettled([
+        // Photos (3 calls, already parallelized internally)
+        Promise.all([
           dishPhotosApi.getFeaturedPhoto(dishId),
           dishPhotosApi.getCommunityPhotos(dishId),
           dishPhotosApi.getAllVisiblePhotos(dishId),
-        ])
+        ]),
+        // Reviews
+        votesApi.getReviewsForDish(dishId, { limit: 20 }),
+        // Friends' votes (only if user is logged in)
+        user ? followsApi.getFriendsVotesForDish(dishId) : Promise.resolve([]),
+      ])
+
+      // Handle photos result
+      if (photosResult.status === 'fulfilled') {
+        const [featured, community, all] = photosResult.value
         setFeaturedPhoto(featured)
         setCommunityPhotos(community)
         setAllPhotos(all)
-      } catch (error) {
-        logger.error('Failed to fetch photos:', error)
-        // Gracefully degrade - show no photos
+      } else {
+        logger.error('Failed to fetch photos:', photosResult.reason)
+      }
+
+      // Handle reviews result
+      if (reviewsResult.status === 'fulfilled') {
+        setReviews(reviewsResult.value)
+      } else {
+        logger.error('Failed to fetch reviews:', reviewsResult.reason)
+        setReviews([])
+      }
+      setReviewsLoading(false)
+
+      // Handle friends' votes result
+      if (friendsResult.status === 'fulfilled') {
+        setFriendsVotes(friendsResult.value)
+      } else {
+        logger.error('Failed to fetch friends votes:', friendsResult.reason)
+        setFriendsVotes([])
       }
     }
 
-    fetchPhotos()
-  }, [dishId])
+    fetchSecondaryData()
+  }, [dishId, user])
 
   const handlePhotoUploaded = async (photo) => {
     setPhotoUploaded(photo)

@@ -11,6 +11,7 @@ import { getStorageItem, setStorageItem } from '../lib/storage'
 import { BROWSE_CATEGORIES } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { BrowseCard } from '../components/BrowseCard'
+import { VirtualizedDishList } from '../components/VirtualizedDishList'
 import { DishModal } from '../components/DishModal'
 import { getPendingVoteFromStorage } from '../lib/storage'
 import { LoginModal } from '../components/Auth/LoginModal'
@@ -666,17 +667,13 @@ export function Browse() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredDishes.map((dish) => (
-                  <BrowseCard
-                    key={dish.dish_id}
-                    dish={dish}
-                    onClick={() => openDishModal(dish)}
-                    isFavorite={isFavorite ? isFavorite(dish.dish_id) : false}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
-                ))}
-              </div>
+              <VirtualizedDishList
+                dishes={filteredDishes}
+                onDishClick={openDishModal}
+                isFavorite={isFavorite}
+                onToggleFavorite={handleToggleFavorite}
+                columns={2}
+              />
             )}
 
             {/* Footer */}
