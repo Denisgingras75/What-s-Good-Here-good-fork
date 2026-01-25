@@ -8,24 +8,7 @@
  */
 
 import { PlateIcon } from './PlateIcon'
-
-// Category image mappings
-const CATEGORY_IMAGES = {
-  pizza: '/categories/pizza.webp',
-  burger: '/categories/burgers.webp',
-  taco: '/categories/tacos.webp',
-  wings: '/categories/wings.webp',
-  sushi: '/categories/sushi.webp',
-  breakfast: '/categories/breakfast.webp',
-  'lobster roll': '/categories/lobster-rolls.webp',
-  seafood: '/categories/seafood.webp',
-  chowder: '/categories/chowder.webp',
-  pasta: '/categories/pasta.webp',
-  steak: '/categories/steak.webp',
-  sandwich: '/categories/sandwiches.webp',
-  salad: '/categories/salads.webp',
-  tendys: '/categories/tendys.webp',
-}
+import { getCategoryNeonImage } from '../constants/categories'
 
 export function CategoryImageCard({
   category,
@@ -33,7 +16,7 @@ export function CategoryImageCard({
   onClick,
   size = 80,
 }) {
-  const imageSrc = CATEGORY_IMAGES[category.id] || null
+  const imageSrc = getCategoryNeonImage(category.id)
 
   return (
     <button

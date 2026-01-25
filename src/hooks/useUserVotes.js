@@ -7,9 +7,6 @@ import {
 } from '../constants/categories'
 import { logger } from '../utils/logger'
 
-// Re-export for backwards compatibility
-export { CATEGORY_INFO, TIER_THRESHOLDS, MAJOR_CATEGORIES }
-
 /**
  * Transform raw vote data to dish format
  */
