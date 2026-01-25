@@ -17,40 +17,32 @@ if (!isSupabaseConfigured) {
   }
 }
 
-// Create client - require real config (no silent placeholders)
+// SECURITY: In-memory storage for auth tokens
+// ===========================================
+// Tokens are stored in memory only, not localStorage/sessionStorage.
+// This prevents XSS attacks from stealing auth tokens.
 //
-// SECURITY NOTE: Session tokens stored in localStorage
-// =====================================================
-// Supabase SDK stores auth tokens in localStorage for session persistence.
-// This is accessible to JavaScript - an XSS attack could steal tokens.
+// Trade-off: Users must re-login after page refresh or closing the tab.
+// This is acceptable for a food discovery app where security > convenience.
 //
-// Why not in-memory storage?
-// - Would require re-login on every page load/refresh
-// - Breaks user experience for a food discovery app
-//
-// Required mitigations (configure in Vercel/hosting):
-// 1. Content Security Policy (CSP) headers:
-//    - script-src 'self' - block inline scripts and external scripts
-//    - style-src 'self' 'unsafe-inline' - allow Tailwind
-//    - connect-src 'self' https://*.supabase.co - restrict API calls
-//    - frame-ancestors 'none' - prevent clickjacking
-//
-// 2. Other security headers:
-//    - X-Content-Type-Options: nosniff
-//    - X-Frame-Options: DENY
-//    - Referrer-Policy: strict-origin-when-cross-origin
-//
-// 3. App-level protections (already implemented):
-//    - Input sanitization (src/utils/sanitize.js)
-//    - autoRefreshToken: true (short-lived tokens)
-//    - No PII stored in localStorage (email removed from login forms)
+// The in-memory store implements the Web Storage API interface.
+const inMemoryStorage = (() => {
+  const store = new Map()
+  return {
+    getItem: (key) => store.get(key) ?? null,
+    setItem: (key, value) => store.set(key, value),
+    removeItem: (key) => store.delete(key),
+  }
+})()
+
+// Create client with in-memory auth storage
 export const supabase = createClient(
   supabaseUrl || '',
   supabaseAnonKey || '',
   {
     auth: {
       persistSession: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      storage: inMemoryStorage,
       storageKey: 'whats-good-here-auth',
       autoRefreshToken: true,
       detectSessionInUrl: true,
