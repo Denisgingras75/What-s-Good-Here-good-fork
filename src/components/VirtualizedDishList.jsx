@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react'
-import { List } from 'react-window'
+import { FixedSizeList as List } from 'react-window'
 import { BrowseCard } from './BrowseCard'
 
 // Estimated row height - BrowseCard is roughly this tall
