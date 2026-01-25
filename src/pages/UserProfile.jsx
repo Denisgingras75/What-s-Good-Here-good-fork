@@ -244,6 +244,7 @@ export function UserProfile() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
+      <h1 className="sr-only">{profile.display_name}'s Profile</h1>
       {/* Header */}
       <div className="border-b px-4 py-6" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-divider)' }}>
         <div className="flex items-center gap-4">

@@ -51,6 +51,7 @@ export function Badges() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
+      <h1 className="sr-only">Your Badges and Achievements</h1>
       {/* Header */}
       <header className="px-4 py-4" style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-divider)' }}>
         <div className="max-w-2xl mx-auto flex items-center gap-4">
