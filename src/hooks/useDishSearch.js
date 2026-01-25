@@ -24,16 +24,6 @@ export function useDishSearch(query, limit = 5) {
     logger.error('Error searching dishes:', error)
   }
 
-  // Debug logging
-  console.log('useDishSearch:', {
-    query: trimmedQuery,
-    dataType: typeof data,
-    dataIsArray: Array.isArray(data),
-    dataLength: data?.length,
-    isLoading,
-    error: error?.message,
-  })
-
   return {
     // Ensure we always return an array, even if API returns unexpected data
     results: Array.isArray(data) ? data : [],

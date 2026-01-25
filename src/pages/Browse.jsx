@@ -136,17 +136,14 @@ export function Browse() {
 
   const { location, radius } = useLocationContext()
 
-  // Only fetch dishes when we have a category selected OR when searching
-  const shouldFetchDishes = selectedCategory || debouncedSearchQuery.trim()
-
-  // When text searching, use island-wide radius (30 miles covers all of MV)
-  // so users can find dishes regardless of their location
-  const searchRadius = debouncedSearchQuery.trim() ? 30 : radius
+  // Only fetch from useDishes when browsing by category (NOT when text searching)
+  // Text search uses useDishSearch hook instead
+  const shouldFetchFromUseDishes = selectedCategory && !debouncedSearchQuery.trim()
 
   const { dishes, loading, error, refetch } = useDishes(
-    shouldFetchDishes ? location : null, // Pass null location to skip fetch
-    searchRadius,
-    debouncedSearchQuery.trim() ? null : selectedCategory, // Search across all categories
+    shouldFetchFromUseDishes ? location : null, // Pass null location to skip fetch
+    radius,
+    selectedCategory,
     null
   )
   const { isFavorite, toggleFavorite } = useFavorites(user?.id)
@@ -256,26 +253,10 @@ export function Browse() {
 
   // Filter and sort dishes
   const filteredDishes = useMemo(() => {
-    // Debug logging
-    console.log('filteredDishes calculating:', {
-      isSearching: !!debouncedSearchQuery.trim(),
-      searchResultsType: typeof searchResults,
-      searchResultsIsArray: Array.isArray(searchResults),
-      searchResultsLength: searchResults?.length,
-      dishesType: typeof dishes,
-      dishesIsArray: Array.isArray(dishes),
-      dishesLength: dishes?.length,
-    })
-
-    // When searching, use search results from API (handles cuisine/tag searches)
-    // When browsing by category, use dishes from useDishes()
-    // Both hooks guarantee arrays, but filter for valid entries as extra safety
+    // When searching, use search results from useDishSearch
+    // When browsing by category, use dishes from useDishes
     const source = debouncedSearchQuery.trim() ? searchResults : dishes
-    if (!Array.isArray(source)) {
-      console.error('Source is not an array:', source)
-      return []
-    }
-    let result = source.filter(d => d && d.dish_id)
+    let result = (Array.isArray(source) ? source : []).filter(d => d && d.dish_id)
 
     // Then sort based on selected option
     switch (sortBy) {
