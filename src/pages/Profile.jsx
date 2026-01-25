@@ -499,12 +499,7 @@ export function Profile() {
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t"
                 style={{ borderColor: 'var(--color-divider)' }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-                    {soundMuted ? '🔇' : '🔊'}
-                  </div>
-                  <span className="font-medium text-[color:var(--color-text-primary)]">Bite Sounds</span>
-                </div>
+                <span className="font-medium text-[color:var(--color-text-primary)]">Bite Sounds</span>
                 <div className="w-12 h-7 rounded-full transition-colors" style={{ background: soundMuted ? 'var(--color-surface-elevated)' : 'var(--color-primary)' }}>
                   <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform mt-1 ${soundMuted ? 'ml-1' : 'ml-6'}`} />
                 </div>
@@ -516,12 +511,7 @@ export function Profile() {
                   to="/admin"
                   className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t" style={{ borderColor: 'var(--color-divider)' }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-                      ⚙️
-                    </div>
-                    <span className="font-medium text-[color:var(--color-text-primary)]">Admin Panel</span>
-                  </div>
+                  <span className="font-medium text-[color:var(--color-text-primary)]">Admin Panel</span>
                   <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -533,12 +523,7 @@ export function Profile() {
                 href="/badges"
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t" style={{ borderColor: 'var(--color-divider)' }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-                    🏆
-                  </div>
-                  <span className="font-medium text-[color:var(--color-text-primary)]">How Badges Work</span>
-                </div>
+                <span className="font-medium text-[color:var(--color-text-primary)]">How Badges Work</span>
                 <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -555,12 +540,7 @@ export function Profile() {
                 href="/privacy"
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t" style={{ borderColor: 'var(--color-divider)' }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-                    🔒
-                  </div>
-                  <span className="font-medium text-[color:var(--color-text-primary)]">Privacy Policy</span>
-                </div>
+                <span className="font-medium text-[color:var(--color-text-primary)]">Privacy Policy</span>
                 <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -571,12 +551,7 @@ export function Profile() {
                 href="/terms"
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t" style={{ borderColor: 'var(--color-divider)' }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-                    📋
-                  </div>
-                  <span className="font-medium text-[color:var(--color-text-primary)]">Terms of Service</span>
-                </div>
+                <span className="font-medium text-[color:var(--color-text-primary)]">Terms of Service</span>
                 <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -585,12 +560,9 @@ export function Profile() {
               {/* Sign Out */}
               <button
                 onClick={handleSignOut}
-                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t"
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t"
                 style={{ borderColor: 'var(--color-divider)' }}
               >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(239, 68, 68, 0.15)' }}>
-                  🚪
-                </div>
                 <span className="font-medium text-red-400">Sign Out</span>
               </button>
             </div>
@@ -937,12 +909,7 @@ function PhotosInfoSection() {
         onClick={() => setExpanded(!expanded)}
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-            📷
-          </div>
-          <span className="font-medium text-[color:var(--color-text-primary)]">How Photos Work</span>
-        </div>
+        <span className="font-medium text-[color:var(--color-text-primary)]">How Photos Work</span>
         <svg
           className={`w-5 h-5 text-[color:var(--color-text-tertiary)] transition-transform ${expanded ? 'rotate-180' : ''}`}
           fill="none"
@@ -997,12 +964,7 @@ function MissionSection() {
         onClick={() => setExpanded(!expanded)}
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-            💡
-          </div>
-          <span className="font-medium text-[color:var(--color-text-primary)]">Our Mission</span>
-        </div>
+        <span className="font-medium text-[color:var(--color-text-primary)]">Our Mission</span>
         <svg
           className={`w-5 h-5 text-[color:var(--color-text-tertiary)] transition-transform ${expanded ? 'rotate-180' : ''}`}
           fill="none"
@@ -1349,32 +1311,27 @@ function EditFavoritesSection({
           editing ? '' : 'hover:bg-[color:var(--color-surface-elevated)]'
         }`}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-elevated)' }}>
-            <HeartIcon size={40} />
-          </div>
-          <div className="text-left">
-            <span className="font-medium text-[color:var(--color-text-primary)]">Favorite Categories</span>
-            {!editing && displayCategories.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1">
-                {displayCategories.map(cat => (
-                  <span
-                    key={cat.id}
-                    className="text-xs px-1.5 py-0.5 rounded flex items-center gap-1"
-                    style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
-                  >
-                    <CategoryIcon category={cat.id} size={14} />
-                    {cat.label}
-                  </span>
-                ))}
-              </div>
-            )}
-            {!editing && displayCategories.length === 0 && (
-              <p className="text-xs text-[color:var(--color-text-tertiary)]">
-                Set your favorites for a personalized Top 10
-              </p>
-            )}
-          </div>
+        <div className="text-left">
+          <span className="font-medium text-[color:var(--color-text-primary)]">Favorite Categories</span>
+          {!editing && displayCategories.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {displayCategories.map(cat => (
+                <span
+                  key={cat.id}
+                  className="text-xs px-1.5 py-0.5 rounded flex items-center gap-1"
+                  style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
+                >
+                  <CategoryIcon category={cat.id} size={14} />
+                  {cat.label}
+                </span>
+              ))}
+            </div>
+          )}
+          {!editing && displayCategories.length === 0 && (
+            <p className="text-xs text-[color:var(--color-text-tertiary)]">
+              Set your favorites for a personalized Top 10
+            </p>
+          )}
         </div>
         {!editing && (
           <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
