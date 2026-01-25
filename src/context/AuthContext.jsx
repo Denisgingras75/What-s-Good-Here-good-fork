@@ -69,8 +69,15 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    // Clear all sensitive localStorage data before signing out
+    // Clear all sensitive localStorage/sessionStorage data before signing out
     clearPendingVoteStorage()
+    // SECURITY: Clear any cached PII (email was previously stored for convenience)
+    try {
+      sessionStorage.removeItem('whats-good-here-email')
+      localStorage.removeItem('whats-good-here-email')
+    } catch {
+      // Storage access may fail in private browsing - ignore
+    }
     await supabase.auth.signOut()
     setUser(null)
   }, [])

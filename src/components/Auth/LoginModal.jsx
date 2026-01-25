@@ -3,10 +3,9 @@ import { authApi } from '../../api/authApi'
 import { getPendingVoteFromStorage } from '../../lib/storage'
 import { ThumbsUpIcon } from '../ThumbsUpIcon'
 import { ThumbsDownIcon } from '../ThumbsDownIcon'
-import { logger } from '../../utils/logger'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 
-const REMEMBERED_EMAIL_KEY = 'whats-good-here-email'
+// SECURITY: Email is NOT persisted to storage to prevent XSS exposure of PII
 
 export function LoginModal({ isOpen, onClose, pendingAction = null }) {
   const [loading, setLoading] = useState(false)
@@ -20,20 +19,6 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
   // Check for pending vote from storage
   const pendingVote = getPendingVoteFromStorage()
   const hasPendingVote = pendingVote !== null
-
-  // Load remembered email when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      try {
-        const savedEmail = sessionStorage.getItem(REMEMBERED_EMAIL_KEY)
-        if (savedEmail) {
-          setEmail(savedEmail)
-        }
-      } catch (error) {
-        logger.warn('LoginModal: unable to read remembered email', error)
-      }
-    }
-  }, [isOpen])
 
   // Reset state when modal closes
   useEffect(() => {
@@ -91,14 +76,6 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
     try {
       setLoading(true)
       setMessage(null)
-
-      // Remember the email
-      try {
-        sessionStorage.setItem(REMEMBERED_EMAIL_KEY, email)
-      } catch (error) {
-        logger.warn('LoginModal: unable to persist remembered email', error)
-      }
-
       await authApi.signInWithPassword(email, password)
       onClose()
     } catch (error) {
@@ -129,13 +106,6 @@ export function LoginModal({ isOpen, onClose, pendingAction = null }) {
     try {
       setLoading(true)
       setMessage(null)
-
-      // Remember the email
-      try {
-        localStorage.setItem(REMEMBERED_EMAIL_KEY, email)
-      } catch (error) {
-        logger.warn('LoginModal: unable to persist remembered email', error)
-      }
 
       const result = await authApi.signUpWithPassword(email, password, username)
 

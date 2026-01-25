@@ -43,7 +43,7 @@ const TABS = [
   { id: 'unrated', label: 'Unrated', emoji: null, icon: 'camera' },
 ]
 
-const REMEMBERED_EMAIL_KEY = 'whats-good-here-email'
+// SECURITY: Email is NOT persisted to storage to prevent XSS exposure of PII
 
 export function Profile() {
   const navigate = useNavigate()
@@ -92,19 +92,6 @@ export function Profile() {
       })
   }, [user])
 
-  // Load remembered email on mount (for logged-out state)
-  useEffect(() => {
-    if (!user) {
-      try {
-        const savedEmail = sessionStorage.getItem(REMEMBERED_EMAIL_KEY)
-        if (savedEmail) {
-          setEmail(savedEmail)
-        }
-      } catch (e) {
-          logger.warn('Profile: unable to read remembered email', e)
-      }
-    }
-  }, [user])
 
   // Set initial name for editing
   useEffect(() => {
@@ -184,12 +171,6 @@ export function Profile() {
     e.preventDefault()
     setAuthLoading(true)
     try {
-      // Remember the email for next time
-      try {
-        sessionStorage.setItem(REMEMBERED_EMAIL_KEY, email)
-      } catch (e) {
-          logger.warn('Profile: unable to persist remembered email', e)
-      }
       // Use current page URL so user returns to the same place after login
       await authApi.signInWithMagicLink(email, window.location.href)
       setMessage({ type: 'success', text: 'Check your email for a magic link!' })

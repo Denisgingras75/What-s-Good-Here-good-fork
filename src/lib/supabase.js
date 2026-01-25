@@ -18,10 +18,32 @@ if (!isSupabaseConfigured) {
 }
 
 // Create client - require real config (no silent placeholders)
-// SECURITY NOTE: Session tokens are stored in localStorage for persistence across page reloads.
-// This is a Supabase SDK limitation - tokens are accessible to JavaScript and could be stolen via XSS.
-// Mitigations: Strict CSP headers, input sanitization, short token expiry with auto-refresh.
-// Alternative (in-memory storage) would break session persistence and require re-login on every page load.
+//
+// SECURITY NOTE: Session tokens stored in localStorage
+// =====================================================
+// Supabase SDK stores auth tokens in localStorage for session persistence.
+// This is accessible to JavaScript - an XSS attack could steal tokens.
+//
+// Why not in-memory storage?
+// - Would require re-login on every page load/refresh
+// - Breaks user experience for a food discovery app
+//
+// Required mitigations (configure in Vercel/hosting):
+// 1. Content Security Policy (CSP) headers:
+//    - script-src 'self' - block inline scripts and external scripts
+//    - style-src 'self' 'unsafe-inline' - allow Tailwind
+//    - connect-src 'self' https://*.supabase.co - restrict API calls
+//    - frame-ancestors 'none' - prevent clickjacking
+//
+// 2. Other security headers:
+//    - X-Content-Type-Options: nosniff
+//    - X-Frame-Options: DENY
+//    - Referrer-Policy: strict-origin-when-cross-origin
+//
+// 3. App-level protections (already implemented):
+//    - Input sanitization (src/utils/sanitize.js)
+//    - autoRefreshToken: true (short-lived tokens)
+//    - No PII stored in localStorage (email removed from login forms)
 export const supabase = createClient(
   supabaseUrl || '',
   supabaseAnonKey || '',

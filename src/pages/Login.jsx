@@ -7,7 +7,7 @@ import { WelcomeSplash } from '../components/WelcomeSplash'
 import { ThumbsUpIcon } from '../components/ThumbsUpIcon'
 import { ThumbsDownIcon } from '../components/ThumbsDownIcon'
 
-const REMEMBERED_EMAIL_KEY = 'whats-good-here-email'
+// SECURITY: Email is NOT persisted to storage to prevent XSS exposure of PII
 
 export function Login() {
   const navigate = useNavigate()
@@ -21,18 +21,6 @@ export function Login() {
   const [showLogin, setShowLogin] = useState(false) // Controls welcome vs login view
   const [mode, setMode] = useState('options') // 'options' | 'signin' | 'signup' | 'forgot'
   const [usernameStatus, setUsernameStatus] = useState(null) // null | 'checking' | 'available' | 'taken'
-
-  // Load remembered email on mount
-  useEffect(() => {
-    try {
-      const savedEmail = sessionStorage.getItem(REMEMBERED_EMAIL_KEY)
-      if (savedEmail) {
-        setEmail(savedEmail)
-      }
-    } catch (error) {
-      logger.warn('Login: unable to read remembered email', error)
-    }
-  }, [])
 
   // Reset form when switching modes
   useEffect(() => {
@@ -81,14 +69,6 @@ export function Login() {
     try {
       setLoading(true)
       setMessage(null)
-
-      // Remember the email
-      try {
-        sessionStorage.setItem(REMEMBERED_EMAIL_KEY, email)
-      } catch (error) {
-        logger.warn('Login: unable to persist remembered email', error)
-      }
-
       await authApi.signInWithPassword(email, password)
       navigate('/')
     } catch (error) {
@@ -119,13 +99,6 @@ export function Login() {
     try {
       setLoading(true)
       setMessage(null)
-
-      // Remember the email
-      try {
-        sessionStorage.setItem(REMEMBERED_EMAIL_KEY, email)
-      } catch (error) {
-        logger.warn('Login: unable to persist remembered email', error)
-      }
 
       const result = await authApi.signUpWithPassword(email, password, username)
 
