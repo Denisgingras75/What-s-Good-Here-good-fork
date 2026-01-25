@@ -198,51 +198,51 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setUserRating(sliderValue)
     if (reviewTextToSubmit) setUserReviewText(reviewTextToSubmit)
 
-    const result = await submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit)
+    // Track vote immediately for snappy analytics
+    capture('vote_cast', {
+      dish_id: dishId,
+      dish_name: dishName,
+      restaurant_id: restaurantId,
+      restaurant_name: restaurantName,
+      category: category,
+      price: price != null ? Number(price) : null,
+      would_order_again: pendingVote,
+      rating: sliderValue,
+      has_review: !!reviewTextToSubmit,
+      is_update: previousVote !== null,
+    })
 
-    if (result.success) {
-      // Track vote submission - the core conversion event
-      capture('vote_cast', {
-        dish_id: dishId,
-        dish_name: dishName,
-        restaurant_id: restaurantId,
-        restaurant_name: restaurantName,
-        category: category,
-        price: price != null ? Number(price) : null,
-        would_order_again: pendingVote,
-        rating: sliderValue,
-        has_review: !!reviewTextToSubmit,
-        is_update: previousVote !== null,
-      })
+    // Clear UI state immediately - instant feedback
+    clearPendingVoteStorage()
+    setStep(1)
+    setPendingVote(null)
+    setReviewText('')
+    setReviewError(null)
 
-      clearPendingVoteStorage()
-      setStep(1)
-      setPendingVote(null)
-      setReviewText('')
-      setReviewError(null)
-      onVote?.()
+    // Fire onVote callback immediately - closes modal, shows success
+    onVote?.()
 
-      // Evaluate badges after successful vote
-      try {
-        const newlyUnlocked = await badgesApi.evaluateBadges(user.id)
-        if (newlyUnlocked.length > 0) {
-          showBadgeUnlockToasts(newlyUnlocked)
+    // Submit to server in background (non-blocking)
+    submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit)
+      .then(async (result) => {
+        if (result.success) {
+          // Evaluate badges in background
+          try {
+            const newlyUnlocked = await badgesApi.evaluateBadges(user.id)
+            if (newlyUnlocked.length > 0) {
+              showBadgeUnlockToasts(newlyUnlocked)
+            }
+          } catch (badgeError) {
+            logger.error('Error evaluating badges:', badgeError)
+          }
+        } else {
+          // Vote failed - log error (user already saw success, so just log)
+          logger.error('Vote submission failed:', result.error)
         }
-      } catch (badgeError) {
-        logger.error('Error evaluating badges:', badgeError)
-        // Don't block the vote flow on badge errors
-      }
-    } else {
-      setUserVote(previousVote)
-      setUserRating(previousRating)
-      setUserReviewText(previousReview)
-      setLocalTotalVotes(totalVotes)
-      setLocalYesVotes(yesVotes)
-      // Show error toast
-      if (result.error) {
-        setReviewError(result.error)
-      }
-    }
+      })
+      .catch((err) => {
+        logger.error('Vote submission error:', err)
+      })
   }
 
   // Already voted - show summary

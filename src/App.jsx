@@ -41,6 +41,15 @@ const Badges = lazyWithRetry(() => import('./pages/Badges'), 'Badges')
 const UserProfile = lazyWithRetry(() => import('./pages/UserProfile'), 'UserProfile')
 const ResetPassword = lazyWithRetry(() => import('./pages/ResetPassword'), 'ResetPassword')
 
+// Prefetch functions for smoother navigation - call on hover/focus
+export const prefetchRoutes = {
+  home: () => import('./pages/Home'),
+  browse: () => import('./pages/Browse'),
+  dish: () => import('./pages/Dish'),
+  restaurants: () => import('./pages/Restaurants'),
+  profile: () => import('./pages/Profile'),
+}
+
 // Loading fallback
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>

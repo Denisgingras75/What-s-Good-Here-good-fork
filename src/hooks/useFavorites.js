@@ -35,28 +35,30 @@ export function useFavorites(userId) {
 
   const isFavorite = useCallback((dishId) => favoriteIds.includes(dishId), [favoriteIds])
 
-  const addFavorite = async (dishId) => {
+  const addFavorite = async (dishId, dishData = null) => {
     if (!userId) return { error: 'Not logged in' }
+
+    // Optimistic update FIRST - instant UI feedback
+    setFavoriteIds(prev => [...prev, dishId])
+
+    // Track immediately for snappy feel
+    capture('dish_saved', {
+      dish_id: dishId,
+      dish_name: dishData?.dish_name,
+      restaurant_name: dishData?.restaurant_name,
+      category: dishData?.category,
+    })
 
     try {
       await favoritesApi.addFavorite(userId, dishId)
-      // Optimistically update IDs
-      setFavoriteIds(prev => [...prev, dishId])
-      // Refetch to get full dish data for favorites list
-      const { favorites: dishes } = await favoritesApi.getFavorites()
-      setFavorites(dishes)
-
-      // Track dish saved - shows intent to try
-      const favoriteDish = dishes.find(d => d.dish_id === dishId)
-      capture('dish_saved', {
-        dish_id: dishId,
-        dish_name: favoriteDish?.dish_name,
-        restaurant_name: favoriteDish?.restaurant_name,
-        category: favoriteDish?.category,
-      })
-
+      // Background refetch for full dish data (non-blocking)
+      favoritesApi.getFavorites().then(({ favorites: dishes }) => {
+        setFavorites(dishes)
+      }).catch(() => {}) // Silent fail - we already have the ID
       return { error: null }
     } catch (err) {
+      // Revert on failure
+      setFavoriteIds(prev => prev.filter(id => id !== dishId))
       return { error: err.message }
     }
   }
@@ -64,33 +66,39 @@ export function useFavorites(userId) {
   const removeFavorite = async (dishId) => {
     if (!userId) return { error: 'Not logged in' }
 
-    // Get dish info before removing
+    // Get dish info before removing (for analytics and potential revert)
     const dishToRemove = favorites.find(d => d.dish_id === dishId)
+    const previousIds = favoriteIds
+    const previousFavorites = favorites
+
+    // Optimistic update FIRST - instant UI feedback
+    setFavoriteIds(prev => prev.filter(id => id !== dishId))
+    setFavorites(prev => prev.filter(d => d.dish_id !== dishId))
+
+    // Track immediately
+    capture('dish_unsaved', {
+      dish_id: dishId,
+      dish_name: dishToRemove?.dish_name,
+      restaurant_name: dishToRemove?.restaurant_name,
+      category: dishToRemove?.category,
+    })
 
     try {
       await favoritesApi.removeFavorite(userId, dishId)
-      setFavoriteIds(prev => prev.filter(id => id !== dishId))
-      setFavorites(prev => prev.filter(d => d.dish_id !== dishId))
-
-      // Track dish unsaved
-      capture('dish_unsaved', {
-        dish_id: dishId,
-        dish_name: dishToRemove?.dish_name,
-        restaurant_name: dishToRemove?.restaurant_name,
-        category: dishToRemove?.category,
-      })
-
       return { error: null }
     } catch (err) {
+      // Revert on failure
+      setFavoriteIds(previousIds)
+      setFavorites(previousFavorites)
       return { error: err.message }
     }
   }
 
-  const toggleFavorite = async (dishId) => {
+  const toggleFavorite = async (dishId, dishData = null) => {
     if (isFavorite(dishId)) {
       return removeFavorite(dishId)
     } else {
-      return addFavorite(dishId)
+      return addFavorite(dishId, dishData)
     }
   }
 
