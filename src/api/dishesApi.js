@@ -120,7 +120,7 @@ export const dishesApi = {
     }
 
     // Query 2: Search by restaurant cuisine
-    const { data: cuisineData } = await supabase
+    const { data: cuisineData, error: cuisineError } = await supabase
       .from('dishes')
       .select(selectFields)
       .eq('restaurants.is_open', true)
@@ -128,14 +128,24 @@ export const dishesApi = {
       .order('avg_rating', { ascending: false, nullsFirst: false })
       .limit(limit)
 
+    if (cuisineError) {
+      console.error('Error searching dishes by cuisine:', cuisineError)
+      throw createClassifiedError(cuisineError)
+    }
+
     // Query 3: Search by dish tags
-    const { data: tagData } = await supabase
+    const { data: tagData, error: tagError } = await supabase
       .from('dishes')
       .select(selectFields)
       .eq('restaurants.is_open', true)
       .contains('tags', [sanitized.toLowerCase()])
       .order('avg_rating', { ascending: false, nullsFirst: false })
       .limit(limit)
+
+    if (tagError) {
+      console.error('Error searching dishes by tags:', tagError)
+      throw createClassifiedError(tagError)
+    }
 
     // Merge all results, removing duplicates
     const allResults = [...(nameData || [])]
