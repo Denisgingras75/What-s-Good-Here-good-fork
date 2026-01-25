@@ -256,11 +256,26 @@ export function Browse() {
 
   // Filter and sort dishes
   const filteredDishes = useMemo(() => {
+    // Debug logging
+    console.log('filteredDishes calculating:', {
+      isSearching: !!debouncedSearchQuery.trim(),
+      searchResultsType: typeof searchResults,
+      searchResultsIsArray: Array.isArray(searchResults),
+      searchResultsLength: searchResults?.length,
+      dishesType: typeof dishes,
+      dishesIsArray: Array.isArray(dishes),
+      dishesLength: dishes?.length,
+    })
+
     // When searching, use search results from API (handles cuisine/tag searches)
     // When browsing by category, use dishes from useDishes()
     // Both hooks guarantee arrays, but filter for valid entries as extra safety
-    let result = (debouncedSearchQuery.trim() ? searchResults : dishes)
-      .filter(d => d && d.dish_id)
+    const source = debouncedSearchQuery.trim() ? searchResults : dishes
+    if (!Array.isArray(source)) {
+      console.error('Source is not an array:', source)
+      return []
+    }
+    let result = source.filter(d => d && d.dish_id)
 
     // Then sort based on selected option
     switch (sortBy) {
