@@ -18,6 +18,12 @@ export function VirtualizedDishList({
 }) {
   const listRef = useRef(null)
 
+  // Defensive: ensure dishes is an array before any operations
+  if (!Array.isArray(dishes)) {
+    console.error('VirtualizedDishList received non-array dishes:', dishes)
+    return null
+  }
+
   // Calculate items per row based on columns
   const itemsPerRow = columns
   const rowCount = Math.ceil(dishes.length / itemsPerRow)
@@ -43,12 +49,6 @@ export function VirtualizedDishList({
       </div>
     )
   }, [dishes, itemsPerRow, columns, onDishClick, isFavorite, onToggleFavorite])
-
-  // Defensive: ensure dishes is an array
-  if (!Array.isArray(dishes)) {
-    console.error('VirtualizedDishList received non-array dishes:', dishes)
-    return null
-  }
 
   // Don't virtualize small lists - overhead not worth it
   if (dishes.length <= 10) {
