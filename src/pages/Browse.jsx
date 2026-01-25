@@ -255,7 +255,14 @@ export function Browse() {
     let result = dishes.filter(dish => {
       if (!debouncedSearchQuery.trim()) return true
       const query = debouncedSearchQuery.toLowerCase()
-      // Check dish name, restaurant name, category, tags, and cuisine
+      // Split query into words for partial matching (e.g., "mexican food" -> ["mexican", "food"])
+      const queryWords = query.split(/\s+/).filter(w => w.length >= 2)
+
+      // Include dishes found by the search API (handles cuisine search the client can't do)
+      const matchesSearchApi = dishSuggestions.some(s => s.dish_id === dish.dish_id)
+      if (matchesSearchApi) return true
+
+      // Check dish name, restaurant name, category
       const matchesBasic = (
         dish.dish_name?.toLowerCase().includes(query) ||
         dish.restaurant_name?.toLowerCase().includes(query) ||
@@ -263,10 +270,13 @@ export function Browse() {
       )
       // Check tags array (e.g., "vegetarian", "caesar", "spicy")
       const matchesTags = dish.tags?.some(tag =>
-        tag?.toLowerCase().includes(query)
+        tag?.toLowerCase().includes(query) ||
+        queryWords.some(word => tag?.toLowerCase().includes(word))
       )
-      // Check restaurant cuisine (e.g., "indian", "italian")
-      const matchesCuisine = dish.cuisine?.toLowerCase().includes(query)
+      // Check restaurant cuisine (field might be cuisine or restaurant_cuisine)
+      const cuisineValue = dish.cuisine || dish.restaurant_cuisine || ''
+      const matchesCuisine = cuisineValue.toLowerCase().includes(query) ||
+        queryWords.some(word => cuisineValue.toLowerCase().includes(word))
 
       return matchesBasic || matchesTags || matchesCuisine
     })
@@ -295,7 +305,7 @@ export function Browse() {
     }
 
     return result
-  }, [dishes, debouncedSearchQuery, sortBy])
+  }, [dishes, debouncedSearchQuery, sortBy, dishSuggestions])
 
   // Clear search
   const clearSearch = () => {
