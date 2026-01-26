@@ -110,9 +110,7 @@ export function LocationProvider({ children }) {
     )
   }, [])
 
-  // Check permission state on mount (non-blocking - dishes load with default location immediately)
-  // NOTE: For now, always use default MV location so app works off-island
-  // To enable real geolocation, uncomment the auto-request logic below
+  // Check permission state on mount and auto-request location if already granted
   useEffect(() => {
     if (!navigator.geolocation) {
       setPermissionState('unsupported')
@@ -128,18 +126,17 @@ export function LocationProvider({ children }) {
         permissionStatus = result
         setPermissionState(result.state)
 
-        // DISABLED: Auto-requesting location when off-island shows no dishes
-        // if (result.state === 'granted') {
-        //   requestLocation()
-        // }
+        // Auto-request if permission granted, or prompt if never asked
+        if (result.state === 'granted' || result.state === 'prompt') {
+          requestLocation()
+        }
 
         // Listen for permission changes
         handlePermissionChange = () => {
           setPermissionState(result.state)
-          // DISABLED: Auto-requesting location when off-island shows no dishes
-          // if (result.state === 'granted') {
-          //   requestLocation()
-          // }
+          if (result.state === 'granted') {
+            requestLocation()
+          }
         }
 
         result.addEventListener('change', handlePermissionChange)
@@ -154,8 +151,7 @@ export function LocationProvider({ children }) {
         permissionStatus.removeEventListener('change', handlePermissionChange)
       }
     }
-    // No else needed - we already have default location and loading is false
-  }, [])
+  }, [requestLocation])
 
   const useDefaultLocation = useCallback(() => {
     setLocation(DEFAULT_LOCATION)

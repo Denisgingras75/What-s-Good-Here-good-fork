@@ -23,17 +23,7 @@ export function Home() {
   const { profile } = useProfile(user?.id)
   const [top10Tab, setTop10Tab] = useState('mv') // 'mv' or 'personal'
 
-  const {
-    location,
-    radius,
-    setRadius,
-    error: locationError,
-    permissionState,
-    isUsingDefault,
-    requestLocation,
-    useDefaultLocation,
-    loading: locationLoading
-  } = useLocationContext()
+  const { location, radius, setRadius } = useLocationContext()
 
   // Fetch ALL dishes once, then filter by category client-side
   const { dishes, loading, error } = useDishes(location, radius, null, null)
@@ -119,25 +109,21 @@ export function Home() {
         />
       </header>
 
-      {/* Location Picker */}
+      {/* Radius Picker */}
       <LocationPicker
         radius={radius}
         onRadiusChange={setRadius}
-        location={location}
-        error={locationError}
-        permissionState={permissionState}
-        isUsingDefault={isUsingDefault}
-        onRequestLocation={requestLocation}
-        onUseDefault={useDefaultLocation}
-        loading={locationLoading}
       />
 
-      {/* Search Bar */}
-      <div className="px-4 py-3" style={{ background: 'var(--color-bg)' }}>
-        <DishSearch loading={loading} />
-        <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-          Real votes from real guests. Make better decisions.
+      {/* Greeting + Search */}
+      <div className="px-4 py-4" style={{ background: 'var(--color-bg)' }}>
+        <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
+          Hello{profile?.display_name ? `, ${profile.display_name}` : ''}!
+        </h2>
+        <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+          What do you want to eat today?
         </p>
+        <DishSearch loading={loading} />
       </div>
 
       {/* Main Content */}
