@@ -38,7 +38,19 @@ function getSavedRadius() {
 export function LocationProvider({ children }) {
   // Start with default location immediately - don't block on geolocation
   const [location, setLocation] = useState(DEFAULT_LOCATION)
-  const [radius, setRadiusState] = useState(getSavedRadius) // Load saved radius
+  const [radius, setRadiusState] = useState(() => {
+    const saved = localStorage.getItem(RADIUS_STORAGE_KEY)
+    console.log('[LocationProvider init] localStorage wgh_radius:', saved)
+    if (saved) {
+      const parsed = parseInt(saved, 10)
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= 50) {
+        console.log('[LocationProvider init] using saved radius:', parsed)
+        return parsed
+      }
+    }
+    console.log('[LocationProvider init] using default: 5')
+    return 5
+  })
 
   // Wrap setRadius to track filter changes and persist to localStorage
   const setRadius = useCallback((newRadius) => {
