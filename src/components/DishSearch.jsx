@@ -168,7 +168,9 @@ export function DishSearch({ loading = false }) {
         className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
         style={{
           background: 'var(--color-bg)',
-          border: `2px solid ${isFocused ? 'var(--color-primary)' : 'var(--color-divider)'}`,
+          border: `1.5px solid ${isFocused ? 'var(--color-primary)' : 'var(--color-divider)'}`,
+          boxShadow: isFocused ? '0 0 0 3px rgba(244, 122, 31, 0.15)' : 'none',
+          minHeight: '48px',
         }}
       >
         <svg
@@ -237,8 +239,8 @@ export function DishSearch({ loading = false }) {
           className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50"
           style={{
             background: 'var(--color-surface)',
-            border: '1px solid var(--color-divider)',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
+            border: '1.5px solid var(--color-divider)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           }}
         >
           {isLoading ? (

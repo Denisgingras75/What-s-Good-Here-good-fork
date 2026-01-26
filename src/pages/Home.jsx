@@ -4,10 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useProfile } from '../hooks/useProfile'
-import { LocationPicker } from '../components/LocationPicker'
-import { DishSearch } from '../components/DishSearch'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
-import { RankedDishRow, Top10Sidebar, CategorySkeleton } from '../components/home'
+import { RankedDishRow, Top10Sidebar, CategorySkeleton, SearchHero } from '../components/home'
 
 // Featured categories for homepage - these are the "hero" categories
 const FEATURED_CATEGORIES = [
@@ -100,38 +98,20 @@ export function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
-      {/* Header - hero logo with presence */}
-      <header className="px-4 pt-8 pb-4 flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <img
-          src="/logo.png"
-          alt="What's Good Here"
-          className="h-[100px] md:h-[120px] lg:h-[140px] w-auto object-contain"
-        />
-      </header>
-
-      {/* Radius Picker */}
-      <LocationPicker
+      {/* Hero Section - search-forward */}
+      <SearchHero
+        name={profile?.display_name}
         radius={radius}
         onRadiusChange={setRadius}
+        loading={loading}
       />
 
-      {/* Greeting + Search */}
-      <div className="px-4 py-4" style={{ background: 'var(--color-bg)' }}>
-        <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
-          Hello{profile?.display_name ? `, ${profile.display_name}` : ''}!
-        </h2>
-        <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-          What do you want to eat today?
-        </p>
-        <DishSearch loading={loading} />
-      </div>
-
       {/* Main Content */}
-      <div className="px-4 py-6">
+      <div className="px-4 pb-6">
         <h1 className="sr-only">What's Good Here - Top Ranked Dishes Near You</h1>
         {/* Loading State */}
         {loading && (
-          <div className="space-y-8" aria-live="polite" aria-label="Loading categories">
+          <div className="space-y-6" aria-live="polite" aria-label="Loading categories">
             {[...Array(3)].map((_, i) => (
               <CategorySkeleton key={i} />
             ))}
@@ -156,7 +136,7 @@ export function Home() {
         {!loading && !error && (
           <div className="lg:flex lg:gap-8">
             {/* Left: Category Rankings */}
-            <div className="flex-1 space-y-8">
+            <div className="flex-1 space-y-6">
               {categoryRankings.map(category => (
                 <CategoryRanking
                   key={category.id}
@@ -232,7 +212,7 @@ function CategoryRanking({ category, onViewAll }) {
   return (
     <section>
       {/* Category Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
           Best {label} near you
         </h2>
