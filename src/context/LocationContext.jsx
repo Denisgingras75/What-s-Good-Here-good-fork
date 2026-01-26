@@ -10,15 +10,32 @@ const DEFAULT_LOCATION = {
 }
 
 const STORAGE_KEY = 'whats-good-here-location-permission'
+const RADIUS_STORAGE_KEY = 'wgh_radius'
 
 const LocationContext = createContext(null)
+
+// Get saved radius from localStorage, default to 5 miles
+function getSavedRadius() {
+  try {
+    const saved = localStorage.getItem(RADIUS_STORAGE_KEY)
+    if (saved) {
+      const parsed = parseInt(saved, 10)
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= 50) {
+        return parsed
+      }
+    }
+  } catch {
+    // localStorage may be unavailable
+  }
+  return 5
+}
 
 export function LocationProvider({ children }) {
   // Start with default location immediately - don't block on geolocation
   const [location, setLocation] = useState(DEFAULT_LOCATION)
-  const [radius, setRadiusState] = useState(5) // Default 5 miles
+  const [radius, setRadiusState] = useState(getSavedRadius) // Load saved radius
 
-  // Wrap setRadius to track filter changes
+  // Wrap setRadius to track filter changes and persist to localStorage
   const setRadius = useCallback((newRadius) => {
     setRadiusState(prevRadius => {
       if (newRadius !== prevRadius) {
@@ -27,6 +44,12 @@ export function LocationProvider({ children }) {
           radius_miles: newRadius,
           previous_radius: prevRadius,
         })
+        // Save to localStorage
+        try {
+          localStorage.setItem(RADIUS_STORAGE_KEY, String(newRadius))
+        } catch {
+          // localStorage may be unavailable
+        }
       }
       return newRadius
     })
