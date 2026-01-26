@@ -18,15 +18,20 @@ const LocationContext = createContext(null)
 function getSavedRadius() {
   try {
     const saved = localStorage.getItem(RADIUS_STORAGE_KEY)
+    console.log('[getSavedRadius] localStorage value:', saved, 'type:', typeof saved)
     if (saved) {
       const parsed = parseInt(saved, 10)
+      console.log('[getSavedRadius] parsed:', parsed)
       if (!isNaN(parsed) && parsed >= 1 && parsed <= 50) {
+        console.log('[getSavedRadius] returning:', parsed)
         return parsed
       }
     }
-  } catch {
+  } catch (e) {
+    console.log('[getSavedRadius] error:', e)
     // localStorage may be unavailable
   }
+  console.log('[getSavedRadius] returning default: 5')
   return 5
 }
 
