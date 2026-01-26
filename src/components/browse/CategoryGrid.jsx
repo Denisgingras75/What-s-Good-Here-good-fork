@@ -86,8 +86,7 @@ export function CategoryGrid({
             className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
             style={{
               background: 'var(--color-bg)',
-              border: `1px solid ${searchFocused ? 'var(--color-primary)' : 'var(--color-divider)'}`,
-              boxShadow: searchFocused ? '0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent)' : 'none',
+              border: `2px solid ${searchFocused ? 'var(--color-primary)' : 'var(--color-divider)'}`,
             }}
           >
             <svg
