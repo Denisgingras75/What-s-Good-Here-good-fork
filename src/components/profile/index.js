@@ -9,3 +9,9 @@ export { EditFavoritesSection } from './EditFavoritesSection'
 export { PhotosInfoSection } from './PhotosInfoSection'
 export { MissionSection } from './MissionSection'
 export { UnratedDishCard } from './UnratedDishCard'
+
+// Rating Identity components
+export { RatingIdentityCard } from './RatingIdentityCard'
+export { PendingVotesIndicator } from './PendingVotesIndicator'
+export { RevealNotification } from './RevealNotification'
+export { CategoryBiasBreakdown } from './CategoryBiasBreakdown'

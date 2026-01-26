@@ -12,6 +12,8 @@ import { useUserVotes } from '../hooks/useUserVotes'
 import { useFavorites } from '../hooks/useFavorites'
 import { useUnratedDishes } from '../hooks/useUnratedDishes'
 import { useBadges } from '../hooks/useBadges'
+import { useRatingIdentity } from '../hooks/useRatingIdentity'
+import { useRevealNotifications } from '../hooks/useRevealNotifications'
 import { isSoundMuted, toggleSoundMute } from '../lib/sounds'
 import { DishModal } from '../components/DishModal'
 import { LoginModal } from '../components/Auth/LoginModal'
@@ -23,6 +25,7 @@ import { ThumbsDownIcon } from '../components/ThumbsDownIcon'
 import { HearingIcon } from '../components/HearingIcon'
 import { CameraIcon } from '../components/CameraIcon'
 import { ReviewsIcon } from '../components/ReviewsIcon'
+import { FEATURES } from '../constants/features'
 import {
   VotedDishCard,
   ReviewCard,
@@ -33,6 +36,9 @@ import {
   EditFavoritesSection,
   PhotosInfoSection,
   MissionSection,
+  RatingIdentityCard,
+  CategoryBiasBreakdown,
+  RevealNotification,
 } from '../components/profile'
 
 const TABS = [
@@ -62,6 +68,11 @@ export function Profile() {
   const { favorites, loading: favoritesLoading, removeFavorite } = useFavorites(user?.id)
   const { dishes: unratedDishes, count: unratedCount, loading: unratedLoading, refetch: refetchUnrated } = useUnratedDishes(user?.id)
   const { badges } = useBadges(user?.id)
+
+  // Rating Identity hooks (always called, but only used when feature is enabled)
+  const ratingIdentity = useRatingIdentity(FEATURES.RATING_IDENTITY_ENABLED ? user?.id : null)
+  const revealNotifications = useRevealNotifications()
+
   const [selectedDish, setSelectedDish] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -288,6 +299,28 @@ export function Profile() {
             setFollowListModal={setFollowListModal}
           />
 
+          {/* Rating Identity Card - behind feature flag */}
+          {FEATURES.RATING_IDENTITY_ENABLED && ratingIdentity && (
+            <div className="px-4 pt-4">
+              <RatingIdentityCard
+                ratingBias={ratingIdentity.ratingBias}
+                biasLabel={ratingIdentity.biasLabel}
+                votesWithConsensus={ratingIdentity.votesWithConsensus}
+                votesPending={ratingIdentity.votesPending}
+                dishesHelpedEstablish={ratingIdentity.dishesHelpedEstablish}
+                loading={ratingIdentity.loading}
+              />
+              {/* Category breakdown if user has category-specific biases */}
+              {Object.keys(ratingIdentity.categoryBiases || {}).length > 0 && (
+                <CategoryBiasBreakdown
+                  categoryBiases={ratingIdentity.categoryBiases}
+                  className="mt-4 p-4 rounded-2xl border"
+                  style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-divider)' }}
+                />
+              )}
+            </div>
+          )}
+
           {/* Compact Identity Snapshot - Category tiers without progress bars */}
           {(stats.categoryTiers.length > 0 || stats.categoryProgress.length > 0) && (
             <IdentitySnapshot categoryTiers={stats.categoryTiers} categoryProgress={stats.categoryProgress} />
@@ -457,6 +490,14 @@ export function Profile() {
               userId={user.id}
               type={followListModal}
               onClose={() => setFollowListModal(null)}
+            />
+          )}
+
+          {/* Reveal Notification - shows when a dish reaches consensus */}
+          {FEATURES.RATING_IDENTITY_ENABLED && revealNotifications?.currentReveal && (
+            <RevealNotification
+              reveal={revealNotifications.currentReveal}
+              onDismiss={() => revealNotifications.dismissReveal(revealNotifications.currentReveal.id)}
             />
           )}
 
