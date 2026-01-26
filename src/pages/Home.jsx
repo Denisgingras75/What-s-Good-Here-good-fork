@@ -35,6 +35,9 @@ export function Home() {
     loading: locationLoading
   } = useLocationContext()
 
+  // Debug: log what radius is being used
+  console.log('[Home] Using radius:', radius, 'localStorage:', localStorage.getItem('wgh_radius'))
+
   // Fetch ALL dishes once, then filter by category client-side
   const { dishes, loading, error } = useDishes(location, radius, null, null)
 
