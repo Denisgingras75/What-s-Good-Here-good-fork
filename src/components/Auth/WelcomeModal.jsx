@@ -34,9 +34,9 @@ const STEPS = [
     id: 'favorites',
     emoji: null,
     icon: 'heart',
-    title: 'Pick your favorites',
-    subtitle: 'We\'ll build your personal Top 10',
-    description: 'Choose up to 3 categories you love most.',
+    title: 'Choose up to 3 favorites',
+    subtitle: 'See your personalized "My Top 10" on the home screen',
+    description: null,
   },
 ]
 
@@ -126,8 +126,8 @@ export function WelcomeModal() {
 
       {/* Modal */}
       <div
-        className="relative bg-white rounded-3xl max-w-md w-full shadow-xl overflow-hidden"
-        style={{ animationDelay: '0.1s' }}
+        className="relative rounded-3xl max-w-md w-full shadow-xl overflow-hidden"
+        style={{ animationDelay: '0.1s', background: 'var(--color-surface)' }}
       >
         {/* Decorative gradient header */}
         <div className="h-2" style={{ background: 'var(--color-primary)' }} />
@@ -141,11 +141,18 @@ export function WelcomeModal() {
                 onClick={() => i < step && setStep(i)}
                 className={`w-2 h-2 rounded-full transition-all ${
                   i === step
-                    ? 'w-6 bg-orange-500'
+                    ? 'w-6'
                     : i < step
-                      ? 'bg-orange-300 cursor-pointer hover:bg-orange-400'
-                      : 'bg-neutral-200'
+                      ? 'cursor-pointer'
+                      : ''
                 }`}
+                style={{
+                  background: i === step
+                    ? 'var(--color-primary)'
+                    : i < step
+                      ? 'var(--color-primary-muted, rgba(244, 122, 31, 0.5))'
+                      : 'var(--color-divider)'
+                }}
                 disabled={i > step}
               />
             ))}
@@ -161,14 +168,14 @@ export function WelcomeModal() {
 
           {/* Header */}
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
               {currentStep.title}
             </h2>
-            <p className="text-neutral-600 text-sm">
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               {currentStep.subtitle}
             </p>
             {currentStep.description && (
-              <p className="text-neutral-400 text-xs mt-2">
+              <p className="text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
                 {currentStep.description}
               </p>
             )}
@@ -177,17 +184,17 @@ export function WelcomeModal() {
           {/* How it works visual - only on step 2 */}
           {currentStep.id === 'how-it-works' && (
             <div className="flex justify-center gap-4 mb-6">
-              <div className="flex flex-col items-center p-3 bg-emerald-50 rounded-xl">
+              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
                 <span className="text-2xl mb-1"><ThumbsUpIcon size={32} /></span>
-                <span className="text-xs font-medium text-emerald-700">Good Here</span>
+                <span className="text-xs font-medium text-emerald-400">Good Here</span>
               </div>
-              <div className="flex flex-col items-center p-3 bg-red-50 rounded-xl">
+              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(239, 68, 68, 0.15)' }}>
                 <span className="text-2xl mb-1"><ThumbsDownIcon size={32} /></span>
-                <span className="text-xs font-medium text-red-600">Not Good</span>
+                <span className="text-xs font-medium text-red-400">Not Good</span>
               </div>
-              <div className="flex flex-col items-center p-3 bg-amber-50 rounded-xl">
+              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(245, 158, 11, 0.15)' }}>
                 <span className="text-2xl mb-1">⭐</span>
-                <span className="text-xs font-medium text-amber-700">Rate 1-10</span>
+                <span className="text-xs font-medium text-amber-400">Rate 1-10</span>
               </div>
             </div>
           )}
@@ -202,7 +209,12 @@ export function WelcomeModal() {
                 placeholder="Your name"
                 autoFocus
                 maxLength={50}
-                className="w-full px-4 py-4 bg-white border-2 border-neutral-200 rounded-xl text-lg text-center focus:border-orange-400 focus:outline-none transition-colors placeholder:text-neutral-400"
+                className="w-full px-4 py-4 border-2 rounded-xl text-lg text-center focus:outline-none transition-colors"
+                style={{
+                  background: 'var(--color-bg)',
+                  borderColor: 'var(--color-divider)',
+                  color: 'var(--color-text-primary)',
+                }}
               />
               <button
                 type="submit"
@@ -215,7 +227,8 @@ export function WelcomeModal() {
               <button
                 type="button"
                 onClick={handleSkipName}
-                className="w-full py-2 text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="w-full py-2 text-sm transition-colors"
+                style={{ color: 'var(--color-text-tertiary)' }}
               >
                 Skip for now
               </button>
@@ -230,8 +243,8 @@ export function WelcomeModal() {
               <button
                 onClick={handleFinish}
                 disabled={saving}
-                className="w-full px-6 py-4 text-white font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
-                style={{ background: 'var(--color-primary)' }}
+                className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+                style={{ background: 'var(--color-primary)', color: '#1A1A1A' }}
               >
                 {saving ? 'Saving...' : selectedCategories.length > 0 ? "Let's go! 🎉" : "Let's go!"}
               </button>
@@ -239,7 +252,8 @@ export function WelcomeModal() {
                 type="button"
                 onClick={handleSkipFavorites}
                 disabled={saving}
-                className="w-full py-2 text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="w-full py-2 text-sm transition-colors"
+                style={{ color: 'var(--color-text-tertiary)' }}
               >
                 Skip for now
               </button>
@@ -248,15 +262,16 @@ export function WelcomeModal() {
             <div className="space-y-3">
               <button
                 onClick={handleNext}
-                className="w-full px-6 py-4 text-white font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
-                style={{ background: 'var(--color-primary)' }}
+                className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                style={{ background: 'var(--color-primary)', color: '#1A1A1A' }}
               >
                 Next
               </button>
               {step > 0 && (
                 <button
                   onClick={handleBack}
-                  className="w-full py-2 text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+                  className="w-full py-2 text-sm transition-colors"
+                  style={{ color: 'var(--color-text-tertiary)' }}
                 >
                   Back
                 </button>
@@ -266,7 +281,7 @@ export function WelcomeModal() {
 
           {/* Fun footer text */}
           {!isNameStep && (
-            <p className="mt-6 text-xs text-center text-neutral-400">
+            <p className="mt-6 text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>
               {step === 0 && "Trusted by island food lovers"}
               {step === 1 && "Dishes need 5+ votes to get ranked"}
             </p>
