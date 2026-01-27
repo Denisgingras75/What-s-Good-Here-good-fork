@@ -106,19 +106,19 @@ export function getCategoryEmoji(id) {
 
 // Category neon image mappings
 const CATEGORY_NEON_IMAGES = {
-  pizza: '/categories/pizza.webp',
-  burger: '/categories/burgers.webp',
-  taco: '/categories/tacos.webp',
-  wings: '/categories/wings.webp',
-  sushi: '/categories/sushi.webp',
-  breakfast: '/categories/breakfast.webp',
-  'lobster roll': '/categories/lobster-rolls.webp',
+  pizza: '/categories/pizza.png',
+  burger: '/categories/burgers.png',
+  taco: '/categories/tacos.png',
+  wings: '/categories/wings.png',
+  sushi: '/categories/sushi.png',
+  breakfast: '/categories/breakfast.png',
+  'lobster roll': '/categories/lobster-rolls.png',
   seafood: '/categories/seafood.webp',
-  chowder: '/categories/chowder.webp',
-  pasta: '/categories/pasta.webp',
-  steak: '/categories/steak.webp',
-  sandwich: '/categories/sandwiches.webp',
-  salad: '/categories/salads.webp',
+  chowder: '/categories/chowder.png',
+  pasta: '/categories/pasta.png',
+  steak: '/categories/steak.png',
+  sandwich: '/categories/sandwiches.png',
+  salad: '/categories/salads.png',
   tendys: '/categories/tendys.webp',
 }
 
