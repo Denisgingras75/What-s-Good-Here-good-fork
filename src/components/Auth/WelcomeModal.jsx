@@ -10,7 +10,7 @@ import { capture } from '../../lib/analytics'
 const STEPS = [
   {
     id: 'welcome',
-    emoji: '🍽️',
+    image: '/wgh-icon.png',
     title: 'Find the best dishes on Martha\'s Vineyard',
     subtitle: 'Real ratings from locals & visitors like you',
     description: 'No more guessing. See what\'s actually worth ordering.',
@@ -159,12 +159,18 @@ export function WelcomeModal() {
           </div>
 
           {/* Step icon */}
-          <div
-            className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-lg transition-all"
-            style={{ background: 'var(--color-primary)' }}
-          >
-            {currentStep.id === 'favorites' ? <HeartIcon size={56} /> : currentStep.icon === 'thumbsUp' ? <ThumbsUpIcon size={52} /> : <span className="text-4xl">{currentStep.emoji}</span>}
-          </div>
+          {currentStep.image ? (
+            <div className="w-24 h-24 mx-auto mb-6">
+              <img src={currentStep.image} alt="" className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <div
+              className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-lg transition-all"
+              style={{ background: 'var(--color-primary)' }}
+            >
+              {currentStep.id === 'favorites' ? <HeartIcon size={56} /> : currentStep.icon === 'thumbsUp' ? <ThumbsUpIcon size={52} /> : <span className="text-4xl">{currentStep.emoji}</span>}
+            </div>
+          )}
 
           {/* Header */}
           <div className="text-center mb-6">
