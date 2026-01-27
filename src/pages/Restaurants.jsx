@@ -132,11 +132,11 @@ export function Restaurants() {
   }, [restaurants, searchQuery])
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, var(--color-surface) 0%, #0d1b2a 100%)' }}>
       <h1 className="sr-only">Restaurants</h1>
 
       {/* Header */}
-      <header className="px-4 pt-3 pb-2" style={{ background: 'var(--color-bg)' }}>
+      <header className="px-4 pt-3 pb-2" style={{ background: 'var(--color-bg)', borderBottom: '1px solid rgba(255, 107, 107, 0.1)' }}>
         {/* Search bar - context-aware */}
         <div className="relative">
           <svg
@@ -146,7 +146,8 @@ export function Restaurants() {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+            className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2"
+            style={{ color: 'var(--color-text-tertiary)' }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
@@ -187,7 +188,11 @@ export function Restaurants() {
       {!selectedRestaurant && (
         <div className="p-4">
           {/* Section Header */}
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-3">
+            <div
+              className="w-1 h-6 rounded-full"
+              style={{ background: 'linear-gradient(180deg, var(--color-primary) 0%, var(--color-accent-orange) 100%)' }}
+            />
             <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
               Restaurants near you
             </h2>
@@ -219,16 +224,33 @@ export function Restaurants() {
                   <button
                     key={restaurant.id}
                     onClick={() => handleRestaurantSelect(restaurant)}
-                    className="w-full rounded-xl border p-4 text-left hover:shadow-md transition-all group"
-                    style={{ background: 'var(--color-card)', borderColor: 'var(--color-divider)' }}
+                    className="w-full rounded-xl p-4 text-left transition-all group"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--color-card) 0%, rgba(255, 107, 107, 0.03) 100%)',
+                      border: '1px solid rgba(0, 245, 212, 0.15)',
+                      borderLeft: '3px solid var(--color-primary)',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 107, 107, 0.15), 0 0 30px rgba(0, 245, 212, 0.08)'
+                      e.currentTarget.style.borderTopColor = 'rgba(0, 245, 212, 0.3)'
+                      e.currentTarget.style.borderRightColor = 'rgba(0, 245, 212, 0.3)'
+                      e.currentTarget.style.borderBottomColor = 'rgba(0, 245, 212, 0.3)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)'
+                      e.currentTarget.style.borderTopColor = 'rgba(0, 245, 212, 0.15)'
+                      e.currentTarget.style.borderRightColor = 'rgba(0, 245, 212, 0.15)'
+                      e.currentTarget.style.borderBottomColor = 'rgba(0, 245, 212, 0.15)'
+                    }}
                   >
                     <div className="flex items-center justify-between gap-3">
                       {/* Restaurant info */}
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold group-hover:text-orange-400 transition-colors" style={{ color: 'var(--color-text-primary)' }}>
+                        <h3 className="font-semibold transition-colors" style={{ color: 'var(--color-text-primary)' }}>
                           {restaurant.name}
                         </h3>
-                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                        <p className="text-xs mt-1" style={{ color: stats.totalVotes > 0 ? 'var(--color-accent-orange)' : 'var(--color-text-tertiary)' }}>
                           {stats.totalVotes > 0
                             ? `${stats.totalVotes} total dish votes`
                             : 'No votes yet'
@@ -237,7 +259,7 @@ export function Restaurants() {
                       </div>
 
                       {/* Chevron */}
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 group-hover:text-orange-400 transition-colors flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 transition-colors flex-shrink-0" style={{ color: 'var(--color-primary)' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                       </svg>
                     </div>
@@ -246,7 +268,7 @@ export function Restaurants() {
               })}
 
               {filteredRestaurants.length === 0 && (
-                <div className="text-center py-12 text-neutral-500">
+                <div className="text-center py-12" style={{ color: 'var(--color-text-tertiary)' }}>
                   No restaurants found
                 </div>
               )}
@@ -317,13 +339,14 @@ export function Restaurants() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedRestaurant.name + ' ' + selectedRestaurant.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-neutral-700 hover:text-orange-600 transition-colors group"
+                  className="flex items-center gap-3 transition-colors group"
+                  style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0 text-neutral-400 group-hover:opacity-80">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0 group-hover:opacity-80" style={{ color: 'var(--color-text-tertiary)' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                   </svg>
-                  <span className="text-sm">Call Restaurant</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 flex-shrink-0 text-neutral-300 group-hover:text-orange-400">
+                  <span className="text-sm group-hover:text-[var(--color-primary)]">Call Restaurant</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 flex-shrink-0 group-hover:text-[var(--color-primary)]" style={{ color: 'var(--color-divider)' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                   </svg>
                 </a>
@@ -349,7 +372,12 @@ export function Restaurants() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedRestaurant.name + ' ' + selectedRestaurant.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 py-2.5 px-4 rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium transition-colors"
+                  style={{
+                    background: 'var(--color-surface-elevated)',
+                    color: 'var(--color-text-primary)',
+                    border: '1px solid rgba(0, 245, 212, 0.2)'
+                  }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
