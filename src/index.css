@@ -29,52 +29,54 @@
 }
 
 /* ===========================
-   What's Good Here — Deep Ocean Theme
-   Bioluminescent ocean with warm sunset accents
+   What's Good Here — Island Depths Theme
+   Dark mode with food psychology + ocean island vibes
    =========================== */
 :root {
-  /* Primary: Coral - buttons, CTAs, main highlights */
-  --color-primary: #ff6b6b;
-  --color-primary-muted: rgba(255, 107, 107, 0.15);
-  --color-primary-glow: rgba(255, 107, 107, 0.4);
+  /* Primary: Deep Rust/Terracotta - appetite trigger, premium feel */
+  --color-primary: #C85A54;
+  --color-primary-muted: rgba(200, 90, 84, 0.15);
+  --color-primary-glow: rgba(200, 90, 84, 0.3);
 
-  /* Secondary: Sunset Orange - badges, special highlights */
-  --color-accent-orange: #f77f00;
-  --color-rating: #f77f00;
+  /* Rating: Muted natural green - softer, less techy */
+  --color-rating: #6BB384;
 
-  /* Tertiary: Bioluminescent Cyan - glows, borders, secondary links */
-  --color-accent-cyan: #00f5d4;
-  --color-accent-cyan-muted: rgba(0, 245, 212, 0.15);
-  --color-link-secondary: #00f5d4;
+  /* Secondary: Warm Sage - links, secondary buttons (warmer than teal) */
+  --color-accent-sage: #8FA887;
+  --color-accent-sage-muted: rgba(143, 168, 135, 0.12);
+  --color-link-secondary: #8FA887;
 
-  /* Text hierarchy */
-  --color-text-primary: #e0f7f4;    /* Pearl white */
-  --color-text-secondary: #8d99ae;  /* Teal gray */
-  --color-text-tertiary: #4a6670;   /* Muted slate */
+  /* Accent: Warm Gold/Sand - badges, decorative borders, premium */
+  --color-accent-gold: #D9A765;
 
-  /* Surfaces - deep ocean */
-  --color-bg: #0d1b2a;              /* Deep ocean */
-  --color-surface: #1b3a4b;         /* Midnight */
-  --color-surface-elevated: #1b3a4b;
-  --color-divider: rgba(0, 245, 212, 0.15);
+  /* Text hierarchy - warm cream primary, not cool white */
+  --color-text-primary: #F5F1E8;      /* Soft cream */
+  --color-text-secondary: #A0A9B3;    /* Muted gray */
+  --color-text-tertiary: #6B7680;     /* Deeper gray */
 
-  /* Cards - midnight blue */
-  --color-card: #1b3a4b;
-  --color-card-hover: #234a5f;
+  /* Surfaces - deep charcoal-navy, ocean depth feel */
+  --color-bg: #0D1B22;                /* Deep charcoal-navy */
+  --color-surface: #0F1F2B;           /* Slightly lighter */
+  --color-surface-elevated: #162B35;
+  --color-divider: rgba(143, 168, 135, 0.1);  /* Subtle sage tint */
+
+  /* Cards - rich navy-teal, tropical water depth */
+  --color-card: #1A3A42;
+  --color-card-hover: #243A43;
 
   /* Feedback states */
-  --color-danger: #ff6b6b;
-  --color-success: #00f5d4;
+  --color-danger: #C85A54;            /* Same as primary */
+  --color-success: #6BB384;           /* Muted natural green */
 
   /* "Avoid" action */
-  --color-muted: #4a6670;
+  --color-muted: #6B7680;
 
-  /* Glow effects - bioluminescent */
-  --glow-primary: 0 0 20px rgba(255, 107, 107, 0.3), 0 0 40px rgba(255, 107, 107, 0.1);
-  --glow-cyan: 0 0 15px rgba(0, 245, 212, 0.3);
+  /* Glow effects */
+  --glow-primary: 0 0 20px rgba(200, 90, 84, 0.25), 0 0 40px rgba(200, 90, 84, 0.1);
+  --glow-sage: 0 0 15px rgba(143, 168, 135, 0.15);
 
-  /* Focus ring helper */
-  --focus-ring: 0 0 0 3px rgba(0, 245, 212, 0.25);
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(200, 90, 84, 0.25);
 }
 
 @tailwind base;
@@ -125,7 +127,7 @@
   }
 
   .glass-header {
-    background: rgba(13, 27, 42, 0.9);
+    background: rgba(13, 27, 34, 0.95);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
   }
@@ -133,14 +135,14 @@
   .card-elevated {
     @apply rounded-2xl transition-all duration-300;
     background: var(--color-card);
-    border: 1px solid rgba(0, 245, 212, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
   }
 
   .card-elevated:hover {
     background: var(--color-card-hover);
-    border-color: rgba(0, 245, 212, 0.4);
-    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 245, 212, 0.15), 0 0 50px rgba(0, 245, 212, 0.08);
+    border-color: rgba(212, 98, 74, 0.2);  /* Subtle coral on hover */
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 98, 74, 0.08);
     transform: translateY(-2px);
   }
 
@@ -158,8 +160,8 @@
     width: 100%;
     background: color-mix(in srgb, var(--color-primary) 6%, var(--color-bg));
     padding-top: env(safe-area-inset-top, 0px);
-    border-bottom: 1px solid rgba(0, 245, 212, 0.12);
-    box-shadow: 0 4px 20px rgba(0, 245, 212, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
 
   .top-bar-content {
@@ -188,7 +190,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #1b3a4b 0%, #0d1b2a 50%, #06101a 100%);
+    background: linear-gradient(145deg, #162B35 0%, #0D1B22 50%, #080F14 100%);
     opacity: 1;
     transition: opacity 0.4s ease-out;
   }
@@ -982,19 +984,19 @@
   margin-top: 10px;
   padding: 8px;
   background: transparent;
-  border: 1px solid var(--color-accent-cyan-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-link-secondary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .see-all-photos-btn:hover {
-  background: var(--color-accent-cyan-muted);
-  color: var(--color-accent-cyan);
-  border-color: rgba(0, 245, 212, 0.3);
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
+  border-color: rgba(212, 98, 74, 0.3);
 }
 
 /* Photo Lightbox */
@@ -1119,9 +1121,9 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid var(--color-accent-cyan);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.2);
+  box-shadow: 0 0 0 4px rgba(212, 98, 74, 0.15);
 }
 
 /* Override focus styles for inputs inside styled containers (they handle their own focus) */

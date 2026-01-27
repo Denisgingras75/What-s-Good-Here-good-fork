@@ -132,11 +132,11 @@ export function Restaurants() {
   }, [restaurants, searchQuery])
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, var(--color-surface) 0%, #0d1b2a 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, var(--color-surface) 0%, #0D1B22 100%)' }}>
       <h1 className="sr-only">Restaurants</h1>
 
       {/* Header */}
-      <header className="px-4 pt-3 pb-2" style={{ background: 'var(--color-bg)', borderBottom: '1px solid rgba(255, 107, 107, 0.1)' }}>
+      <header className="px-4 pt-3 pb-2" style={{ background: 'var(--color-bg)', borderBottom: '1px solid rgba(212, 98, 74, 0.1)' }}>
         {/* Search bar - context-aware */}
         <div className="relative">
           <svg
@@ -226,22 +226,22 @@ export function Restaurants() {
                     onClick={() => handleRestaurantSelect(restaurant)}
                     className="w-full rounded-xl p-4 text-left transition-all group"
                     style={{
-                      background: 'linear-gradient(135deg, var(--color-card) 0%, rgba(255, 107, 107, 0.03) 100%)',
-                      border: '1px solid rgba(0, 245, 212, 0.15)',
+                      background: 'linear-gradient(135deg, var(--color-card) 0%, rgba(212, 98, 74, 0.03) 100%)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
                       borderLeft: '3px solid var(--color-primary)',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 107, 107, 0.15), 0 0 30px rgba(0, 245, 212, 0.08)'
-                      e.currentTarget.style.borderTopColor = 'rgba(0, 245, 212, 0.3)'
-                      e.currentTarget.style.borderRightColor = 'rgba(0, 245, 212, 0.3)'
-                      e.currentTarget.style.borderBottomColor = 'rgba(0, 245, 212, 0.3)'
+                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 98, 74, 0.15)'
+                      e.currentTarget.style.borderTopColor = 'rgba(212, 98, 74, 0.15)'
+                      e.currentTarget.style.borderRightColor = 'rgba(212, 98, 74, 0.15)'
+                      e.currentTarget.style.borderBottomColor = 'rgba(212, 98, 74, 0.15)'
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)'
-                      e.currentTarget.style.borderTopColor = 'rgba(0, 245, 212, 0.15)'
-                      e.currentTarget.style.borderRightColor = 'rgba(0, 245, 212, 0.15)'
-                      e.currentTarget.style.borderBottomColor = 'rgba(0, 245, 212, 0.15)'
+                      e.currentTarget.style.borderTopColor = 'rgba(255, 255, 255, 0.06)'
+                      e.currentTarget.style.borderRightColor = 'rgba(255, 255, 255, 0.06)'
+                      e.currentTarget.style.borderBottomColor = 'rgba(255, 255, 255, 0.06)'
                     }}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -376,7 +376,7 @@ export function Restaurants() {
                   style={{
                     background: 'var(--color-surface-elevated)',
                     color: 'var(--color-text-primary)',
-                    border: '1px solid rgba(0, 245, 212, 0.2)'
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">

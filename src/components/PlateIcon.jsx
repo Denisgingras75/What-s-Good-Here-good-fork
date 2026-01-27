@@ -22,12 +22,11 @@ export function PlateIcon({
       style={{
         width: size,
         height: size,
-        background: '#0d1b2a',
-        border: '2px solid rgba(0, 245, 212, 0.2)',
+        background: '#0D1B22',
+        border: '2px solid rgba(255, 255, 255, 0.08)',
         boxShadow: `
           0 10px 20px rgba(0, 0, 0, 0.6),
-          0 0 15px rgba(0, 245, 212, 0.08),
-          inset 0 0 0 1px rgba(0, 245, 212, 0.1),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.04),
           inset 0 6px 10px rgba(0, 0, 0, 0.5)
         `,
       }}

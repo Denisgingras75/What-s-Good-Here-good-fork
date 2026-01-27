@@ -52,7 +52,7 @@ export function WelcomeSplash({ onComplete }) {
     <div
       className="fixed inset-0 z-[99999] flex flex-col items-center justify-center cursor-pointer"
       style={{
-        background: '#0d1b2a',
+        background: '#0D1B22',
         opacity: isFadingOut ? 0 : isVisible ? 1 : 0,
         transition: isFadingOut ? 'opacity 300ms ease-out' : 'opacity 300ms ease-in',
         pointerEvents: (isFadingOut || !isVisible) ? 'none' : 'auto',
@@ -72,10 +72,11 @@ export function WelcomeSplash({ onComplete }) {
         }}
       >
         <img
-          src="/wgh-splash.png?v=6"
+          src="/wgh-splash.png?v=7"
           alt="What's Good Here"
           className="w-[320px] md:w-[420px] lg:w-[500px] h-auto"
           draggable={false}
+          onError={(e) => console.error('Splash image failed to load:', e)}
         />
       </div>
 
@@ -83,7 +84,7 @@ export function WelcomeSplash({ onComplete }) {
       <p
         className="absolute bottom-10 text-xs transition-opacity duration-300"
         style={{
-          color: 'rgba(0, 245, 212, 0.5)',
+          color: 'rgba(255, 255, 255, 0.4)',
           opacity: isVisible && !isFadingOut ? 1 : 0,
         }}
       >

@@ -215,8 +215,8 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
           backgroundColor: 'var(--color-surface-elevated)',
           borderRadius: '16px',
           padding: '20px',
-          border: '1px solid rgba(0, 245, 212, 0.2)',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(0, 245, 212, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
         }}
       >
         {/* Action buttons - top right */}

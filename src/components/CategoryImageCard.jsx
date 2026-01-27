@@ -33,11 +33,10 @@ export function CategoryImageCard({
           <div
             className="w-full h-full rounded-full overflow-hidden"
             style={{
-              // Food glow - the "alive" element
-              // Warm sunset glow on the food - keeps appetite appeal
+              // Food glow - warm sand/gold glow for appetite appeal
               boxShadow: isActive
-                ? '0 0 14px rgba(246, 173, 85, 0.45), 0 0 6px rgba(246, 173, 85, 0.25)'
-                : '0 0 8px rgba(246, 173, 85, 0.12)',
+                ? '0 0 14px rgba(212, 165, 116, 0.5), 0 0 6px rgba(212, 165, 116, 0.3)'
+                : '0 0 8px rgba(212, 165, 116, 0.15)',
             }}
           >
             <img
@@ -55,7 +54,7 @@ export function CategoryImageCard({
         ) : (
           <div
             className="w-full h-full rounded-full"
-            style={{ background: '#0d1b2a' }}
+            style={{ background: '#0D1B22' }}
           />
         )}
       </PlateIcon>
@@ -64,7 +63,7 @@ export function CategoryImageCard({
       <span
         className="text-[12px] font-medium text-center leading-none"
         style={{
-          color: isActive ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.5)',
+          color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
         }}
       >
         {category.label}
