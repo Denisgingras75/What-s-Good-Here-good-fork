@@ -14,22 +14,15 @@ export function SearchHero({ name, radius, onRadiusChange, loading }) {
 
   return (
     <section className="px-4 pt-4 pb-6" style={{ background: 'var(--color-bg)' }}>
-      {/* Brand + Greeting row with inline filter */}
+      {/* Greeting row with radius filter */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt=""
-            className="h-12 w-12 object-contain"
-          />
-          <div>
-            <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              Hello{name ? `, ${name}` : ''}!
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)', opacity: 0.9 }}>
-              What's good today?
-            </p>
-          </div>
+        <div>
+          <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            Hello{name ? `, ${name}` : ''}!
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)', opacity: 0.9 }}>
+            What's good today?
+          </p>
         </div>
         <RadiusChip radius={radius} onClick={() => setShowRadiusSheet(true)} />
       </div>
