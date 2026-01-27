@@ -72,7 +72,7 @@ export function WelcomeSplash({ onComplete }) {
         }}
       >
         <img
-          src="/wgh-splash.jpg?v=5"
+          src="/wgh-splash.png?v=6"
           alt="What's Good Here"
           className="w-[320px] md:w-[420px] lg:w-[500px] h-auto"
           draggable={false}
