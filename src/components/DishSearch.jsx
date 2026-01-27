@@ -168,8 +168,8 @@ export function DishSearch({ loading = false }) {
         className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
         style={{
           background: 'var(--color-bg)',
-          border: `1.5px solid ${isFocused ? 'var(--color-primary)' : 'var(--color-divider)'}`,
-          boxShadow: isFocused ? '0 0 0 3px rgba(244, 122, 31, 0.15)' : 'none',
+          border: `1.5px solid ${isFocused ? 'var(--color-accent-cyan)' : 'var(--color-divider)'}`,
+          boxShadow: isFocused ? '0 0 0 3px rgba(0, 245, 212, 0.15), 0 0 20px rgba(0, 245, 212, 0.1)' : 'none',
           minHeight: '48px',
         }}
       >
@@ -239,8 +239,8 @@ export function DishSearch({ loading = false }) {
           className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50"
           style={{
             background: 'var(--color-surface)',
-            border: '1.5px solid var(--color-divider)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            border: '1.5px solid rgba(0, 245, 212, 0.2)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3), 0 0 20px rgba(0, 245, 212, 0.05)',
           }}
         >
           {isLoading ? (

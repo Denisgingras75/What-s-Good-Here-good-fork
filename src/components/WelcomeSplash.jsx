@@ -52,9 +52,10 @@ export function WelcomeSplash({ onComplete }) {
     <div
       className="fixed inset-0 z-[99999] flex flex-col items-center justify-center cursor-pointer"
       style={{
-        background: '#121212',
+        background: '#0d1b2a',
         opacity: isFadingOut ? 0 : isVisible ? 1 : 0,
         transition: isFadingOut ? 'opacity 300ms ease-out' : 'opacity 300ms ease-in',
+        pointerEvents: (isFadingOut || !isVisible) ? 'none' : 'auto',
       }}
       onClick={handleSkip}
       onKeyDown={handleKeyDown}
@@ -82,7 +83,7 @@ export function WelcomeSplash({ onComplete }) {
       <p
         className="absolute bottom-10 text-xs transition-opacity duration-300"
         style={{
-          color: 'rgba(244, 162, 97, 0.4)',
+          color: 'rgba(0, 245, 212, 0.5)',
           opacity: isVisible && !isFadingOut ? 1 : 0,
         }}
       >

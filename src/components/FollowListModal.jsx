@@ -87,11 +87,12 @@ export function FollowListModal({ userId, type, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="follow-list-title"
-        className="relative w-full max-w-md rounded-2xl overflow-hidden flex flex-col shadow-2xl border"
+        className="relative w-full max-w-md rounded-2xl overflow-hidden flex flex-col border"
         style={{
           background: 'var(--color-surface-elevated)',
           maxHeight: 'calc(100vh - 120px)',
-          borderColor: 'rgba(255,255,255,0.1)'
+          borderColor: 'rgba(0, 245, 212, 0.2)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(0, 245, 212, 0.1)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -99,8 +100,8 @@ export function FollowListModal({ userId, type, onClose }) {
         <div
           className="flex items-center justify-between px-4 py-4 border-b"
           style={{
-            borderColor: 'rgba(255,255,255,0.1)',
-            background: 'rgba(244, 162, 97, 0.08)'
+            borderColor: 'rgba(0, 245, 212, 0.15)',
+            background: 'rgba(255, 107, 107, 0.08)'
           }}
         >
           <h2 id="follow-list-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>

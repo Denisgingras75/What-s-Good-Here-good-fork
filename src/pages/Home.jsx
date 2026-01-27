@@ -220,7 +220,7 @@ function CategoryRanking({ category, onViewAll }) {
           <button
             onClick={onViewAll}
             className="text-xs font-medium"
-            style={{ color: 'var(--color-primary)' }}
+            style={{ color: 'var(--color-link-secondary)' }}
           >
             See all {totalCount} →
           </button>

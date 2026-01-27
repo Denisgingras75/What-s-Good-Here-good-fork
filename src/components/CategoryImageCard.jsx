@@ -34,10 +34,10 @@ export function CategoryImageCard({
             className="w-full h-full rounded-full overflow-hidden"
             style={{
               // Food glow - the "alive" element
-              // Neon glow ONLY on the food, not the plate
+              // Warm sunset glow on the food - keeps appetite appeal
               boxShadow: isActive
-                ? '0 0 14px rgba(244, 162, 97, 0.45), 0 0 6px rgba(244, 162, 97, 0.25)'
-                : '0 0 8px rgba(244, 162, 97, 0.12)',
+                ? '0 0 14px rgba(246, 173, 85, 0.45), 0 0 6px rgba(246, 173, 85, 0.25)'
+                : '0 0 8px rgba(246, 173, 85, 0.12)',
             }}
           >
             <img

@@ -30,7 +30,7 @@ export function CategoryIcon({ category, size = 20, className = '' }) {
       style={{
         width: size,
         height: size,
-        boxShadow: '0 0 6px rgba(244, 162, 97, 0.3)',
+        boxShadow: '0 0 6px rgba(246, 173, 85, 0.3)',
       }}
     />
   )

@@ -532,7 +532,7 @@ export function Dish() {
                   <button
                     onClick={() => setShowAllPhotos(true)}
                     className="mt-3 text-sm font-medium"
-                    style={{ color: 'var(--color-primary)' }}
+                    style={{ color: 'var(--color-link-secondary)' }}
                   >
                     See all {allPhotos.length} photos
                   </button>

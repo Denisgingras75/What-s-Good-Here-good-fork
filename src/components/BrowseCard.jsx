@@ -47,7 +47,11 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className="w-full rounded-2xl overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:shadow-md text-left group cursor-pointer browse-card-virtualized"
-      style={{ background: 'var(--color-card)', borderColor: 'var(--color-divider)' }}
+      style={{
+        background: 'var(--color-card)',
+        borderColor: 'rgba(0, 245, 212, 0.2)',
+        boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4)'
+      }}
     >
       {/* Image with rating badge */}
       <div className="relative aspect-[16/10] overflow-hidden image-placeholder">

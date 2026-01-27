@@ -12,7 +12,7 @@ export function HearingIcon({ size = 20, className = '', active = false }) {
         width: size,
         height: size,
         filter: active
-          ? 'brightness(1.4) drop-shadow(0 0 6px rgba(244, 162, 97, 0.8)) drop-shadow(0 0 12px rgba(244, 162, 97, 0.4))'
+          ? 'brightness(1.4) drop-shadow(0 0 6px rgba(246, 173, 85, 0.8)) drop-shadow(0 0 12px rgba(246, 173, 85, 0.4))'
           : 'brightness(0.9) opacity(0.85)',
       }}
     />
