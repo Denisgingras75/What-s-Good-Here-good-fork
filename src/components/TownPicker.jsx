@@ -47,17 +47,15 @@ export function TownPicker({ town, onTownChange }) {
     <div className="relative inline-block" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 text-xs font-medium transition-colors"
-        style={{ color: 'var(--color-text-tertiary)' }}
-        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
-        onMouseLeave={(e) => {
-          if (!isOpen) e.currentTarget.style.color = 'var(--color-text-tertiary)'
-        }}
+        className="flex items-center gap-1.5 text-xs font-medium transition-colors"
+        style={{ color: 'var(--color-accent-gold, #D9A765)' }}
+        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
         <span>Showing:</span>
-        <span className="font-semibold" style={{ color: isOpen ? 'var(--color-primary)' : 'inherit' }}>
+        <span className="font-semibold underline underline-offset-2">
           {currentLabel}
         </span>
         <svg

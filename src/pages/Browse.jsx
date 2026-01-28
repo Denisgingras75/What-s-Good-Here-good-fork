@@ -6,6 +6,7 @@ import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useDishSearch } from '../hooks/useDishSearch'
 import { useFavorites } from '../hooks/useFavorites'
+import { useWaitTimes } from '../hooks/useWaitTimes'
 import { restaurantsApi } from '../api/restaurantsApi'
 import { dishesApi } from '../api/dishesApi'
 import { getStorageItem, setStorageItem } from '../lib/storage'
@@ -53,6 +54,7 @@ export function Browse() {
   const votingDishId = new URLSearchParams(window.location.search).get('votingDish')
 
   // Handle category and search query from URL params (when coming from home page)
+  // Redirect to Home if no category or search query
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category')
     const queryFromUrl = searchParams.get('q')
@@ -65,8 +67,11 @@ export function Browse() {
       setSearchQuery(queryFromUrl)
       setDebouncedSearchQuery(queryFromUrl)
       setSelectedCategory(null)
+    } else {
+      // No category or search - redirect to Home
+      navigate('/', { replace: true })
     }
-  }, [searchParams])
+  }, [searchParams, navigate])
 
   // Debounce search query by 300ms - only when already showing dishes
   // On categories page, search only triggers on Enter key
@@ -146,6 +151,7 @@ export function Browse() {
     town
   )
   const { isFavorite, toggleFavorite } = useFavorites(user?.id)
+  const { getWaitTime } = useWaitTimes()
 
   // Helper to find dish rank in current list
   const getDishRank = useCallback((dishId, dishList) => {
@@ -226,12 +232,9 @@ export function Browse() {
     }
   }
 
-  // Go back to category grid
+  // Go back to Home page
   const handleBackToCategories = () => {
-    setSelectedCategory(null)
-    setSearchQuery('')
-    setDebouncedSearchQuery('')
-    setSearchParams({})
+    navigate('/')
   }
 
   // Filter and sort dishes
@@ -685,6 +688,7 @@ export function Browse() {
                     key={dish.dish_id}
                     dish={dish}
                     rank={index + 1}
+                    waitTime={getWaitTime(dish.restaurant_id)}
                   />
                 ))}
 
@@ -707,6 +711,7 @@ export function Browse() {
                           key={dish.dish_id}
                           dish={dish}
                           rank={index + 11}
+                          waitTime={getWaitTime(dish.restaurant_id)}
                         />
                       ))}
                     </div>
