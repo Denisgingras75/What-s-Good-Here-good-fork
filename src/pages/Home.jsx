@@ -78,11 +78,8 @@ export function Home() {
             className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"
             style={{ color: 'rgba(255, 255, 255, 0.45)' }}
           >
-            Browse by Category
+            The Best By Category
           </h2>
-          <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.35)' }}>
-            Or use search above for anything specific
-          </p>
         </div>
 
         {/* Category grid - 3 columns on mobile, 4 on desktop */}
