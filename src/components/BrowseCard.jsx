@@ -46,7 +46,7 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
       tabIndex={0}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      className="w-full rounded-2xl overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:shadow-md text-left group cursor-pointer browse-card-virtualized"
+      className="w-full rounded-2xl border shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:shadow-md text-left group cursor-pointer"
       style={{
         background: 'var(--color-card)',
         borderColor: 'rgba(217, 167, 101, 0.1)',

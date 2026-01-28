@@ -1,5 +1,6 @@
 export { RankedDishRow } from './RankedDishRow'
 export { Top10Sidebar } from './Top10Sidebar'
+export { Top10Compact } from './Top10Compact'
 export { BadgesInfoCard } from './BadgesInfoCard'
 export { CategorySkeleton } from './CategorySkeleton'
 export { SearchHero } from './SearchHero'

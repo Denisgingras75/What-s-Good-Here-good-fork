@@ -1,60 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useProfile } from '../hooks/useProfile'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
-import { RankedDishRow, Top10Sidebar, CategorySkeleton, SearchHero } from '../components/home'
-
-// Featured categories for homepage - these are the "hero" categories
-const FEATURED_CATEGORIES = [
-  { id: 'pizza', label: 'Pizza', emoji: '🍕' },
-  { id: 'burger', label: 'Burger', emoji: '🍔' },
-  { id: 'lobster roll', label: 'Lobster Roll', emoji: '🦞' },
-  { id: 'seafood', label: 'Seafood', emoji: '🦐' },
-]
+import { BROWSE_CATEGORIES } from '../constants/categories'
+import { SearchHero, Top10Compact } from '../components/home'
+import { CategoryImageCard } from '../components/CategoryImageCard'
 
 export function Home() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { profile } = useProfile(user?.id)
-  const [top10Tab, setTop10Tab] = useState('mv') // 'mv' or 'personal'
 
   const { location, radius, setRadius } = useLocationContext()
 
-  // Fetch ALL dishes once, then filter by category client-side
+  // Fetch ALL dishes once
   const { dishes, loading, error } = useDishes(location, radius, null, null)
-
-  // Group dishes by category and get top 3 for each featured category
-  const categoryRankings = useMemo(() => {
-    if (!dishes?.length) return []
-
-    return FEATURED_CATEGORIES.map(category => {
-      // Filter dishes for this category
-      const categoryDishes = dishes.filter(d =>
-        d.category?.toLowerCase() === category.id.toLowerCase()
-      )
-
-      // Sort by avg_rating (ranked dishes first, then by score)
-      const sorted = categoryDishes.slice().sort((a, b) => {
-        const aRanked = (a.total_votes || 0) >= MIN_VOTES_FOR_RANKING
-        const bRanked = (b.total_votes || 0) >= MIN_VOTES_FOR_RANKING
-        if (aRanked && !bRanked) return -1
-        if (!aRanked && bRanked) return 1
-        return (b.avg_rating || 0) - (a.avg_rating || 0)
-      })
-
-      // Take top 3
-      const topDishes = sorted.slice(0, 3)
-
-      return {
-        ...category,
-        dishes: topDishes,
-        totalCount: categoryDishes.length,
-      }
-    }).filter(cat => cat.dishes.length > 0) // Only show categories with dishes
-  }, [dishes])
 
   // Top 10 dishes on the island (all categories)
   const top10Dishes = useMemo(() => {
@@ -91,37 +54,59 @@ export function Home() {
   // Whether to show the toggle (user is logged in and has preferences)
   const showPersonalToggle = user && profile?.preferred_categories?.length > 0
 
-  // Which dishes to show in sidebar based on active tab
-  const activeDishes = top10Tab === 'personal' && showPersonalToggle
-    ? personalTop10Dishes
-    : top10Dishes
-
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
-      {/* Hero Section - search-forward */}
+      <h1 className="sr-only">What's Good Here - Top Ranked Dishes Near You</h1>
+
+      {/* Section 1: Hero with search */}
       <SearchHero
-        name={profile?.display_name}
         radius={radius}
         onRadiusChange={setRadius}
         loading={loading}
       />
 
-      {/* Main Content */}
-      <div className="px-4 pb-6">
-        <h1 className="sr-only">What's Good Here - Top Ranked Dishes Near You</h1>
-        {/* Loading State */}
-        {loading && (
-          <div className="space-y-6" aria-live="polite" aria-label="Loading categories">
-            {[...Array(3)].map((_, i) => (
-              <CategorySkeleton key={i} />
-            ))}
-          </div>
-        )}
+      {/* Section 2: Category Grid */}
+      <section
+        className="px-4 py-6"
+        style={{
+          background: 'linear-gradient(180deg, #1A3A42 0%, #122830 50%, #0D1B22 100%)',
+        }}
+      >
+        {/* Section header */}
+        <div className="mb-6 text-center">
+          <h2
+            className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"
+            style={{ color: 'rgba(255, 255, 255, 0.45)' }}
+          >
+            Browse by Category
+          </h2>
+          <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.35)' }}>
+            Or use search above for anything specific
+          </p>
+        </div>
 
-        {/* Error State */}
-        {error && (
-          <div className="py-12 text-center">
-            <p role="alert" className="text-sm" style={{ color: 'var(--color-danger)' }}>{error?.message || error}</p>
+        {/* Category grid - 3 columns on mobile, 4 on desktop */}
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-6 justify-items-center max-w-2xl mx-auto">
+          {BROWSE_CATEGORIES.map((category) => (
+            <CategoryImageCard
+              key={category.id}
+              category={category}
+              onClick={() => navigate(`/browse?category=${encodeURIComponent(category.id)}`)}
+              size={72}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Section 3: Top 10 Compact */}
+      <section className="px-4 py-6">
+        {loading ? (
+          <Top10Skeleton />
+        ) : error ? (
+          <div className="py-8 text-center">
+            <p role="alert" className="text-sm" style={{ color: 'var(--color-danger)' }}>
+              {error?.message || error}
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 text-sm font-medium rounded-lg"
@@ -130,113 +115,73 @@ export function Home() {
               Retry
             </button>
           </div>
-        )}
-
-        {/* Category Rankings + Top 10 Sidebar */}
-        {!loading && !error && (
-          <div className="lg:flex lg:gap-8">
-            {/* Left: Category Rankings */}
-            <div className="flex-1 space-y-6">
-              {categoryRankings.map(category => (
-                <CategoryRanking
-                  key={category.id}
-                  category={category}
-                  onViewAll={() => navigate(`/browse?category=${encodeURIComponent(category.id)}`)}
-                />
-              ))}
-
-              {/* Empty state if no categories have dishes */}
-              {categoryRankings.length === 0 && (
-                <div className="py-12 text-center">
-                  <div
-                    className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-                    style={{ background: 'var(--color-bg)' }}
-                  >
-                    <span className="text-2xl">🔍</span>
-                  </div>
-                  <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    No dishes found nearby
-                  </p>
-                  <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                    Try increasing your search radius
-                  </p>
-                  <button
-                    onClick={() => navigate('/browse')}
-                    className="mt-4 px-6 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
-                    style={{ background: 'var(--color-primary)', color: 'white' }}
-                  >
-                    Browse All Dishes
-                  </button>
-                </div>
-              )}
-
-              {/* All Categories Link */}
-              {categoryRankings.length > 0 && (
-                <div className="pt-4 text-center lg:text-left">
-                  <button
-                    onClick={() => navigate('/browse')}
-                    className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                    style={{
-                      color: 'var(--color-text-secondary)',
-                      background: 'var(--color-bg)',
-                      border: '1px solid var(--color-divider)'
-                    }}
-                  >
-                    Find the best of something else →
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Right: Top 10 Sidebar (desktop) / Below (mobile) */}
-            {activeDishes.length > 0 && (
-              <Top10Sidebar
-                dishes={activeDishes}
-                showToggle={showPersonalToggle}
-                activeTab={top10Tab}
-                onTabChange={setTop10Tab}
-              />
-            )}
+        ) : top10Dishes.length > 0 ? (
+          <div className="max-w-lg mx-auto">
+            <Top10Compact
+              dishes={top10Dishes}
+              personalDishes={personalTop10Dishes}
+              showToggle={showPersonalToggle}
+              initialCount={3}
+            />
           </div>
+        ) : (
+          <EmptyState onBrowse={() => navigate('/browse')} />
         )}
+      </section>
+    </div>
+  )
+}
 
+// Skeleton for Top 10 section while loading
+function Top10Skeleton() {
+  return (
+    <div
+      className="rounded-2xl p-4 max-w-lg mx-auto animate-pulse"
+      style={{
+        background: 'var(--color-bg)',
+        border: '1px solid var(--color-divider)',
+      }}
+    >
+      <div className="h-6 w-48 rounded mb-4" style={{ background: 'var(--color-surface-elevated)' }} />
+      <div className="space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-5 h-5 rounded-full" style={{ background: 'var(--color-surface-elevated)' }} />
+            <div className="flex-1">
+              <div className="h-4 w-32 rounded mb-1" style={{ background: 'var(--color-surface-elevated)' }} />
+              <div className="h-3 w-24 rounded" style={{ background: 'var(--color-surface-elevated)' }} />
+            </div>
+            <div className="h-5 w-8 rounded" style={{ background: 'var(--color-surface-elevated)' }} />
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-// Category ranking section
-function CategoryRanking({ category, onViewAll }) {
-  const { label, dishes, totalCount } = category
-
+// Empty state when no dishes found
+function EmptyState({ onBrowse }) {
   return (
-    <section>
-      {/* Category Header */}
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Best {label} near you
-        </h2>
-        {totalCount > 3 && (
-          <button
-            onClick={onViewAll}
-            className="text-xs font-medium"
-            style={{ color: 'var(--color-link-secondary)' }}
-          >
-            See all {totalCount} →
-          </button>
-        )}
+    <div className="py-12 text-center">
+      <div
+        className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+        style={{ background: 'var(--color-bg)' }}
+      >
+        <span className="text-2xl">🔍</span>
       </div>
-
-      {/* Top Dishes */}
-      <div className="space-y-2">
-        {dishes.map((dish, index) => (
-          <RankedDishRow
-            key={dish.dish_id}
-            dish={dish}
-            rank={index + 1}
-          />
-        ))}
-      </div>
-    </section>
+      <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+        No dishes found nearby
+      </p>
+      <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+        Try increasing your search radius
+      </p>
+      <button
+        onClick={onBrowse}
+        className="mt-4 px-6 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
+        style={{ background: 'var(--color-primary)', color: 'white' }}
+      >
+        Browse All Dishes
+      </button>
+    </div>
   )
 }

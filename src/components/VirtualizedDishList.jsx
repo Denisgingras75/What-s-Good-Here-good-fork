@@ -2,8 +2,8 @@ import { useRef, useCallback } from 'react'
 import { FixedSizeList as List } from 'react-window'
 import { BrowseCard } from './BrowseCard'
 
-// Estimated row height - BrowseCard is roughly this tall
-const ROW_HEIGHT = 320
+// Estimated row height - BrowseCard needs ~450px at full desktop width to show all content
+const ROW_HEIGHT = 450
 
 /**
  * Virtualized dish list using react-window
@@ -53,9 +53,9 @@ export function VirtualizedDishList({
     return null
   }
 
-  // Don't virtualize lists under 100 items - virtualization creates a fixed-height
-  // scroll container that conflicts with normal page scrolling for search results
-  if (safeDishes.length <= 100) {
+  // Don't virtualize lists under 500 items - virtualization creates a fixed-height
+  // scroll container that causes card clipping issues at various screen widths
+  if (safeDishes.length <= 500) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {safeDishes.map((dish) => (

@@ -29,7 +29,7 @@ const BROWSE_CATEGORIES = [
   { id: 'tendys', label: 'Tendys' },
 ]
 
-export function DishSearch({ loading = false }) {
+export function DishSearch({ loading = false, placeholder = "Find What's Good near you" }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [isFocused, setIsFocused] = useState(false)
@@ -194,7 +194,7 @@ export function DishSearch({ loading = false }) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Find What's Good near you"
+          placeholder={placeholder}
           aria-label="Search dishes by name"
           aria-autocomplete="list"
           aria-expanded={showDropdown}

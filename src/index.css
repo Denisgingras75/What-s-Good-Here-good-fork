@@ -1054,11 +1054,7 @@
   contain-intrinsic-size: 0 420px;
 }
 
-/* Smaller card variant for browse grid */
-.browse-card-virtualized {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 280px;
-}
+/* Note: .browse-card-virtualized removed - content-visibility was causing card content clipping */
 
 /* ===========================
    Accessibility: Reduced Motion
