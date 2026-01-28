@@ -6,7 +6,6 @@ import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useDishSearch } from '../hooks/useDishSearch'
 import { useFavorites } from '../hooks/useFavorites'
-import { useWaitTimes } from '../hooks/useWaitTimes'
 import { restaurantsApi } from '../api/restaurantsApi'
 import { dishesApi } from '../api/dishesApi'
 import { getStorageItem, setStorageItem } from '../lib/storage'
@@ -151,7 +150,6 @@ export function Browse() {
     town
   )
   const { isFavorite, toggleFavorite } = useFavorites(user?.id)
-  const { getWaitTime } = useWaitTimes()
 
   // Helper to find dish rank in current list
   const getDishRank = useCallback((dishId, dishList) => {
@@ -688,7 +686,6 @@ export function Browse() {
                     key={dish.dish_id}
                     dish={dish}
                     rank={index + 1}
-                    waitTime={getWaitTime(dish.restaurant_id)}
                   />
                 ))}
 
@@ -711,7 +708,6 @@ export function Browse() {
                           key={dish.dish_id}
                           dish={dish}
                           rank={index + 11}
-                          waitTime={getWaitTime(dish.restaurant_id)}
                         />
                       ))}
                     </div>
