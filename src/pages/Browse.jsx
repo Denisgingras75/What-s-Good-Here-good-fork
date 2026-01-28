@@ -14,7 +14,6 @@ import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { getRelatedSuggestions } from '../constants/searchSuggestions'
 import { BrowseCard } from '../components/BrowseCard'
 import { VirtualizedDishList } from '../components/VirtualizedDishList'
-import { DishModal } from '../components/DishModal'
 import { getPendingVoteFromStorage } from '../lib/storage'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { DishCardSkeleton } from '../components/Skeleton'
@@ -33,7 +32,6 @@ export function Browse() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [loginModalOpen, setLoginModalOpen] = useState(false)
-  const [selectedDish, setSelectedDish] = useState(null)
   const [impactFeedback, setImpactFeedback] = useState(null)
   const [pendingVoteData, setPendingVoteData] = useState(null)
   const [sortBy, setSortBy] = useState(() => getStorageItem('browse_sort') || 'top_rated')
@@ -156,23 +154,16 @@ export function Browse() {
     return index === -1 ? 999 : index + 1
   }, [])
 
-  // Open dish modal and capture before state for impact calculation
-  const openDishModal = useCallback((dish) => {
-    beforeVoteRef.current = {
-      dish_id: dish.dish_id,
-      total_votes: dish.total_votes || 0,
-      percent_worth_it: dish.percent_worth_it || 0,
-      rank: getDishRank(dish.dish_id, dishes)
-    }
-    setSelectedDish(dish)
-  }, [dishes, getDishRank])
+  // Navigate to full dish page
+  const openDishPage = useCallback((dish) => {
+    navigate(`/dish/${dish.dish_id}`)
+  }, [navigate])
 
-  // Auto-reopen modal after OAuth/magic link login if there's a pending vote
+  // Auto-navigate to dish page after OAuth/magic link login if there's a pending vote
   useEffect(() => {
-    if (!user || !dishes?.length || selectedDish) return
+    if (!user || !dishes?.length) return
 
     // Check URL for votingDish param (from magic link redirect)
-
     // Also check localStorage as fallback
     const pending = getPendingVoteFromStorage()
     const dishIdToOpen = votingDishId || pending?.dishId
@@ -190,10 +181,10 @@ export function Browse() {
       window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
     }
 
-    // Open modal immediately - dishes are guaranteed ready now
-    openDishModal(dish)
+    // Navigate to dish page
+    openDishPage(dish)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, dishes, openDishModal, selectedDish])
+  }, [user, dishes, openDishPage])
 
   // Calculate impact when dishes update after voting
   useEffect(() => {
@@ -210,17 +201,6 @@ export function Browse() {
       setPendingVoteData(null)
     }
   }, [dishes, pendingVoteData, setImpactFeedback, getDishRank])
-
-  const handleVote = () => {
-    // Store before data and mark as pending
-    if (beforeVoteRef.current) {
-      setPendingVoteData(beforeVoteRef.current)
-      beforeVoteRef.current = null
-    }
-    // Close the modal first, then refetch so toast appears on clean screen
-    setSelectedDish(null)
-    refetch()
-  }
 
   const handleLoginRequired = () => {
     setLoginModalOpen(true)
@@ -329,13 +309,13 @@ export function Browse() {
 
     if (suggestion.type === 'dish') {
       // Open the dish modal
-      openDishModal(suggestion.data)
+      openDishPage(suggestion.data)
       setSearchQuery('')
     } else if (suggestion.type === 'restaurant') {
       // Navigate to restaurant page
       navigate(`/restaurants/${suggestion.id}`)
     }
-  }, [navigate, openDishModal])
+  }, [navigate, openDishPage])
 
   // Handle keyboard navigation in autocomplete
   const handleSearchKeyDown = useCallback((e) => {
@@ -685,7 +665,7 @@ export function Browse() {
             ) : (
               <VirtualizedDishList
                 dishes={filteredDishes}
-                onDishClick={openDishModal}
+                onDishClick={openDishPage}
                 isFavorite={isFavorite}
                 onToggleFavorite={handleToggleFavorite}
                 columns={2}
@@ -703,14 +683,6 @@ export function Browse() {
           </div>
         </>
       )}
-
-      {/* Dish Detail Modal */}
-      <DishModal
-        dish={selectedDish}
-        onClose={() => setSelectedDish(null)}
-        onVote={handleVote}
-        onLoginRequired={handleLoginRequired}
-      />
 
       <LoginModal
         isOpen={loginModalOpen}

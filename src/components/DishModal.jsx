@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 import { ReviewFlow } from './ReviewFlow'
 import { PhotoUploadButton } from './PhotoUploadButton'
 import { PhotoUploadConfirmation } from './PhotoUploadConfirmation'
@@ -9,6 +10,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap'
 import { getResponsiveImageProps } from '../utils/images'
 
 export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
+  const navigate = useNavigate()
   const [photoUploaded, setPhotoUploaded] = useState(null)
   const [featuredPhoto, setFeaturedPhoto] = useState(null)
   const [communityPhotos, setCommunityPhotos] = useState([])
@@ -284,10 +286,30 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
             <h2 id="dish-modal-title" style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px', paddingRight: '30px', color: 'var(--color-text-primary)' }}>
               {dish.dish_name}
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
               {dish.restaurant_name}
               {dish.price && ` · $${Number(dish.price).toFixed(0)}`}
             </p>
+
+            {/* See Reviews and Photos button */}
+            <button
+              onClick={() => {
+                handleClose()
+                // Small delay to let modal close animation complete
+                setTimeout(() => navigate(`/dish/${dish.dish_id}`), 200)
+              }}
+              className="w-full py-2.5 mb-4 rounded-xl text-sm font-medium transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
+              style={{
+                background: 'var(--color-surface)',
+                color: 'var(--color-text-secondary)',
+                border: '1px solid var(--color-divider)',
+              }}
+            >
+              <span>See Reviews & Photos</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
 
             {/* Photo load error feedback */}
             {photoLoadError && (
