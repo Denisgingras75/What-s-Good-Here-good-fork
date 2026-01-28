@@ -146,22 +146,18 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
             )}
           </div>
 
-          {/* Rating Info */}
+          {/* Rating Info - Single metric: would order again % */}
           <div className="mt-2">
             {isRanked ? (
-              <div className="flex items-center gap-3">
-                {/* Rating block - stacked vertically */}
-                <div className="flex flex-col items-center px-3 py-1.5 rounded-lg" style={{ background: 'var(--color-surface)' }}>
-                  <span className="text-lg font-bold leading-none" style={{ color: getRatingColor(displayRating) }}>
-                    {displayRating || '—'}
-                  </span>
-                  <span className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {has_variants && best_variant_name ? `Best: ${best_variant_name}` : `${votes} votes`}
-                  </span>
-                </div>
-                {/* Order again badge */}
-                <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  {Math.round(percent_worth_it)}% say it's good here
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-lg font-bold"
+                  style={{ color: getRatingColor(percent_worth_it / 10) }}
+                >
+                  {Math.round(percent_worth_it)}%
+                </span>
+                <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  would order again · {votes} votes
                 </span>
               </div>
             ) : (
