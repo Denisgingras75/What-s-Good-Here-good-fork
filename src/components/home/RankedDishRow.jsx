@@ -37,8 +37,9 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank }) {
       aria-label={accessibleLabel}
       className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:shadow-md active:scale-[0.99] group stagger-item"
       style={{
-        background: 'var(--color-bg)',
-        border: '1px solid var(--color-divider)'
+        background: rank <= 3 ? 'rgba(244, 122, 31, 0.04)' : 'var(--color-bg)',
+        border: '1px solid var(--color-divider)',
+        borderLeft: rank <= 3 ? '3px solid var(--color-primary)' : '1px solid var(--color-divider)'
       }}
     >
       {/* Rank Badge - Medals for top 3 */}
