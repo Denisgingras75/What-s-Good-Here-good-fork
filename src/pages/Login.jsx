@@ -172,7 +172,7 @@ export function Login() {
           <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
             {/* Logo */}
             <img
-              src="/wgh-splash.png"
+              src="/logo.png"
               alt="What's Good Here"
               className="w-64 md:w-72 h-auto mb-8"
             />
