@@ -43,9 +43,12 @@ export function Browse() {
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
 
+  const { location, radius, town } = useLocationContext()
+
   // Search results from API using React Query hook
   // Handles cuisine/tag searches with proper caching and error handling
-  const { results: searchResults, loading: searchLoading } = useDishSearch(debouncedSearchQuery, 50)
+  // Pass town to filter search results by selected town
+  const { results: searchResults, loading: searchLoading } = useDishSearch(debouncedSearchQuery, 50, town)
 
   const beforeVoteRef = useRef(null)
   const searchInputRef = useRef(null)
@@ -104,7 +107,7 @@ export function Browse() {
     const fetchSuggestions = async () => {
       try {
         const [dishResults, restaurantResults] = await Promise.all([
-          dishesApi.search(searchQuery, 5),
+          dishesApi.search(searchQuery, 5, town),
           restaurantsApi.search(searchQuery, 3),
         ])
         setDishSuggestions(dishResults)
@@ -119,7 +122,7 @@ export function Browse() {
 
     const timer = setTimeout(fetchSuggestions, 150)
     return () => clearTimeout(timer)
-  }, [searchQuery])
+  }, [searchQuery, town])
 
   // Close autocomplete when clicking outside
   useEffect(() => {
@@ -135,8 +138,6 @@ export function Browse() {
     document.addEventListener('mousedown', handleClickOutside, { passive: true })
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  const { location, radius, town } = useLocationContext()
 
   // Only fetch from useDishes when browsing by category (NOT when text searching)
   // Text search uses useDishSearch hook instead
@@ -396,7 +397,7 @@ export function Browse() {
           {debouncedSearchQuery.trim() && !selectedCategory && (
             <div className="px-4 py-3">
               <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                Best "{debouncedSearchQuery}" near you
+                Best "{debouncedSearchQuery}" {town ? `in ${town}` : 'near you'}
               </h1>
             </div>
           )}
@@ -571,8 +572,8 @@ export function Browse() {
               <div>
                 <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                   {debouncedSearchQuery
-                    ? `Results for "${debouncedSearchQuery}"`
-                    : `The Best ${CATEGORIES.find(c => c.id === selectedCategory)?.label || 'Dishes'}`
+                    ? `Best "${debouncedSearchQuery}" ${town ? `in ${town}` : 'near you'}`
+                    : `The Best ${CATEGORIES.find(c => c.id === selectedCategory)?.label || 'Dishes'}${town ? ` in ${town}` : ''}`
                   }
                 </h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>

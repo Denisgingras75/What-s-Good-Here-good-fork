@@ -7,14 +7,15 @@ import { logger } from '../utils/logger'
  * Great for autocomplete - caches previous searches
  * @param {string} query - Search query
  * @param {number} limit - Max results (default 5)
+ * @param {string|null} town - Optional town filter (e.g., 'Oak Bluffs')
  * @returns {Object} { results, loading, error }
  */
-export function useDishSearch(query, limit = 5) {
+export function useDishSearch(query, limit = 5, town = null) {
   const trimmedQuery = query?.trim() || ''
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['dishSearch', trimmedQuery, limit],
-    queryFn: () => dishesApi.search(trimmedQuery, limit),
+    queryKey: ['dishSearch', trimmedQuery, limit, town],
+    queryFn: () => dishesApi.search(trimmedQuery, limit, town),
     enabled: trimmedQuery.length >= 2, // Only search with 2+ chars
     staleTime: 1000 * 60 * 5, // Cache search results for 5 minutes
     gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes

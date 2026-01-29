@@ -142,25 +142,29 @@ export const dishesApi = {
     `
 
     // Build query helper that applies common filters
-    // Note: For Supabase foreign table filtering, we need to apply filters in the right order
+    // For Supabase foreign table filtering, we filter the results after fetching
+    // since PostgREST foreign table filters can be unreliable
     const runSearchQuery = async (additionalFilter) => {
       let query = supabase
         .from('dishes')
         .select(selectFields)
         .eq('restaurants.is_open', true)
 
-      // Apply town filter if specified
-      if (town) {
-        query = query.eq('restaurants.town', town)
-      }
-
       // Apply the additional search-specific filter
       query = additionalFilter(query)
 
       // Apply ordering and limit
-      return query
+      const result = await query
         .order('avg_rating', { ascending: false, nullsFirst: false })
-        .limit(limit)
+        .limit(town ? limit * 3 : limit) // Fetch more if we need to filter by town
+
+      // If town filter is specified, filter results client-side
+      // This is more reliable than PostgREST foreign table filtering
+      if (town && result.data) {
+        result.data = result.data.filter(dish => dish.restaurants?.town === town).slice(0, limit)
+      }
+
+      return result
     }
 
     // Run all 3 search queries in parallel for better performance
