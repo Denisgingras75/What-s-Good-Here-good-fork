@@ -13,8 +13,8 @@ export function PlateIcon({
   children,
   className = ''
 }) {
-  // Content inset (20% from edge for food area)
-  const contentInset = Math.round(size * 0.18)
+  // Content inset (2% from edge for food area - nearly fills entire plate)
+  const contentInset = Math.round(size * 0.02)
 
   return (
     <div

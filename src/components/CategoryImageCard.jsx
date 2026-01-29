@@ -44,7 +44,10 @@ export function CategoryImageCard({
               alt={category.label}
               // No lazy loading - these are above the fold
               className="w-full h-full object-cover transition-opacity duration-300"
-              style={{ opacity: imageLoaded ? 1 : 0 }}
+              style={{
+                opacity: imageLoaded ? 1 : 0,
+                transform: category.id === 'breakfast' ? 'scale(1.15)' : category.id === 'pizza' ? 'scale(1.15)' : 'none',
+              }}
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
                 e.target.style.display = 'none'
