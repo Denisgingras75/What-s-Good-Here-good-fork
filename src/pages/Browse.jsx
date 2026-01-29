@@ -23,6 +23,25 @@ import { CategoryImageCard } from '../components/CategoryImageCard'
 // Use centralized browse categories
 const CATEGORIES = BROWSE_CATEGORIES
 
+// Cuisine types that should have "food" appended for natural language
+const CUISINE_TYPES = new Set([
+  'mexican', 'chinese', 'thai', 'japanese', 'italian', 'indian', 'vietnamese',
+  'korean', 'greek', 'french', 'spanish', 'mediterranean', 'american', 'brazilian',
+  'cuban', 'caribbean', 'ethiopian', 'moroccan', 'turkish', 'lebanese', 'persian',
+  'german', 'british', 'irish', 'polish', 'russian', 'african', 'asian', 'european',
+  'latin', 'southern', 'cajun', 'creole', 'hawaiian', 'filipino', 'indonesian',
+  'malaysian', 'singaporean', 'taiwanese', 'cantonese', 'szechuan', 'hunan',
+])
+
+// Format search query for display - adds "food" for cuisine types
+function formatSearchQuery(query) {
+  const lower = query.toLowerCase().trim()
+  if (CUISINE_TYPES.has(lower)) {
+    return `${query} food`
+  }
+  return query
+}
+
 export function Browse() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -564,7 +583,7 @@ export function Browse() {
               <div>
                 <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                   {debouncedSearchQuery
-                    ? `Best "${debouncedSearchQuery}" ${town ? `in ${town}` : 'near you'}`
+                    ? `Best ${formatSearchQuery(debouncedSearchQuery)} ${town ? `in ${town}` : 'near you'}`
                     : `The Best ${CATEGORIES.find(c => c.id === selectedCategory)?.label || 'Dishes'}${town ? ` in ${town}` : ''}`
                   }
                 </h2>
