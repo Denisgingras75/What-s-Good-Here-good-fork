@@ -13,8 +13,8 @@ const TOWN_COLORS = {
   // Aquinnah uses gradient - handled separately
 }
 
-// Gay Head Cliffs gradient for Aquinnah (rust, ochre, cream layers)
-const AQUINNAH_GRADIENT = 'linear-gradient(135deg, #C45C3E 0%, #D4883B 25%, #E8C87A 50%, #F5E6D3 75%, #8B7355 100%)'
+// Gay Head Cliffs gradient for Aquinnah (deep reds, oranges, mustard, white, brown, purple)
+const AQUINNAH_GRADIENT = 'linear-gradient(135deg, #8B1E3F 0%, #D4573B 20%, #E8923B 40%, #D4A849 55%, #F5F0E6 70%, #6B4423 85%, #4A2040 100%)'
 
 // Default color for unknown towns
 const DEFAULT_COLOR = { bg: '#5C6B73', text: '#F5E6D3' } // Slate
