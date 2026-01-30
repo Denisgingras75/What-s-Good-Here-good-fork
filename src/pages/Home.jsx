@@ -65,7 +65,38 @@ export function Home() {
         loading={loading}
       />
 
-      {/* Section 2: Category Grid */}
+      {/* Section 2: Top 10 Compact */}
+      <section className="px-4 py-6">
+        {loading ? (
+          <Top10Skeleton />
+        ) : error ? (
+          <div className="py-8 text-center">
+            <p role="alert" className="text-sm" style={{ color: 'var(--color-danger)' }}>
+              {error?.message || error}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 text-sm font-medium rounded-lg"
+              style={{ background: 'var(--color-primary)', color: 'white' }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : top10Dishes.length > 0 ? (
+          <div className="max-w-lg mx-auto">
+            <Top10Compact
+              dishes={top10Dishes}
+              personalDishes={personalTop10Dishes}
+              showToggle={showPersonalToggle}
+              initialCount={3}
+            />
+          </div>
+        ) : (
+          <EmptyState onBrowse={() => navigate('/browse')} />
+        )}
+      </section>
+
+      {/* Section 3: Category Grid */}
       <section
         className="px-4 py-6"
         style={{
@@ -96,37 +127,6 @@ export function Home() {
             />
           ))}
         </div>
-      </section>
-
-      {/* Section 3: Top 10 Compact */}
-      <section className="px-4 py-6">
-        {loading ? (
-          <Top10Skeleton />
-        ) : error ? (
-          <div className="py-8 text-center">
-            <p role="alert" className="text-sm" style={{ color: 'var(--color-danger)' }}>
-              {error?.message || error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 text-sm font-medium rounded-lg"
-              style={{ background: 'var(--color-primary)', color: 'white' }}
-            >
-              Retry
-            </button>
-          </div>
-        ) : top10Dishes.length > 0 ? (
-          <div className="max-w-lg mx-auto">
-            <Top10Compact
-              dishes={top10Dishes}
-              personalDishes={personalTop10Dishes}
-              showToggle={showPersonalToggle}
-              initialCount={3}
-            />
-          </div>
-        ) : (
-          <EmptyState onBrowse={() => navigate('/browse')} />
-        )}
       </section>
     </div>
   )
