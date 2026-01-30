@@ -641,9 +641,7 @@ export function Browse() {
               </div>
             ) : filteredDishes.length === 0 ? (
               <div className="py-12 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
-                  <span className="text-2xl">🔍</span>
-                </div>
+                <img src="/search-not-found.png" alt="" className="w-16 h-16 mx-auto mb-4 rounded-full object-cover" />
                 <p className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>
                   {debouncedSearchQuery
                     ? `No dishes found for "${debouncedSearchQuery}"`

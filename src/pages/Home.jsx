@@ -196,12 +196,11 @@ function Top10Skeleton() {
 function EmptyState({ onBrowse }) {
   return (
     <div className="py-12 text-center">
-      <div
-        className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-        style={{ background: 'var(--color-bg)' }}
-      >
-        <span className="text-2xl">🔍</span>
-      </div>
+      <img
+        src="/search-not-found.png"
+        alt=""
+        className="w-16 h-16 mx-auto mb-4 rounded-full object-cover"
+      />
       <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
         No dishes found
       </p>

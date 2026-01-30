@@ -234,7 +234,7 @@ export function UserProfile() {
   if (error || !profile) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--color-surface)' }}>
-        <div className="text-6xl mb-4">🔍</div>
+        <img src="/search-not-found.png" alt="" className="w-16 h-16 mx-auto mb-4 rounded-full object-cover" />
         <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
           User not found
         </h1>
