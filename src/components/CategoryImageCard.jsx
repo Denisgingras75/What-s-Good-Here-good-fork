@@ -46,7 +46,7 @@ export function CategoryImageCard({
               className="w-full h-full object-cover transition-opacity duration-300"
               style={{
                 opacity: imageLoaded ? 1 : 0,
-                transform: category.id === 'breakfast' ? 'scale(1.15)' : 'none',
+                transform: category.id === 'breakfast' ? 'scale(1.3)' : 'none',
               }}
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
