@@ -8,6 +8,7 @@ import {
   BreakfastSandwichSVG,
   BurgerSVG,
   ChowderSVG,
+  DessertSVG,
   EntreeSVG,
   FriedChickenSVG,
   FriesSVG,
@@ -195,6 +196,7 @@ function getFoodComponent(category) {
     'apps': AppsSVG,
     'fried chicken': FriedChickenSVG,
     'entree': EntreeSVG,
+    'dessert': DessertSVG,
   }
 
   return foodMap[category] || PizzaSVG // Default to pizza for now
@@ -202,7 +204,7 @@ function getFoodComponent(category) {
 
 // Check if food is served on a plate (doesn't shrink, plate stays)
 function hasPlate(category) {
-  const platedFoods = ['pasta', 'salad', 'breakfast', 'entree', 'apps', 'seafood', 'fried chicken', 'sushi', 'pokebowl', 'wings', 'tendys', 'fries', 'chowder', 'soup']
+  const platedFoods = ['pasta', 'salad', 'breakfast', 'entree', 'apps', 'seafood', 'fried chicken', 'sushi', 'pokebowl', 'wings', 'tendys', 'fries', 'chowder', 'soup', 'dessert']
   return platedFoods.includes(category)
 }
 
@@ -225,6 +227,7 @@ function getCrumbColor(category) {
     'apps': '#D4AA4A', // Breading color
     'fried chicken': '#8B4513', // Brown
     'entree': '#8B4513', // Steak brown
+    'dessert': '#F4A0A0', // Pink cake crumbs
     'lobster roll': '#FFA07A', // Lobster meat color
     'taco': '#E8C060', // Tortilla color
   }
@@ -262,6 +265,7 @@ function getRatingLabel(value, category) {
     'apps': '🍽️',
     'fried chicken': '🍗',
     'entree': '🍽️',
+    'dessert': '🍰',
   }
 
   const emoji = categoryEmojis[category] || '🍽️'
