@@ -4,6 +4,7 @@ import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { restaurantsApi } from '../api/restaurantsApi'
+import { followsApi } from '../api/followsApi'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useFavorites } from '../hooks/useFavorites'
@@ -22,6 +23,7 @@ export function Restaurants() {
   const [dishSearchQuery, setDishSearchQuery] = useState('')
   const [selectedRestaurant, setSelectedRestaurant] = useState(null)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [friendsVotesByDish, setFriendsVotesByDish] = useState({})
 
   const { location, radius } = useLocationContext()
   const { dishes, loading: dishesLoading, error: dishesError, refetch } = useDishes(
@@ -59,6 +61,34 @@ export function Restaurants() {
       }
     }
   }, [restaurantId, restaurants, selectedRestaurant])
+
+  // Fetch friend votes when a restaurant is selected
+  useEffect(() => {
+    if (!selectedRestaurant?.id || !user) {
+      setFriendsVotesByDish({})
+      return
+    }
+
+    async function fetchFriendsVotes() {
+      try {
+        const votes = await followsApi.getFriendsVotesForRestaurant(selectedRestaurant.id)
+        // Group votes by dish_id
+        const byDish = {}
+        votes.forEach(vote => {
+          if (!byDish[vote.dish_id]) {
+            byDish[vote.dish_id] = []
+          }
+          byDish[vote.dish_id].push(vote)
+        })
+        setFriendsVotesByDish(byDish)
+      } catch (err) {
+        logger.error('Failed to fetch friends votes for restaurant:', err)
+        setFriendsVotesByDish({})
+      }
+    }
+
+    fetchFriendsVotes()
+  }, [selectedRestaurant?.id, user])
 
   const handleVote = () => {
     refetch()
@@ -451,6 +481,7 @@ export function Restaurants() {
             onToggleFavorite={handleToggleFavorite}
             user={user}
             searchQuery={dishSearchQuery}
+            friendsVotesByDish={friendsVotesByDish}
           />
         </>
       )}

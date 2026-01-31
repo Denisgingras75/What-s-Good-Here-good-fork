@@ -14,6 +14,7 @@ import { PhotoUploadConfirmation } from '../components/PhotoUploadConfirmation'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
 import { getCategoryImage } from '../constants/categoryImages'
+import { CATEGORY_INFO } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { getRatingColor, formatScore10 } from '../utils/ranking'
 import { formatRelativeTime } from '../utils/formatters'
@@ -69,6 +70,7 @@ export function Dish() {
   const [lightboxPhoto, setLightboxPhoto] = useState(null)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [friendsVotes, setFriendsVotes] = useState([])
+  const [friendsCompat, setFriendsCompat] = useState({}) // { userId: compatibility_pct }
   const [reviews, setReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
 
@@ -227,6 +229,33 @@ export function Dish() {
 
     fetchSecondaryData()
   }, [dishId, user])
+
+  // Fetch taste compatibility for each friend who voted
+  useEffect(() => {
+    if (!user || friendsVotes.length === 0) {
+      setFriendsCompat({})
+      return
+    }
+
+    async function fetchCompat() {
+      try {
+        const results = await Promise.allSettled(
+          friendsVotes.map(fv => followsApi.getTasteCompatibility(fv.user_id))
+        )
+        const compatMap = {}
+        friendsVotes.forEach((fv, i) => {
+          if (results[i].status === 'fulfilled' && results[i].value?.compatibility_pct != null) {
+            compatMap[fv.user_id] = results[i].value.compatibility_pct
+          }
+        })
+        setFriendsCompat(compatMap)
+      } catch (err) {
+        logger.error('Failed to fetch friends compatibility:', err)
+      }
+    }
+
+    fetchCompat()
+  }, [user, friendsVotes])
 
   const handlePhotoUploaded = async (photo) => {
     setPhotoUploaded(photo)
@@ -489,39 +518,66 @@ export function Dish() {
                   Friends who rated this
                 </h3>
                 <div className="space-y-3">
-                  {friendsVotes.map((vote) => (
-                    <Link
-                      key={vote.user_id}
-                      to={`/user/${vote.user_id}`}
-                      className="flex items-center gap-3 p-2 -mx-2 rounded-lg transition-colors hover:bg-[color:var(--color-surface-elevated)]"
-                    >
-                      {/* Avatar */}
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ background: 'var(--color-primary)' }}
+                  {friendsVotes.map((vote) => {
+                    const categoryLabel = CATEGORY_INFO[dish.category]?.label || dish.category
+                    const expertiseLabel = vote.category_expertise === 'authority'
+                      ? `${categoryLabel} Authority`
+                      : vote.category_expertise === 'specialist'
+                        ? `${categoryLabel} Specialist`
+                        : null
+
+                    return (
+                      <Link
+                        key={vote.user_id}
+                        to={`/user/${vote.user_id}`}
+                        className="flex items-center gap-3 p-2 -mx-2 rounded-lg transition-colors hover:bg-[color:var(--color-surface-elevated)]"
                       >
-                        {vote.display_name?.charAt(0).toUpperCase() || '?'}
-                      </div>
+                        {/* Avatar */}
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                          style={{ background: 'var(--color-primary)' }}
+                        >
+                          {vote.display_name?.charAt(0).toUpperCase() || '?'}
+                        </div>
 
-                      {/* Name and verdict */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                          {vote.display_name || 'Anonymous'}
-                        </p>
-                        <p className="text-xs flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                          {vote.would_order_again ? <><ThumbsUpIcon size={20} /> Would order again</> : <><ThumbsDownIcon size={20} /> Would skip</>}
-                        </p>
-                      </div>
+                        {/* Name, expertise, and verdict */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                              {vote.display_name || 'Anonymous'}
+                            </p>
+                            {expertiseLabel && (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0"
+                                style={{
+                                  background: vote.category_expertise === 'authority' ? 'rgba(147, 51, 234, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+                                  color: vote.category_expertise === 'authority' ? '#9333EA' : '#3B82F6',
+                                }}
+                              >
+                                {expertiseLabel}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                            {vote.would_order_again ? <><ThumbsUpIcon size={20} /> Would order again</> : <><ThumbsDownIcon size={20} /> Would skip</>}
+                            {friendsCompat[vote.user_id] != null && (
+                              <span className="ml-1.5 font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                                · {friendsCompat[vote.user_id]}% match
+                              </span>
+                            )}
+                          </p>
+                        </div>
 
-                      {/* Rating */}
-                      <div className="text-right">
-                        <span className="text-lg font-bold" style={{ color: getRatingColor(vote.rating_10) }}>
-                          {formatScore10(vote.rating_10)}
-                        </span>
-                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
-                      </div>
-                    </Link>
-                  ))}
+                        {/* Rating */}
+                        <div className="text-right">
+                          <span className="text-lg font-bold" style={{ color: getRatingColor(vote.rating_10) }}>
+                            {formatScore10(vote.rating_10)}
+                          </span>
+                          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
               </div>
             )}

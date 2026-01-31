@@ -236,6 +236,63 @@ export const followsApi = {
   },
 
   /**
+   * Get taste compatibility between current user and another user
+   * @param {string} otherUserId - The other user's ID
+   * @returns {Promise<{shared_dishes: number, avg_difference: number, compatibility_pct: number|null}>}
+   */
+  async getTasteCompatibility(otherUserId) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return { shared_dishes: 0, avg_difference: null, compatibility_pct: null }
+
+      const { data, error } = await supabase
+        .rpc('get_taste_compatibility', {
+          p_user_id: user.id,
+          p_other_user_id: otherUserId,
+        })
+
+      if (error) {
+        logger.error('Error fetching taste compatibility:', error)
+        throw new Error('Failed to fetch taste compatibility')
+      }
+
+      // RPC returns an array with one row
+      return data?.[0] || { shared_dishes: 0, avg_difference: null, compatibility_pct: null }
+    } catch (err) {
+      logger.error('Unexpected error in getTasteCompatibility:', err)
+      throw err
+    }
+  },
+
+  /**
+   * Get friends (people you follow) who voted on dishes at a restaurant
+   * @param {string} restaurantId - Restaurant ID
+   * @returns {Promise<Array>}
+   */
+  async getFriendsVotesForRestaurant(restaurantId) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
+      const { data, error } = await supabase
+        .rpc('get_friends_votes_for_restaurant', {
+          p_user_id: user.id,
+          p_restaurant_id: restaurantId,
+        })
+
+      if (error) {
+        logger.error('Error fetching friends votes for restaurant:', error)
+        throw new Error('Failed to fetch friends votes for restaurant')
+      }
+
+      return data || []
+    } catch (err) {
+      logger.error('Unexpected error in getFriendsVotesForRestaurant:', err)
+      throw err
+    }
+  },
+
+  /**
    * Get friends (people you follow) who voted on a dish
    * @param {string} dishId - Dish ID
    * @returns {Promise<Array>}

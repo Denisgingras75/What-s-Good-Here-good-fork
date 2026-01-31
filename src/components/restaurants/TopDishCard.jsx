@@ -8,7 +8,7 @@ import { HearingIcon } from '../HearingIcon'
 
 // Compact dish card for restaurant view - shows order again % prominently
 // Now supports variants with expandable list
-export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, onToggleFavorite }) {
+export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, onToggleFavorite, friendVotes }) {
   const navigate = useNavigate()
   const [showVariants, setShowVariants] = useState(false)
   const {
@@ -189,6 +189,40 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
               </span>
             )}
           </div>
+
+          {/* Friend votes indicator */}
+          {friendVotes && friendVotes.length > 0 && (() => {
+            const expertCount = friendVotes.filter(fv => fv.category_expertise).length
+            return (
+              <div className="mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-1.5">
+                    {friendVotes.slice(0, 3).map((fv) => (
+                      <div
+                        key={fv.user_id}
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold ring-1"
+                        style={{ background: 'var(--color-primary)', ringColor: 'var(--color-bg)' }}
+                      >
+                        {fv.display_name?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="font-medium truncate" style={{ color: 'var(--color-text-tertiary)', fontSize: '11px' }}>
+                    {friendVotes.slice(0, 2).map(fv => {
+                      const name = fv.display_name?.split(' ')[0] || 'Friend'
+                      return `${name}: ${fv.rating_10}`
+                    }).join(', ')}
+                    {friendVotes.length > 2 && ` +${friendVotes.length - 2}`}
+                  </span>
+                </div>
+                {expertCount > 0 && (
+                  <p className="mt-1 font-medium" style={{ color: '#9333EA', fontSize: '10px' }}>
+                    Including {expertCount} {expertCount === 1 ? 'Specialist' : 'Specialists'}
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         </div>
       </div>
 

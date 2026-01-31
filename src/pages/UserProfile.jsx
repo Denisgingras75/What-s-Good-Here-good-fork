@@ -40,6 +40,7 @@ export function UserProfile() {
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [selectedReview, setSelectedReview] = useState(null)
   const [activityTab, setActivityTab] = useState('ratings') // 'ratings' | 'reviews'
+  const [tasteCompat, setTasteCompat] = useState(null)
 
   // Check if viewing own profile
   const isOwnProfile = currentUser?.id === userId
@@ -93,6 +94,20 @@ export function UserProfile() {
       }
     }
     checkFollowStatus()
+  }, [currentUser, userId, isOwnProfile])
+
+  // Fetch taste compatibility
+  useEffect(() => {
+    async function fetchCompatibility() {
+      if (!currentUser || !userId || isOwnProfile) return
+      try {
+        const compat = await followsApi.getTasteCompatibility(userId)
+        setTasteCompat(compat)
+      } catch (err) {
+        logger.error('Failed to fetch taste compatibility:', err)
+      }
+    }
+    fetchCompatibility()
   }, [currentUser, userId, isOwnProfile])
 
   // Fetch current user's ratings for the same dishes (for comparison)
@@ -383,6 +398,44 @@ export function UserProfile() {
             </div>
           </div>
         </div>
+
+        {/* Taste Compatibility */}
+        {!isOwnProfile && tasteCompat && (
+          <div
+            className="mt-4 px-3.5 py-3 rounded-xl"
+            style={{
+              background: tasteCompat.compatibility_pct != null
+                ? 'linear-gradient(135deg, rgba(244, 122, 31, 0.08) 0%, rgba(217, 167, 101, 0.06) 100%)'
+                : 'var(--color-surface-elevated)',
+              border: tasteCompat.compatibility_pct != null
+                ? '1px solid rgba(244, 122, 31, 0.15)'
+                : '1px solid var(--color-divider)',
+            }}
+          >
+            {tasteCompat.compatibility_pct != null ? (
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
+                  {tasteCompat.compatibility_pct}%
+                </span>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    taste match
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                    Based on {tasteCompat.shared_dishes} shared {tasteCompat.shared_dishes === 1 ? 'dish' : 'dishes'}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                {tasteCompat.shared_dishes > 0
+                  ? `${tasteCompat.shared_dishes} shared ${tasteCompat.shared_dishes === 1 ? 'dish' : 'dishes'} — rate ${3 - tasteCompat.shared_dishes} more to see your taste match`
+                  : 'Rate the same dishes to see your taste match'
+                }
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Rank Title + Archetype */}
         <div className="mt-5">

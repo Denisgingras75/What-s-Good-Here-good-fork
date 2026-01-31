@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { MIN_VOTES_FOR_RANKING } from '../../constants/app'
 import { TopDishCard } from './TopDishCard'
 
 const TOP_DISHES_COUNT = 5
 
 // Restaurant dishes component - Job #2: "What should I order?"
-export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isFavorite, onToggleFavorite, user, searchQuery = '' }) {
+export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isFavorite, onToggleFavorite, user, searchQuery = '', friendsVotesByDish = {} }) {
   const [showAllDishes, setShowAllDishes] = useState(false)
 
   // Filter and sort dishes
@@ -49,6 +50,15 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
   }, [dishes, searchQuery])
 
   const rankedCount = dishes?.filter(d => (d.total_votes || 0) >= MIN_VOTES_FOR_RANKING).length || 0
+
+  // Count unique friends who rated dishes here
+  const uniqueFriends = useMemo(() => {
+    const friendIds = new Set()
+    Object.values(friendsVotesByDish).forEach(votes => {
+      votes.forEach(v => friendIds.add(v.user_id))
+    })
+    return friendIds.size
+  }, [friendsVotesByDish])
 
   if (loading) {
     return (
@@ -107,6 +117,50 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
         </p>
       </div>
 
+      {/* Friends banner */}
+      {uniqueFriends > 0 && (
+        <div
+          className="mb-4 px-3.5 py-3 rounded-xl flex items-center gap-3"
+          style={{
+            background: 'linear-gradient(135deg, rgba(244, 122, 31, 0.08) 0%, rgba(217, 167, 101, 0.06) 100%)',
+            border: '1px solid rgba(244, 122, 31, 0.15)',
+          }}
+        >
+          {/* Stacked avatars */}
+          <div className="flex -space-x-2 flex-shrink-0">
+            {(() => {
+              const seen = new Set()
+              const friendList = []
+              Object.values(friendsVotesByDish).forEach(votes => {
+                votes.forEach(v => {
+                  if (!seen.has(v.user_id)) {
+                    seen.add(v.user_id)
+                    friendList.push(v)
+                  }
+                })
+              })
+              return friendList.slice(0, 3).map((friend, i) => (
+                <Link
+                  key={friend.user_id}
+                  to={`/user/${friend.user_id}`}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2"
+                  style={{
+                    background: 'var(--color-primary)',
+                    ringColor: 'var(--color-bg)',
+                    zIndex: 3 - i,
+                  }}
+                >
+                  {friend.display_name?.charAt(0).toUpperCase() || '?'}
+                </Link>
+              ))
+            })()}
+          </div>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            {uniqueFriends} {uniqueFriends === 1 ? 'friend has' : 'friends have'} been here
+          </p>
+        </div>
+      )}
+
       {/* Top Dishes */}
       {sortedDishes.top.length > 0 ? (
         <div className="space-y-3.5">
@@ -119,6 +173,7 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
               onLoginRequired={onLoginRequired}
               isFavorite={isFavorite ? isFavorite(dish.dish_id) : false}
               onToggleFavorite={handleToggleSave}
+              friendVotes={friendsVotesByDish[dish.dish_id]}
             />
           ))}
         </div>
@@ -181,6 +236,7 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
                   onLoginRequired={onLoginRequired}
                   isFavorite={isFavorite ? isFavorite(dish.dish_id) : false}
                   onToggleFavorite={handleToggleSave}
+                  friendVotes={friendsVotesByDish[dish.dish_id]}
                 />
               ))}
             </div>
