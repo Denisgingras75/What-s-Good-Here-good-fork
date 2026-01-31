@@ -4,10 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { followsApi } from '../api/followsApi'
 import { votesApi } from '../api/votesApi'
-import { getRatingColor } from '../utils/ranking'
 import { FollowListModal } from '../components/FollowListModal'
 import { ProfileSkeleton } from '../components/Skeleton'
-import { CategoryIcon } from '../components/CategoryIcon'
 import { VotedDishCard, ReviewCard, ReviewDetailModal } from '../components/profile'
 import { supabase } from '../lib/supabase'
 import {
@@ -15,7 +13,10 @@ import {
   calculateCategoryProgress,
 } from '../hooks/useUserVotes'
 import { useRatingIdentity } from '../hooks/useRatingIdentity'
-import { FEATURES } from '../constants/features'
+import { getRankForBadgeCount } from '../constants/ranks'
+import { TIER_DESCRIPTIONS } from '../constants/categories'
+import { calculateArchetype, getArchetypeById } from '../utils/calculateArchetype'
+import { getRarityColor, RARITY_LABELS } from '../constants/badgeDefinitions'
 
 /**
  * Public User Profile Page
@@ -51,7 +52,7 @@ export function UserProfile() {
   }, [isOwnProfile, navigate])
 
   // Fetch rating identity for this user (behind feature flag)
-  const ratingIdentity = useRatingIdentity(FEATURES.RATING_IDENTITY_ENABLED ? userId : null)
+  const ratingIdentity = useRatingIdentity(userId)
 
   // Fetch profile data
   useEffect(() => {
@@ -201,31 +202,47 @@ export function UserProfile() {
     return { emoji: '😤', title: 'Tough Critic' }
   }
 
-  // Calculate category tiers and progress from recent_votes
-  const { categoryTiers, categoryProgress } = useMemo(() => {
+  // Calculate category tiers, progress, and archetype stats from recent_votes
+  const { categoryTiers, categoryProgress, ratingVariance, categoryConcentration, uniqueRestaurants } = useMemo(() => {
     if (!profile?.recent_votes?.length) {
-      return { categoryTiers: [], categoryProgress: [] }
+      return { categoryTiers: [], categoryProgress: [], ratingVariance: 0, categoryConcentration: 0, uniqueRestaurants: 0 }
     }
 
-    // Count votes per category
+    // Count votes per category + unique restaurants
     const categoryCounts = {}
+    const restaurantNames = new Set()
     profile.recent_votes.forEach(vote => {
       const cat = vote.dish?.category
       if (cat) {
         categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
       }
+      if (vote.dish?.restaurant_name) {
+        restaurantNames.add(vote.dish.restaurant_name)
+      }
     })
+
+    // Rating variance (std dev)
+    const avgRating = profile.stats?.avg_rating || 0
+    const ratingsWithValue = profile.recent_votes.filter(v => v.rating != null)
+    const variance = ratingsWithValue.length > 1
+      ? Math.sqrt(ratingsWithValue.reduce((sum, v) => sum + Math.pow(v.rating - avgRating, 2), 0) / ratingsWithValue.length)
+      : 0
+
+    // Category concentration (Herfindahl index)
+    const catValues = Object.values(categoryCounts)
+    const catTotal = catValues.reduce((a, b) => a + b, 0)
+    const concentration = catTotal > 0
+      ? catValues.reduce((sum, c) => sum + Math.pow(c / catTotal, 2), 0)
+      : 0
 
     return {
       categoryTiers: calculateCategoryTiers(categoryCounts),
       categoryProgress: calculateCategoryProgress(categoryCounts),
+      ratingVariance: variance,
+      categoryConcentration: concentration,
+      uniqueRestaurants: restaurantNames.size,
     }
-  }, [profile?.recent_votes])
-
-  // Format member since date
-  const memberSince = profile?.created_at
-    ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : null
+  }, [profile?.recent_votes, profile?.stats?.avg_rating])
 
   if (loading) {
     return <ProfileSkeleton />
@@ -254,86 +271,172 @@ export function UserProfile() {
 
   const personality = getRatingPersonality(profile.stats?.avg_rating)
 
+  // Rank from badge count
+  const badgeCount = profile.badges?.length || 0
+  const currentRank = getRankForBadgeCount(badgeCount)
+  const totalVotes = profile.stats?.total_votes || 0
+
+  // Archetype
+  const archetypeResult = calculateArchetype(
+    { totalVotes, avgRating: profile.stats?.avg_rating || 0, ratingVariance, categoryConcentration, categoryTiers },
+    ratingIdentity,
+    { followers: profile.follower_count || 0, following: profile.following_count || 0 }
+  )
+  const archetype = archetypeResult.id ? getArchetypeById(archetypeResult.id) : null
+
+  // Primary title from highest tier or personality
+  const getPrimaryTitle = () => {
+    if (categoryTiers.length > 0) {
+      const highestTier = categoryTiers[0]
+      return `${highestTier.label} ${highestTier.title}`
+    }
+    if (personality) return personality.title
+    return 'Food Explorer'
+  }
+
+  // Top category progress
+  const topProgress = categoryProgress.length > 0 ? categoryProgress[0] : null
+  const isCloseToNextTier = topProgress && topProgress.votesNeeded <= 3
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
       <h1 className="sr-only">{profile.display_name}'s Profile</h1>
       {/* Header */}
-      <div className="border-b px-4 py-6" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-divider)' }}>
+      <div
+        className="relative px-4 pt-8 pb-6 overflow-hidden"
+        style={{
+          background: `
+            radial-gradient(ellipse 90% 50% at 20% 0%, ${currentRank.color}08 0%, transparent 70%),
+            radial-gradient(ellipse 70% 60% at 80% 100%, rgba(217, 167, 101, 0.04) 0%, transparent 70%),
+            var(--color-bg)
+          `,
+        }}
+      >
+        {/* Bottom divider */}
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px"
+          style={{
+            width: '90%',
+            background: 'linear-gradient(90deg, transparent, var(--color-divider), transparent)',
+          }}
+        />
+
+        {/* Avatar + Name row */}
         <div className="flex items-center gap-4">
-          {/* Avatar */}
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg"
-            style={{ background: 'var(--color-primary)' }}
-          >
-            {profile.display_name?.charAt(0).toUpperCase() || '?'}
+          {/* Avatar with rank-colored ring */}
+          <div className="relative flex-shrink-0">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+              style={{
+                background: 'var(--color-primary)',
+                boxShadow: `0 4px 20px -4px ${currentRank.color}60, 0 0 0 ${badgeCount >= 5 ? '4px' : badgeCount >= 1 ? '3px' : '2px'} ${currentRank.color}30`,
+              }}
+            >
+              {profile.display_name?.charAt(0).toUpperCase() || '?'}
+            </div>
+            {/* Rank emoji badge */}
+            {badgeCount >= 1 && (
+              <div
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md"
+                style={{ background: currentRank.color, border: '2px solid var(--color-bg)' }}
+              >
+                {currentRank.emoji}
+              </div>
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
             {/* Display Name */}
-            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+            <h2
+              className="font-bold"
+              style={{
+                color: 'var(--color-text-primary)',
+                fontSize: '22px',
+                letterSpacing: '-0.02em',
+                lineHeight: '1.2',
+              }}
+            >
               {profile.display_name || 'Anonymous'}
-            </h1>
-
-            {/* Rating Style - from Rating Identity system */}
-            {FEATURES.RATING_IDENTITY_ENABLED && ratingIdentity && !ratingIdentity.loading && ratingIdentity.votesWithConsensus > 0 ? (
-              <Link
-                to="/rating-style"
-                className="inline-flex items-center gap-2 mt-1.5 px-3 py-1.5 rounded-full border transition-colors hover:bg-white/5"
-                style={{ borderColor: 'var(--color-divider)', background: 'var(--color-surface-elevated)' }}
-              >
-                <span
-                  className="text-base font-bold tabular-nums"
-                  style={{ color: ratingIdentity.ratingBias < 0 ? '#f97316' : ratingIdentity.ratingBias > 0 ? '#22c55e' : 'var(--color-text-secondary)' }}
-                >
-                  {ratingIdentity.ratingBias > 0 ? '+' : ''}{ratingIdentity.ratingBias?.toFixed(1) || '0.0'}
-                </span>
-                <span className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {ratingIdentity.biasLabel}
-                </span>
-                <svg className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </Link>
-            ) : personality && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <span>{personality.emoji}</span>
-                <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
-                  {personality.title}
-                </span>
-              </div>
-            )}
-
-            {/* Stats Summary */}
-            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              {profile.stats?.total_votes > 0
-                ? `${profile.stats.total_votes} ${profile.stats.total_votes === 1 ? 'dish' : 'dishes'} rated`
-                : 'No ratings yet'
-              }
-              {memberSince && ` · Since ${memberSince}`}
-            </p>
+            </h2>
 
             {/* Follow Stats */}
-            <div className="flex items-center gap-3 mt-2 text-sm">
+            <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '13px' }}>
               <button
                 onClick={() => setFollowListModal('followers')}
-                className="hover:underline"
+                className="hover:underline transition-colors"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>
                   {profile.follower_count || 0}
                 </span> followers
               </button>
+              <span style={{ color: 'var(--color-text-tertiary)' }}>&middot;</span>
               <button
                 onClick={() => setFollowListModal('following')}
-                className="hover:underline"
+                className="hover:underline transition-colors"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>
                   {profile.following_count || 0}
                 </span> following
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Rank Title + Archetype */}
+        <div className="mt-5">
+          <h3
+            className="font-bold"
+            style={{
+              color: currentRank.color,
+              fontSize: '17px',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {currentRank.emoji} {currentRank.title}
+          </h3>
+          <p
+            className="font-bold mt-0.5"
+            style={{
+              color: 'var(--color-primary)',
+              fontSize: '15px',
+            }}
+          >
+            {getPrimaryTitle()}
+          </p>
+          {archetype && archetypeResult.confidence === 'established' && (
+            <p className="mt-1 font-medium" style={{ color: archetype.color, fontSize: '13px' }}>
+              {archetype.emoji} {archetype.label}
+            </p>
+          )}
+          {archetype && archetypeResult.confidence === 'emerging' && (
+            <p className="mt-1" style={{ color: 'var(--color-text-tertiary)', fontSize: '13px' }}>
+              trending toward {archetype.label.replace('The ', '')}
+            </p>
+          )}
+        </div>
+
+        {/* Compact Stats Row */}
+        <div className="flex items-center gap-4 mt-3" style={{ fontSize: '13px' }}>
+          {badgeCount > 0 && (
+            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+              <span style={{ color: currentRank.color }}>{currentRank.emoji}</span>
+              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{badgeCount}</span>
+            </span>
+          )}
+          {totalVotes > 0 && (
+            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+              <span>🍴</span>
+              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{totalVotes}</span>
+            </span>
+          )}
+          {uniqueRestaurants > 0 && (
+            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+              <span>🏠</span>
+              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{uniqueRestaurants}</span>
+            </span>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -370,23 +473,37 @@ export function UserProfile() {
           )}
         </div>
 
-        {/* Quick Stats Cards */}
-        {profile.stats?.total_votes > 0 && (
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <div className="rounded-xl p-3 text-center" style={{ background: 'var(--color-surface-elevated)' }}>
-              <div className="text-2xl font-bold text-emerald-500">{profile.stats.worth_it}</div>
-              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Good Here</div>
+        {/* Expertise Progress */}
+        {topProgress && (
+          <div
+            className="mt-4 w-full text-left p-3.5 rounded-xl"
+            style={{
+              background: 'var(--color-surface-elevated)',
+              border: `1px solid ${isCloseToNextTier ? 'rgba(245, 158, 11, 0.4)' : 'var(--color-divider)'}`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                {topProgress.emoji} {topProgress.label}: {topProgress.currentTier?.title || 'Newcomer'} → {topProgress.nextTier.title}
+              </span>
+              <span className="text-xs font-bold" style={{ color: isCloseToNextTier ? '#F59E0B' : 'var(--color-text-tertiary)' }}>
+                {topProgress.count}/{topProgress.nextTier.min}
+              </span>
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: 'var(--color-surface-elevated)' }}>
-              <div className="text-2xl font-bold text-red-500">{profile.stats.avoid}</div>
-              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Not Good</div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-divider)' }}>
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ${isCloseToNextTier ? 'animate-glow-breathe' : ''}`}
+                style={{
+                  width: `${Math.min(topProgress.progress * 100, 100)}%`,
+                  background: isCloseToNextTier
+                    ? 'linear-gradient(90deg, #F59E0B, #FBBF24)'
+                    : 'var(--color-primary)',
+                }}
+              />
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: 'var(--color-surface-elevated)' }}>
-              <div className="text-2xl font-bold" style={{ color: getRatingColor(profile.stats.avg_rating) }}>
-                {profile.stats.avg_rating ? profile.stats.avg_rating.toFixed(1) : '—'}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Avg Rating</div>
-            </div>
+            <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+              {TIER_DESCRIPTIONS[topProgress.nextTier.title] || ''}
+            </p>
           </div>
         )}
 
@@ -397,90 +514,25 @@ export function UserProfile() {
               Badges
             </h3>
             <div className="flex flex-wrap gap-2">
-              {profile.badges.map((badge) => (
-                <div
-                  key={badge.key}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border"
-                  style={{ background: 'var(--color-card)', borderColor: 'var(--color-divider)' }}
-                >
-                  <span>{badge.icon}</span>
-                  <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {badge.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Category Tiers - Achieved Ranks */}
-        {categoryTiers.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              {isOwnProfile ? 'Your Ranks' : `${profile.display_name}'s Ranks`}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {categoryTiers.map((tier) => (
-                <div
-                  key={tier.category}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border"
-                  style={{ background: 'var(--color-card)', borderColor: 'var(--color-divider)' }}
-                >
-                  <CategoryIcon category={tier.category} size={18} />
-                  <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{tier.label}</span>
-                  <span style={{ color: 'var(--color-text-tertiary)' }}>·</span>
-                  <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>
-                    {tier.icon} {tier.title}
-                  </span>
-                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>({tier.count})</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Category Progress - Working towards next tier */}
-        {categoryProgress.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              {categoryTiers.length > 0 ? 'Level Up' : 'Progress'}
-            </h3>
-            <div className="space-y-2">
-              {categoryProgress.slice(0, 3).map((prog) => (
-                <div
-                  key={prog.category}
-                  className="rounded-xl p-3 border"
-                  style={{ background: 'var(--color-card)', borderColor: 'var(--color-divider)' }}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <CategoryIcon category={prog.category} size={20} />
-                      <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{prog.label}</span>
-                      {prog.currentTier && (
-                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                          {prog.currentTier.icon} {prog.currentTier.title}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
-                      {prog.votesNeeded} more to {prog.nextTier.icon} {prog.nextTier.title}
+              {profile.badges.map((badge) => {
+                const rarityColor = getRarityColor(badge.rarity)
+                const isRarePlus = badge.rarity === 'rare' || badge.rarity === 'epic' || badge.rarity === 'legendary'
+                return (
+                  <div
+                    key={badge.key}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${isRarePlus ? 'animate-rarity-glow' : ''}`}
+                    style={{
+                      background: `${rarityColor}10`,
+                      border: `1.5px solid ${rarityColor}50`,
+                    }}
+                  >
+                    <span>{badge.icon}</span>
+                    <span className="font-medium" style={{ color: rarityColor }}>
+                      {badge.name}
                     </span>
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-elevated)' }}>
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${Math.round(prog.progress * 100)}%`,
-                        background: 'var(--color-primary)',
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{prog.count} votes</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{prog.nextTier.min} needed</span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

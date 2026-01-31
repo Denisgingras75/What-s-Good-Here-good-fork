@@ -1,18 +1,119 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { badgesApi } from '../api/badgesApi'
 import { logger } from '../utils/logger'
+import {
+  VOLUME_BADGE_META,
+  DISCOVERY_BADGE_META,
+  COMMUNITY_BADGE_META,
+  CONSISTENCY_BADGE_META,
+  INFLUENCE_BADGE_META,
+  CATEGORY_BADGE_TIERS,
+  isCategoryBadge,
+  parseCategoryBadgeKey,
+} from '../constants/badgeDefinitions'
 
-export function useBadges(userId) {
+/**
+ * Compute progress info for a single badge based on evaluation stats.
+ */
+function computeBadgeProgress(badge, evalStats) {
+  if (!evalStats) return { progress: 0, target: 1, accuracyStatus: null }
+
+  const family = badge.family || 'volume'
+
+  // Volume badges
+  if (family === 'volume' && VOLUME_BADGE_META[badge.key]) {
+    const meta = VOLUME_BADGE_META[badge.key]
+    const value = evalStats[meta.stat] || 0
+    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
+  }
+
+  // Category mastery badges
+  if (family === 'category' && isCategoryBadge(badge.key)) {
+    const parsed = parseCategoryBadgeKey(badge.key)
+    if (!parsed) return { progress: 0, target: 1 }
+
+    const tierMeta = CATEGORY_BADGE_TIERS[parsed.tier]
+    if (!tierMeta) return { progress: 0, target: 1 }
+
+    // Find category stats
+    const catStats = (evalStats.categoryStats || []).find(
+      c => c.category === parsed.categoryId
+    )
+    const consensusRatings = catStats?.consensus_ratings || catStats?.consensusRatings || 0
+    const bias = catStats?.bias
+    const absBias = bias != null ? Math.abs(bias) : null
+
+    return {
+      progress: Math.min(consensusRatings, tierMeta.volumeThreshold),
+      target: tierMeta.volumeThreshold,
+      accuracyStatus: absBias != null
+        ? { met: absBias <= tierMeta.maxAbsBias, currentBias: bias, maxBias: tierMeta.maxAbsBias }
+        : null,
+    }
+  }
+
+  // Discovery badges
+  if (family === 'discovery' && DISCOVERY_BADGE_META[badge.key]) {
+    const meta = DISCOVERY_BADGE_META[badge.key]
+    const value = evalStats.dishesHelpedEstablish || 0
+    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
+  }
+
+  // Community badges
+  if (family === 'community' && COMMUNITY_BADGE_META[badge.key]) {
+    const meta = COMMUNITY_BADGE_META[badge.key]
+    const value = evalStats.dishesHelpedEstablish || 0
+    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
+  }
+
+  // Consistency badges
+  if (family === 'consistency' && CONSISTENCY_BADGE_META[badge.key]) {
+    const meta = CONSISTENCY_BADGE_META[badge.key]
+    const votes = evalStats.votesWithConsensus || 0
+    const bias = evalStats.globalBias || 0
+
+    // Volume progress toward 20 consensus votes
+    const volumeProgress = Math.min(votes, meta.minVotes)
+
+    let accuracyMet = false
+    if (meta.check === 'steady') {
+      accuracyMet = Math.abs(bias) <= meta.maxAbsBias
+    } else if (meta.check === 'low') {
+      accuracyMet = bias <= meta.maxBias
+    } else if (meta.check === 'high') {
+      accuracyMet = bias >= meta.minBias
+    }
+
+    return {
+      progress: volumeProgress,
+      target: meta.minVotes,
+      accuracyStatus: { met: accuracyMet, currentBias: bias },
+    }
+  }
+
+  // Influence badges
+  if (family === 'influence' && INFLUENCE_BADGE_META[badge.key]) {
+    const meta = INFLUENCE_BADGE_META[badge.key]
+    const value = evalStats.followerCount || 0
+    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
+  }
+
+  // Fallback for unknown badges
+  return { progress: 0, target: 1 }
+}
+
+export function useBadges(userId, { evaluateOnMount = false } = {}) {
   const [badges, setBadges] = useState([])
   const [allBadges, setAllBadges] = useState([])
-  const [stats, setStats] = useState({ rated_dishes_count: 0, restaurants_rated_count: 0 })
+  const [evalStats, setEvalStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch user's badges and stats
+  // Fetch user's badges, badge definitions, and evaluation stats
   useEffect(() => {
     if (!userId) {
       setBadges([])
-      setStats({ rated_dishes_count: 0, restaurants_rated_count: 0 })
+      setAllBadges([])
+      setEvalStats(null)
       setLoading(false)
       return
     }
@@ -20,18 +121,19 @@ export function useBadges(userId) {
     async function fetchBadges() {
       setLoading(true)
       try {
-        const [userBadges, badgeDefs, userStats] = await Promise.all([
+        const [userBadges, badgeDefs, stats] = await Promise.all([
           badgesApi.getUserBadges(userId),
           badgesApi.getAllBadges(),
-          badgesApi.getUserBadgeStats(userId),
+          badgesApi.getBadgeEvaluationStats(userId),
         ])
         setBadges(userBadges)
         setAllBadges(badgeDefs)
-        setStats(userStats)
+        setEvalStats(stats)
       } catch (error) {
         logger.error('Error fetching badges:', error)
         setBadges([])
         setAllBadges([])
+        setEvalStats(null)
       }
       setLoading(false)
     }
@@ -39,17 +141,41 @@ export function useBadges(userId) {
     fetchBadges()
   }, [userId])
 
-  // Refresh badges (call after a vote is submitted)
+  // Evaluate on mount (Badges page uses this to catch consensus changes)
+  useEffect(() => {
+    if (!evaluateOnMount || !userId || loading) return
+
+    async function runEvaluation() {
+      try {
+        const newlyUnlocked = await badgesApi.evaluateBadges(userId)
+        if (newlyUnlocked.length > 0) {
+          // Refresh all data after new unlocks
+          const [userBadges, stats] = await Promise.all([
+            badgesApi.getUserBadges(userId),
+            badgesApi.getBadgeEvaluationStats(userId),
+          ])
+          setBadges(userBadges)
+          setEvalStats(stats)
+        }
+      } catch (error) {
+        logger.error('Error evaluating badges on mount:', error)
+      }
+    }
+
+    runEvaluation()
+  }, [evaluateOnMount, userId, loading])
+
+  // Refresh badges
   const refreshBadges = useCallback(async () => {
     if (!userId) return
 
     try {
-      const [userBadges, userStats] = await Promise.all([
+      const [userBadges, stats] = await Promise.all([
         badgesApi.getUserBadges(userId),
-        badgesApi.getUserBadgeStats(userId),
+        badgesApi.getBadgeEvaluationStats(userId),
       ])
       setBadges(userBadges)
-      setStats(userStats)
+      setEvalStats(stats)
     } catch (error) {
       logger.error('Error refreshing badges:', error)
     }
@@ -62,7 +188,6 @@ export function useBadges(userId) {
     try {
       const newlyUnlocked = await badgesApi.evaluateBadges(userId)
 
-      // Refresh badges if any were unlocked
       if (newlyUnlocked.length > 0) {
         await refreshBadges()
       }
@@ -75,72 +200,30 @@ export function useBadges(userId) {
   }, [userId, refreshBadges])
 
   // Compute progress for each badge
-  const badgesWithProgress = allBadges.map(badge => {
-    const unlocked = badges.find(b => b.badge_key === badge.key)
-    let progress = 0
-    let target = 0
+  const badgesWithProgress = useMemo(() => {
+    return allBadges.map(badge => {
+      const unlocked = badges.find(b => b.badge_key === badge.key)
+      const { progress, target, accuracyStatus } = computeBadgeProgress(badge, evalStats)
 
-    // Determine progress based on badge type
-    switch (badge.key) {
-      case 'first_bite':
-        target = 1
-        progress = Math.min(stats.rated_dishes_count, target)
-        break
-      case 'food_explorer':
-        target = 10
-        progress = Math.min(stats.rated_dishes_count, target)
-        break
-      case 'taste_tester':
-        target = 25
-        progress = Math.min(stats.rated_dishes_count, target)
-        break
-      case 'super_reviewer':
-        target = 100
-        progress = Math.min(stats.rated_dishes_count, target)
-        break
-      case 'top_1_percent_reviewer':
-        target = 125
-        progress = Math.min(stats.rated_dishes_count, target)
-        break
-      case 'neighborhood_explorer':
-        target = 3
-        progress = Math.min(stats.restaurants_rated_count, target)
-        break
-      case 'city_taster':
-        target = 5
-        progress = Math.min(stats.restaurants_rated_count, target)
-        break
-      case 'local_food_scout':
-        target = 10
-        progress = Math.min(stats.restaurants_rated_count, target)
-        break
-      case 'restaurant_trailblazer':
-        target = 20
-        progress = Math.min(stats.restaurants_rated_count, target)
-        break
-      case 'ultimate_explorer':
-        target = 50
-        progress = Math.min(stats.restaurants_rated_count, target)
-        break
-      default:
-        target = 1
-        progress = unlocked ? 1 : 0
-    }
-
-    return {
-      ...badge,
-      unlocked: !!unlocked,
-      unlocked_at: unlocked?.unlocked_at,
-      progress,
-      target,
-      percentage: target > 0 ? Math.round((progress / target) * 100) : 0,
-    }
-  })
+      return {
+        ...badge,
+        unlocked: !!unlocked,
+        unlocked_at: unlocked?.unlocked_at,
+        progress,
+        target,
+        percentage: target > 0 ? Math.round((progress / target) * 100) : 0,
+        rarity: badge.rarity || 'common',
+        family: badge.family || 'volume',
+        category: badge.category || null,
+        accuracyStatus: accuracyStatus || null,
+      }
+    })
+  }, [allBadges, badges, evalStats])
 
   return {
     badges: badgesWithProgress,
     unlockedBadges: badges,
-    stats,
+    evalStats,
     loading,
     refreshBadges,
     evaluateBadges,

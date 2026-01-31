@@ -82,6 +82,35 @@ export const badgesApi = {
   },
 
   /**
+   * Get badge evaluation stats (all data needed for progress calculation)
+   * Returns: { totalDishes, totalRestaurants, globalBias, votesWithConsensus,
+   *            followerCount, dishesHelpedEstablish, categoryStats }
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} Evaluation stats
+   */
+  async getBadgeEvaluationStats(userId) {
+    const { data, error } = await supabase.rpc('get_badge_evaluation_stats', {
+      p_user_id: userId,
+    })
+
+    if (error) {
+      logger.error('Error fetching badge evaluation stats:', error)
+      throw error
+    }
+
+    // RPC returns JSON directly
+    return data || {
+      totalDishes: 0,
+      totalRestaurants: 0,
+      globalBias: 0,
+      votesWithConsensus: 0,
+      followerCount: 0,
+      dishesHelpedEstablish: 0,
+      categoryStats: [],
+    }
+  },
+
+  /**
    * Evaluate and award any newly unlocked badges for a user
    * Call this after a vote is submitted
    * @param {string} userId - User ID

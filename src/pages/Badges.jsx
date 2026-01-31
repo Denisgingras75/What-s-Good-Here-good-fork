@@ -2,31 +2,37 @@ import { useState, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useBadges } from '../hooks/useBadges'
-
-// Rank definitions matching the Profile achievements section
-const RANKS = [
-  { title: 'Newcomer', emoji: '🌱', color: '#6B7280', minBadges: 0, description: 'Just getting started' },
-  { title: 'Explorer', emoji: '🧭', color: '#3B82F6', minBadges: 1, description: 'Beginning the journey' },
-  { title: 'Rising Star', emoji: '🌟', color: '#10B981', minBadges: 3, description: 'Making your mark' },
-  { title: 'Expert', emoji: '⭐', color: '#F59E0B', minBadges: 5, description: 'Trusted contributor' },
-  { title: 'Legend', emoji: '👑', color: '#9333EA', minBadges: 8, description: 'Elite status achieved' },
-]
+import { RANKS } from '../constants/ranks'
+import {
+  RARITY_LABELS,
+  BADGE_FAMILY,
+  FAMILY_INFO,
+  getRarityColor,
+  parseCategoryBadgeKey,
+} from '../constants/badgeDefinitions'
+import { CATEGORY_INFO, MAJOR_CATEGORIES } from '../constants/categories'
 
 export function Badges() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { badges, loading } = useBadges(user?.id)
-  const [activeTab, setActiveTab] = useState('journey') // 'journey' | 'all'
+  const { badges, loading } = useBadges(user?.id, { evaluateOnMount: true })
+  const [expandedFamilies, setExpandedFamilies] = useState({})
 
-  // Split badges - memoized for performance
-  const { unlockedBadges, lockedBadges, privateBadges, publicBadges } = useMemo(() => ({
-    unlockedBadges: badges.filter(b => b.unlocked),
-    lockedBadges: badges.filter(b => !b.unlocked).sort((a, b) => b.percentage - a.percentage),
-    privateBadges: badges.filter(b => !b.is_public_eligible),
-    publicBadges: badges.filter(b => b.is_public_eligible),
-  }), [badges])
+  // Group badges by family
+  const badgesByFamily = useMemo(() => {
+    const groups = {}
+    badges.forEach(b => {
+      const fam = b.family || 'volume'
+      if (!groups[fam]) groups[fam] = []
+      groups[fam].push(b)
+    })
+    return groups
+  }, [badges])
 
-  // Calculate user's current rank - memoized
+  // Unlocked counts
+  const unlockedBadges = useMemo(() => badges.filter(b => b.unlocked), [badges])
+
+  // Current rank
   const currentRank = useMemo(() => {
     const count = unlockedBadges.length
     for (let i = RANKS.length - 1; i >= 0; i--) {
@@ -37,17 +43,38 @@ export function Badges() {
 
   const nextRank = RANKS[currentRank.index + 1] || null
 
-  // Calculate progress to next rank - memoized
   const nextRankProgress = useMemo(() => {
     if (!nextRank) return 100
     const current = unlockedBadges.length
     const needed = nextRank.minBadges
     const prevNeeded = currentRank.minBadges
+    if (needed === prevNeeded) return 100
     return Math.round(((current - prevNeeded) / (needed - prevNeeded)) * 100)
   }, [nextRank, unlockedBadges.length, currentRank.minBadges])
 
-  // Get closest badge to unlock
-  const nextBadge = lockedBadges[0] || null
+  // Get closest locked badge to unlock
+  const nextBadge = useMemo(() => {
+    const locked = badges
+      .filter(b => !b.unlocked)
+      .slice()
+      .sort((a, b) => b.percentage - a.percentage)
+    return locked[0] || null
+  }, [badges])
+
+  // Toggle family expansion
+  const toggleFamily = (family) => {
+    setExpandedFamilies(prev => ({ ...prev, [family]: !prev[family] }))
+  }
+
+  // Family order for display
+  const familyOrder = [
+    BADGE_FAMILY.VOLUME,
+    BADGE_FAMILY.CATEGORY,
+    BADGE_FAMILY.DISCOVERY,
+    BADGE_FAMILY.CONSISTENCY,
+    BADGE_FAMILY.COMMUNITY,
+    BADGE_FAMILY.INFLUENCE,
+  ]
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
@@ -83,15 +110,8 @@ export function Badges() {
               border: `2px solid ${currentRank.color}50`,
             }}
           >
-            {/* Decorative background circles */}
-            <div
-              className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20"
-              style={{ background: currentRank.color }}
-            />
-            <div
-              className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full opacity-10"
-              style={{ background: currentRank.color }}
-            />
+            <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20" style={{ background: currentRank.color }} />
+            <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full opacity-10" style={{ background: currentRank.color }} />
 
             <div className="relative">
               <div className="flex items-center gap-4 mb-4">
@@ -114,7 +134,6 @@ export function Badges() {
                 </div>
               </div>
 
-              {/* Progress to next rank */}
               {nextRank && (
                 <div className="mt-4 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.5)' }}>
                   <div className="flex items-center justify-between mb-2">
@@ -137,10 +156,8 @@ export function Badges() {
                 </div>
               )}
 
-              {/* Max rank celebration */}
               {!nextRank && (
                 <div className="mt-4 p-3 rounded-xl text-center" style={{ background: 'rgba(255,255,255,0.5)' }}>
-                  <span className="text-lg">🎉</span>
                   <p className="font-semibold" style={{ color: currentRank.color }}>
                     You've reached the highest rank!
                   </p>
@@ -153,15 +170,10 @@ export function Badges() {
         {/* Rank Journey Map */}
         <div className="rounded-2xl p-6" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-            🗺️ Rank Journey
+            Rank Journey
           </h2>
           <div className="relative">
-            {/* Connection line */}
-            <div
-              className="absolute left-6 top-8 bottom-8 w-0.5"
-              style={{ background: 'var(--color-divider)' }}
-            />
-
+            <div className="absolute left-6 top-8 bottom-8 w-0.5 transition-all duration-1000" style={{ background: 'var(--color-divider)' }} />
             <div className="space-y-4">
               {RANKS.map((rank, index) => {
                 const isCurrentRank = currentRank.index === index
@@ -171,27 +183,18 @@ export function Badges() {
                 return (
                   <div
                     key={rank.title}
-                    className={`flex items-center gap-4 p-3 rounded-xl relative transition-all ${
-                      isCurrentRank ? 'scale-[1.02]' : ''
-                    }`}
+                    className={`flex items-center gap-4 p-3 rounded-xl relative transition-all ${isCurrentRank ? 'scale-[1.02]' : ''}`}
                     style={{
                       background: isCurrentRank
                         ? `linear-gradient(135deg, ${rank.color}20 0%, ${rank.color}10 100%)`
-                        : isNext
-                          ? 'linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)'
-                          : 'transparent',
+                        : isNext ? 'linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)' : 'transparent',
                       border: isCurrentRank
                         ? `2px solid ${rank.color}`
-                        : isNext
-                          ? '2px dashed #F59E0B'
-                          : '2px solid transparent',
+                        : isNext ? '2px dashed #F59E0B' : '2px solid transparent',
                     }}
                   >
-                    {/* Rank icon */}
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center text-xl z-10 ${
-                        isAchieved ? 'shadow-md' : ''
-                      }`}
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-xl z-10 ${isAchieved ? 'shadow-md' : ''}`}
                       style={{
                         background: isAchieved ? rank.color : 'var(--color-surface)',
                         border: isAchieved ? 'none' : '2px solid var(--color-divider)',
@@ -200,36 +203,22 @@ export function Badges() {
                     >
                       {isAchieved ? rank.emoji : '🔒'}
                     </div>
-
-                    {/* Rank info */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span
-                          className="font-bold"
-                          style={{ color: isAchieved ? rank.color : 'var(--color-text-tertiary)' }}
-                        >
+                        <span className="font-bold" style={{ color: isAchieved ? rank.color : 'var(--color-text-tertiary)' }}>
                           {rank.title}
                         </span>
                         {isCurrentRank && (
-                          <span
-                            className="text-xs px-2 py-0.5 rounded-full font-medium text-white"
-                            style={{ background: rank.color }}
-                          >
-                            YOU
-                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium text-white" style={{ background: rank.color }}>YOU</span>
                         )}
                         {isNext && (
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">
-                            NEXT
-                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">NEXT</span>
                         )}
                       </div>
                       <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                         {rank.minBadges} badges required
                       </p>
                     </div>
-
-                    {/* Checkmark for achieved */}
                     {isAchieved && !isCurrentRank && (
                       <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#10B981' }}>
                         <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -244,12 +233,10 @@ export function Badges() {
           </div>
         </div>
 
-        {/* Next Badge Focus (if user is logged in and has progress) */}
+        {/* Next Badge Focus */}
         {user && nextBadge && !loading && (
           <div
-            className={`rounded-2xl p-5 relative overflow-hidden ${
-              nextBadge.percentage >= 70 ? 'animate-pulse-subtle' : ''
-            }`}
+            className={`rounded-2xl p-5 relative overflow-hidden ${nextBadge.percentage >= 70 ? 'animate-pulse-subtle' : ''}`}
             style={{
               background: nextBadge.percentage >= 70
                 ? 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)'
@@ -261,60 +248,39 @@ export function Badges() {
           >
             {nextBadge.percentage >= 70 && (
               <div className="absolute top-0 right-0 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-200 rounded-bl-xl">
-                🔥 ALMOST THERE
+                ALMOST THERE
               </div>
             )}
-
             <div className="flex items-center gap-4">
-              {/* Circular progress */}
               <div className="relative w-20 h-20 flex-shrink-0">
                 <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
-                  <circle
-                    cx="40" cy="40" r="34"
-                    stroke="var(--color-divider)"
-                    strokeWidth="8"
-                    fill="none"
-                  />
+                  <circle cx="40" cy="40" r="34" stroke="var(--color-divider)" strokeWidth="8" fill="none" />
                   <circle
                     cx="40" cy="40" r="34"
                     stroke={nextBadge.percentage >= 70 ? '#F59E0B' : 'var(--color-primary)'}
-                    strokeWidth="8"
-                    fill="none"
-                    strokeLinecap="round"
+                    strokeWidth="8" fill="none" strokeLinecap="round"
                     strokeDasharray={`${nextBadge.percentage * 2.14} 214`}
                     className="transition-all duration-500"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-3xl">
-                  {nextBadge.icon}
-                </span>
+                <span className="absolute inset-0 flex items-center justify-center text-3xl">{nextBadge.icon}</span>
               </div>
-
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{
-                  color: nextBadge.percentage >= 70 ? '#92400E' : 'var(--color-text-tertiary)'
-                }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: nextBadge.percentage >= 70 ? '#92400E' : 'var(--color-text-tertiary)' }}>
                   Closest to Unlock
                 </p>
-                <p className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                  {nextBadge.name}
-                </p>
-                <p className="text-sm" style={{
-                  color: nextBadge.percentage >= 70 ? '#B45309' : 'var(--color-text-secondary)'
-                }}>
-                  {nextBadge.percentage >= 90
-                    ? `🔥 Just ${nextBadge.target - nextBadge.progress} more!`
-                    : nextBadge.percentage >= 70
-                      ? `⚡ Only ${nextBadge.target - nextBadge.progress} to go!`
-                      : `${nextBadge.target - nextBadge.progress} more to unlock`
-                  }
-                </p>
+                <p className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{nextBadge.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <RarityPill rarity={nextBadge.rarity} />
+                </div>
+                {nextBadge.accuracyStatus && (
+                  <p className="text-xs mt-1" style={{ color: nextBadge.accuracyStatus.met ? '#10B981' : '#F59E0B' }}>
+                    Accuracy: {nextBadge.accuracyStatus.met ? 'within range' : 'needs improvement'} (bias: {nextBadge.accuracyStatus.currentBias?.toFixed(1)})
+                  </p>
+                )}
               </div>
-
               <div className="text-right">
-                <div className="text-3xl font-bold" style={{
-                  color: nextBadge.percentage >= 70 ? '#F59E0B' : 'var(--color-primary)'
-                }}>
+                <div className="text-3xl font-bold" style={{ color: nextBadge.percentage >= 70 ? '#F59E0B' : 'var(--color-primary)' }}>
                   {nextBadge.percentage}%
                 </div>
               </div>
@@ -322,11 +288,10 @@ export function Badges() {
           </div>
         )}
 
-        {/* How It Works - Expandable */}
+        {/* How It Works */}
         <details className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
           <summary className="px-5 py-4 cursor-pointer flex items-center justify-between list-none">
             <div className="flex items-center gap-2">
-              <span className="text-lg">📖</span>
               <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>How It Works</span>
             </div>
             <svg className="w-5 h-5 transition-transform" style={{ color: 'var(--color-text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,14 +299,44 @@ export function Badges() {
             </svg>
           </summary>
           <div className="px-5 pb-5 space-y-4">
-            {/* Rank System */}
             <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg)' }}>
-              <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                <span>🏆</span> The Rank System
-              </h4>
+              <h4 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Badge Families</h4>
               <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-                As you earn badges, you climb through 5 ranks. Each rank requires unlocking more badges:
+                56 badges across 6 families. Rate dishes, explore restaurants, build accuracy, and earn mastery badges.
               </p>
+              <div className="flex flex-wrap gap-2">
+                {familyOrder.map(fam => {
+                  const info = FAMILY_INFO[fam]
+                  return (
+                    <span key={fam} className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }}>
+                      {info.emoji} {info.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg)' }}>
+              <h4 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Rarity Tiers</h4>
+              <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+                Each badge has a rarity tier. Higher rarity = bigger celebration when you unlock it.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(RARITY_LABELS).map(([rarity, label]) => (
+                  <RarityPill key={rarity} rarity={rarity} />
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg)' }}>
+              <h4 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Category Mastery</h4>
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                Category badges require both <strong>volume</strong> (enough consensus-rated dishes) and <strong>accuracy</strong> (your ratings align with community consensus). This proves real expertise, not just participation.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg)' }}>
+              <h4 className="font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>Ranks</h4>
               <div className="flex flex-wrap gap-2">
                 {RANKS.map((rank) => (
                   <div key={rank.title} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs" style={{ background: `${rank.color}20`, color: rank.color }}>
@@ -352,301 +347,93 @@ export function Badges() {
                 ))}
               </div>
             </div>
-
-            {/* How to Earn */}
-            <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg)' }}>
-              <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                <span>⭐</span> How to Earn Badges
-              </h4>
-              <ul className="text-sm space-y-2" style={{ color: 'var(--color-text-secondary)' }}>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500">✓</span>
-                  <span><strong>Rate dishes</strong> — Each vote counts toward dish-based badges</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500">✓</span>
-                  <span><strong>Try new restaurants</strong> — Explore different spots to unlock explorer badges</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500">✓</span>
-                  <span><strong>One vote = multiple badges</strong> — A single rating can unlock several badges at once!</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Golden Badges */}
-            <div className="p-4 rounded-xl" style={{ background: 'linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)', border: '1px solid #F59E0B' }}>
-              <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-900">
-                <span>🔥</span> "Almost There" Badges
-              </h4>
-              <p className="text-sm text-amber-800">
-                When you're <strong>70% or closer</strong> to unlocking a badge, it lights up gold! These are your quick wins — just a few more ratings to unlock them.
-              </p>
-            </div>
-
-            {/* Badge Types */}
-            <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg)' }}>
-              <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                <span>🎖️</span> Badge Types
-              </h4>
-              <div className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                <div className="flex items-start gap-2">
-                  <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}>Personal</span>
-                  <span>Celebrate your journey — visible only to you on your profile</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: '#F5F3FF', color: '#7C3AED' }}>Prestigious</span>
-                  <span>Elite achievements displayed publicly for everyone to see</span>
-                </div>
-              </div>
-            </div>
           </div>
         </details>
 
-        {/* Tab Switcher */}
-        <div className="flex gap-2 p-1 rounded-xl" style={{ background: 'var(--color-surface-elevated)' }}>
-          <button
-            onClick={() => setActiveTab('journey')}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all ${
-              activeTab === 'journey' ? 'shadow-md' : ''
-            }`}
-            style={{
-              background: activeTab === 'journey' ? 'var(--color-primary)' : 'transparent',
-              color: activeTab === 'journey' ? 'white' : 'var(--color-text-secondary)',
-            }}
-          >
-            🎯 Your Progress
-          </button>
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all ${
-              activeTab === 'all' ? 'shadow-md' : ''
-            }`}
-            style={{
-              background: activeTab === 'all' ? 'var(--color-primary)' : 'transparent',
-              color: activeTab === 'all' ? 'white' : 'var(--color-text-secondary)',
-            }}
-          >
-            🏆 All Badges
-          </button>
-        </div>
-
-        {/* Your Progress Tab */}
-        {activeTab === 'journey' && (
-          <div className="space-y-6">
-            {/* Earned Badges */}
-            {unlockedBadges.length > 0 && (
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-lg">✨</span>
-                  <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    Earned ({unlockedBadges.length})
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {unlockedBadges.map((badge) => (
-                    <div
-                      key={badge.key}
-                      className="p-3 rounded-xl"
-                      style={{
-                        background: 'linear-gradient(135deg, var(--color-primary-muted) 0%, white 100%)',
-                        border: '2px solid var(--color-primary)',
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{badge.icon}</span>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-sm truncate" style={{ color: 'var(--color-primary)' }}>
-                            {badge.name}
-                          </p>
-                          <p className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
-                            {badge.unlocked_at && new Date(badge.unlocked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* In Progress Badges */}
-            {lockedBadges.length > 0 && (
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-lg">🔒</span>
-                  <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    In Progress ({lockedBadges.length})
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  {lockedBadges.map((badge) => {
-                    const isClose = badge.percentage >= 70
-                    const remaining = badge.target - badge.progress
-
-                    return (
-                      <div
-                        key={badge.key}
-                        className="p-4 rounded-xl relative"
-                        style={{
-                          background: isClose
-                            ? 'linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)'
-                            : 'var(--color-bg)',
-                          border: isClose ? '2px solid #F59E0B' : '1px solid var(--color-divider)',
-                        }}
-                      >
-                        {isClose && (
-                          <span className="absolute top-2 right-2 text-sm">🔥</span>
-                        )}
-                        <div className="flex items-center gap-3">
-                          <span className={`text-2xl ${isClose ? '' : 'opacity-50'}`}>{badge.icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className={`font-semibold ${isClose ? 'text-amber-900' : 'text-[color:var(--color-text-secondary)]'}`}>
-                              {badge.name}
-                            </p>
-                            <p className={`text-xs ${isClose ? 'text-amber-700' : 'text-[color:var(--color-text-tertiary)]'}`}>
-                              {isClose ? `Just ${remaining} more!` : badge.description}
-                            </p>
-                            <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-divider)' }}>
-                              <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{
-                                  width: `${badge.percentage}%`,
-                                  background: isClose ? '#F59E0B' : 'var(--color-primary)',
-                                }}
-                              />
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className={`text-lg font-bold ${isClose ? 'text-amber-600' : 'text-[color:var(--color-text-secondary)]'}`}>
-                              {badge.progress}/{badge.target}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Empty state for logged out users */}
-            {!user && (
-              <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
-                <span className="text-4xl">🔐</span>
-                <h3 className="mt-4 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  Sign in to track your progress
-                </h3>
-                <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  Create an account to start earning badges and climbing the ranks!
-                </p>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="mt-4 px-6 py-2 rounded-xl font-semibold text-white"
-                  style={{ background: 'var(--color-primary)' }}
-                >
-                  Sign In
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* All Badges Tab */}
-        {activeTab === 'all' && (
-          <div className="space-y-6">
-            {/* Personal Milestones */}
-            <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">🎖️</span>
-                <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  Personal Milestones
-                </h3>
-              </div>
-              <p className="text-xs mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
-                Celebrate your journey — visible only to you
-              </p>
-
-              {loading ? (
-                <div className="space-y-3">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--color-bg)' }} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {privateBadges.map((badge) => (
-                    <BadgeRow key={badge.key} badge={badge} />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Prestigious Badges */}
-            <div className="rounded-2xl p-5" style={{
-              background: 'linear-gradient(135deg, #FDF4FF 0%, #FAF5FF 100%)',
-              border: '2px solid #C084FC',
-            }}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">👑</span>
-                <h3 className="font-semibold" style={{ color: '#7C3AED' }}>
-                  Prestigious Badges
-                </h3>
-              </div>
-              <p className="text-xs mb-4" style={{ color: '#8B5CF6' }}>
-                Elite achievements displayed on your public profile
-              </p>
-
-              {loading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.5)' }} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {publicBadges.map((badge) => (
-                    <BadgeRow key={badge.key} badge={badge} isPublic />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Category Expertise */}
-        <div className="rounded-2xl p-5" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">🍕</span>
-            <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              Category Expertise
+        {/* Badge Families */}
+        {!user && (
+          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
+            <h3 className="mt-4 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              Sign in to track your progress
             </h3>
+            <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              Create an account to start earning badges and climbing the ranks!
+            </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="mt-4 px-6 py-2 rounded-xl font-semibold text-white"
+              style={{ background: 'var(--color-primary)' }}
+            >
+              Sign In
+            </button>
           </div>
-          <p className="text-xs mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
-            Rate dishes in a category to earn expertise titles
-          </p>
+        )}
 
-          <div className="grid grid-cols-5 gap-2 text-center">
-            {[
-              { emoji: '🌱', title: 'Explorer', votes: '5+', color: '#6B7280' },
-              { emoji: '🔥', title: 'Fan', votes: '10+', color: '#F97316' },
-              { emoji: '💎', title: 'Connoisseur', votes: '20+', color: '#3B82F6' },
-              { emoji: '⭐', title: 'Expert', votes: '30+', color: '#F59E0B' },
-              { emoji: '👑', title: 'Master', votes: '50+', color: '#9333EA' },
-            ].map((level) => (
-              <div key={level.title} className="p-2">
-                <div
-                  className="w-10 h-10 mx-auto rounded-full flex items-center justify-center text-lg mb-1"
-                  style={{ background: `${level.color}20` }}
-                >
-                  {level.emoji}
+        {familyOrder.map(family => {
+          const familyBadges = badgesByFamily[family]
+          if (!familyBadges || familyBadges.length === 0) return null
+
+          const info = FAMILY_INFO[family]
+          const earned = familyBadges.filter(b => b.unlocked).length
+          const isExpanded = expandedFamilies[family] !== false // default open
+
+          // Category family gets special grid treatment
+          if (family === BADGE_FAMILY.CATEGORY) {
+            return (
+              <CategoryMasterySection
+                key={family}
+                badges={familyBadges}
+                info={info}
+                earned={earned}
+                isExpanded={isExpanded}
+                onToggle={() => toggleFamily(family)}
+                loading={loading}
+              />
+            )
+          }
+
+          return (
+            <div key={family} className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
+              <button
+                onClick={() => toggleFamily(family)}
+                className="w-full px-5 py-4 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{info.emoji}</span>
+                  <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {info.label}
+                  </h3>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: earned > 0 ? 'var(--color-primary-muted)' : 'var(--color-divider)', color: earned > 0 ? 'var(--color-primary)' : 'var(--color-text-tertiary)' }}>
+                    {earned}/{familyBadges.length}
+                  </span>
                 </div>
-                <p className="text-xs font-semibold" style={{ color: level.color }}>{level.title}</p>
-                <p className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>{level.votes}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+                <svg
+                  className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isExpanded && (
+                <div className="px-5 pb-5 space-y-2">
+                  {loading ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--color-bg)' }} />
+                      ))}
+                    </div>
+                  ) : (
+                    familyBadges.map((badge) => (
+                      <BadgeRow key={badge.key} badge={badge} />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
 
         {/* Pro Tips */}
         <div
@@ -657,24 +444,24 @@ export function Badges() {
           }}
         >
           <h3 className="font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
-            <span>💡</span> Pro Tips
+            Pro Tips
           </h3>
           <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             <li className="flex gap-2">
-              <span>⚡</span>
-              <span>One vote can unlock multiple badges at once!</span>
+              <span>*</span>
+              <span>Category mastery requires both volume AND accuracy</span>
             </li>
             <li className="flex gap-2">
-              <span>🍽️</span>
-              <span>Try new restaurants to unlock explorer badges faster</span>
+              <span>*</span>
+              <span>Rate honestly - your ratings are compared to community consensus</span>
             </li>
             <li className="flex gap-2">
-              <span>🎯</span>
-              <span>Focus on badges at 70%+ for quick wins</span>
+              <span>*</span>
+              <span>Be an early voter on new dishes to earn discovery badges</span>
             </li>
             <li className="flex gap-2">
-              <span>👑</span>
-              <span>Prestigious badges show on your public profile</span>
+              <span>*</span>
+              <span>Rare+ badges unlock full-screen celebrations</span>
             </li>
           </ul>
         </div>
@@ -683,29 +470,166 @@ export function Badges() {
   )
 }
 
-// Badge row component with gamified styling - memoized for list performance
-const BadgeRow = memo(function BadgeRow({ badge, isPublic }) {
+// Category Mastery section with grid of 17 categories
+const CategoryMasterySection = memo(function CategoryMasterySection({ badges, info, earned, isExpanded, onToggle, loading }) {
+  // Group by category
+  const categorized = useMemo(() => {
+    const map = {}
+    badges.forEach(b => {
+      const parsed = parseCategoryBadgeKey(b.key)
+      if (!parsed) return
+      if (!map[parsed.categoryId]) map[parsed.categoryId] = {}
+      map[parsed.categoryId][parsed.tier] = b
+    })
+    return map
+  }, [badges])
+
+  const categoryIds = Array.from(MAJOR_CATEGORIES)
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
+      <button onClick={onToggle} className="w-full px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{info.emoji}</span>
+          <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{info.label}</h3>
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: earned > 0 ? 'var(--color-primary-muted)' : 'var(--color-divider)', color: earned > 0 ? 'var(--color-primary)' : 'var(--color-text-tertiary)' }}>
+            {earned}/{badges.length}
+          </span>
+        </div>
+        <svg className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} style={{ color: 'var(--color-text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isExpanded && (
+        <div className="px-5 pb-5">
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--color-bg)' }} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {categoryIds.map(catId => {
+                const catInfo = CATEGORY_INFO[catId] || { emoji: '🍽️', label: catId }
+                const specialist = categorized[catId]?.specialist
+                const authority = categorized[catId]?.authority
+                if (!specialist && !authority) return null
+
+                const highestUnlocked = authority?.unlocked ? 'authority' : specialist?.unlocked ? 'specialist' : null
+                const rarityColor = highestUnlocked
+                  ? getRarityColor(highestUnlocked === 'authority' ? 'epic' : 'rare')
+                  : 'var(--color-divider)'
+
+                return (
+                  <div
+                    key={catId}
+                    className="p-3 rounded-xl"
+                    style={{
+                      background: highestUnlocked ? `${rarityColor}10` : 'var(--color-bg)',
+                      borderLeft: `3px solid ${rarityColor}`,
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">{catInfo.emoji}</span>
+                      <span className="font-semibold text-sm truncate" style={{ color: highestUnlocked ? rarityColor : 'var(--color-text-secondary)' }}>
+                        {catInfo.label}
+                      </span>
+                    </div>
+
+                    {/* Specialist row */}
+                    {specialist && (
+                      <CategoryBadgeMiniRow badge={specialist} tierLabel="Specialist" />
+                    )}
+
+                    {/* Authority row */}
+                    {authority && (
+                      <CategoryBadgeMiniRow badge={authority} tierLabel="Authority" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+})
+
+// Mini row for a category badge within the mastery grid
+const CategoryBadgeMiniRow = memo(function CategoryBadgeMiniRow({ badge, tierLabel }) {
+  const rarityColor = getRarityColor(badge.rarity)
+
+  return (
+    <div className="mt-1.5">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-medium" style={{ color: badge.unlocked ? rarityColor : 'var(--color-text-tertiary)' }}>
+            {tierLabel}
+          </span>
+          {badge.unlocked && <span className="text-xs text-emerald-500">&#10003;</span>}
+          <RarityPill rarity={badge.rarity} small />
+        </div>
+        <span className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+          {badge.progress}/{badge.target}
+        </span>
+      </div>
+      {/* Progress bar */}
+      {!badge.unlocked && (
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-divider)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${badge.percentage}%`, background: rarityColor }}
+          />
+        </div>
+      )}
+      {/* Accuracy indicator */}
+      {badge.accuracyStatus && !badge.unlocked && (
+        <p className="text-[10px] mt-0.5" style={{ color: badge.accuracyStatus.met ? '#10B981' : '#F59E0B' }}>
+          Accuracy: {badge.accuracyStatus.met ? 'in range' : `bias ${badge.accuracyStatus.currentBias?.toFixed(1)}`}
+        </p>
+      )}
+    </div>
+  )
+})
+
+// Rarity pill component
+function RarityPill({ rarity, small = false }) {
+  const color = getRarityColor(rarity)
+  const label = RARITY_LABELS[rarity] || 'Common'
+
+  return (
+    <span
+      className={`inline-flex items-center font-semibold uppercase tracking-wide rounded-full ${small ? 'text-[9px] px-1.5 py-0' : 'text-[10px] px-2 py-0.5'}`}
+      style={{
+        background: `${color}20`,
+        color: color,
+        border: `1px solid ${color}40`,
+      }}
+    >
+      {label}
+    </span>
+  )
+}
+
+// Badge row component with rarity styling
+const BadgeRow = memo(function BadgeRow({ badge }) {
   const isUnlocked = badge.unlocked
   const isClose = !isUnlocked && badge.percentage >= 70
+  const rarityColor = getRarityColor(badge.rarity)
 
   return (
     <div
       className="flex items-center gap-3 p-3 rounded-xl transition-all"
       style={{
         background: isUnlocked
-          ? isPublic
-            ? 'linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)'
-            : 'linear-gradient(135deg, var(--color-primary-muted) 0%, white 100%)'
+          ? `${rarityColor}10`
           : isClose
             ? 'linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%)'
             : 'var(--color-bg)',
-        border: isUnlocked
-          ? isPublic
-            ? '2px solid #A78BFA'
-            : '2px solid var(--color-primary)'
-          : isClose
-            ? '2px solid #F59E0B'
-            : '1px solid var(--color-divider)',
+        borderLeft: `3px solid ${isUnlocked ? rarityColor : isClose ? '#F59E0B' : 'var(--color-divider)'}`,
       }}
     >
       {/* Icon */}
@@ -719,25 +643,15 @@ const BadgeRow = memo(function BadgeRow({ badge, isPublic }) {
           <h3
             className="font-semibold text-sm"
             style={{
-              color: isUnlocked
-                ? isPublic ? '#7C3AED' : 'var(--color-primary)'
-                : isClose
-                  ? '#92400E'
-                  : 'var(--color-text-tertiary)'
+              color: isUnlocked ? rarityColor : isClose ? '#92400E' : 'var(--color-text-tertiary)',
             }}
           >
             {badge.name}
           </h3>
-          {isUnlocked && (
-            <span className="text-xs">✓</span>
-          )}
-          {isClose && (
-            <span className="text-xs">🔥</span>
-          )}
+          {isUnlocked && <span className="text-xs text-emerald-500">&#10003;</span>}
+          <RarityPill rarity={badge.rarity} small />
         </div>
-        <p className="text-xs" style={{
-          color: isClose ? '#B45309' : 'var(--color-text-tertiary)'
-        }}>
+        <p className="text-xs" style={{ color: isClose ? '#B45309' : 'var(--color-text-tertiary)' }}>
           {badge.description}
         </p>
 
@@ -746,19 +660,25 @@ const BadgeRow = memo(function BadgeRow({ badge, isPublic }) {
           <div className="mt-2 flex items-center gap-2">
             <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-divider)' }}>
               <div
-                className="h-full rounded-full transition-all"
+                className={`h-full rounded-full transition-all duration-1000 ${isClose ? 'animate-glow-breathe' : ''}`}
                 style={{
                   width: `${badge.percentage}%`,
-                  background: isClose ? '#F59E0B' : 'var(--color-primary)',
+                  background: isClose ? '#F59E0B' : rarityColor,
                 }}
               />
             </div>
-            <span className="text-xs font-medium" style={{
-              color: isClose ? '#F59E0B' : 'var(--color-text-tertiary)'
-            }}>
+            <span className="text-xs font-medium" style={{ color: isClose ? '#F59E0B' : 'var(--color-text-tertiary)' }}>
               {badge.progress}/{badge.target}
             </span>
           </div>
+        )}
+
+        {/* Accuracy indicator for multi-requirement badges */}
+        {badge.accuracyStatus && !isUnlocked && (
+          <p className="text-[10px] mt-1" style={{ color: badge.accuracyStatus.met ? '#10B981' : '#F59E0B' }}>
+            Accuracy: {badge.accuracyStatus.met ? 'within range' : 'needs improvement'}
+            {badge.accuracyStatus.currentBias != null && ` (bias: ${badge.accuracyStatus.currentBias.toFixed(1)})`}
+          </p>
         )}
       </div>
     </div>

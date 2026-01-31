@@ -626,6 +626,90 @@
   }
 }
 
+/* ===========================
+   Celebration Keyframes
+   =========================== */
+
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(100vh + 50px)) translateX(var(--confetti-drift, 30px)) rotate(var(--confetti-spin, 720deg)) scale(0.5);
+  }
+}
+
+@keyframes celebrationPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@keyframes glowBreathe {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 0 24px rgba(245, 158, 11, 0.2);
+  }
+}
+
+@keyframes badgeBounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes rankFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+.animate-confetti-fall {
+  animation: confettiFall var(--confetti-duration, 2s) ease-out forwards;
+  animation-delay: var(--confetti-delay, 0s);
+}
+
+.animate-celebration-pulse {
+  animation: celebrationPulse 2s ease-in-out infinite;
+}
+
+.animate-glow-breathe {
+  animation: glowBreathe 2s ease-in-out infinite;
+}
+
+.animate-badge-bounce-in {
+  animation: badgeBounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-rank-fade-out {
+  animation: rankFadeOut 0.4s ease-in forwards;
+}
+
 @keyframes crumbFall {
   0% {
     opacity: 1;
@@ -640,6 +724,39 @@
 .animate-crumb-fall {
   animation: crumbFall 0.8s ease-out forwards;
   transform-origin: center;
+}
+
+/* ===========================
+   Rarity System Animations
+   =========================== */
+
+@keyframes rarityGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px var(--rarity-color, #3B82F6));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--rarity-color, #3B82F6)) drop-shadow(0 0 24px color-mix(in srgb, var(--rarity-color, #3B82F6) 40%, transparent));
+  }
+}
+
+@keyframes legendaryShimmer {
+  0% {
+    filter: drop-shadow(0 0 8px #F59E0B) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px #F59E0B) drop-shadow(0 0 32px rgba(245, 158, 11, 0.4)) brightness(1.1);
+  }
+  100% {
+    filter: drop-shadow(0 0 8px #F59E0B) brightness(1);
+  }
+}
+
+.animate-rarity-glow {
+  animation: rarityGlow 2.5s ease-in-out infinite;
+}
+
+.animate-legendary-shimmer {
+  animation: legendaryShimmer 2s ease-in-out infinite;
 }
 
 /* ===========================
@@ -1105,7 +1222,14 @@
   .animate-expand-in,
   .animate-pulse,
   .animate-spin,
-  .animate-bounce {
+  .animate-bounce,
+  .animate-confetti-fall,
+  .animate-celebration-pulse,
+  .animate-glow-breathe,
+  .animate-badge-bounce-in,
+  .animate-rank-fade-out,
+  .animate-rarity-glow,
+  .animate-legendary-shimmer {
     animation: none;
   }
 
