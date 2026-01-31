@@ -354,7 +354,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             disabled={showConfirmation}
             className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
             style={(showConfirmation && confirmationType === 'yes') || showPendingYes
-              ? { background: 'linear-gradient(to bottom right, #10B981, #059669)', color: 'white', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)', transform: 'scale(1.05)' }
+              ? { background: 'linear-gradient(to bottom right, #6BB384, #5A9E72)', color: 'white', boxShadow: '0 10px 15px -3px rgba(107, 179, 132, 0.3)', transform: 'scale(1.05)' }
               : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'yes' ? (
@@ -368,7 +368,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             disabled={showConfirmation}
             className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
             style={(showConfirmation && confirmationType === 'no') || showPendingNo
-              ? { background: 'linear-gradient(to bottom right, #EF4444, #DC2626)', color: 'white', boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3)', transform: 'scale(1.05)' }
+              ? { background: 'linear-gradient(to bottom right, #C85A54, #B04E49)', color: 'white', boxShadow: '0 10px 15px -3px rgba(200, 90, 84, 0.3)', transform: 'scale(1.05)' }
               : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'no' ? (

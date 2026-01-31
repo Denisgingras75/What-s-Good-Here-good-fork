@@ -190,13 +190,13 @@ export function WelcomeModal() {
           {/* How it works visual - only on step 2 */}
           {currentStep.id === 'how-it-works' && (
             <div className="flex justify-center gap-4 mb-6">
-              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
+              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(107, 179, 132, 0.15)' }}>
                 <span className="text-2xl mb-1"><ThumbsUpIcon size={32} /></span>
-                <span className="text-xs font-medium text-emerald-400">Good Here</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--color-rating)' }}>Good Here</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(239, 68, 68, 0.15)' }}>
+              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(200, 90, 84, 0.15)' }}>
                 <span className="text-2xl mb-1"><ThumbsDownIcon size={32} /></span>
-                <span className="text-xs font-medium text-red-400">Not Good</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>Not Good</span>
               </div>
               <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(245, 158, 11, 0.15)' }}>
                 <span className="text-2xl mb-1">⭐</span>
