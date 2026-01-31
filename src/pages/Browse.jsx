@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
+import { useUserVotes } from '../hooks/useUserVotes'
 import { useDishSearch } from '../hooks/useDishSearch'
 import { useFavorites } from '../hooks/useFavorites'
 import { restaurantsApi } from '../api/restaurantsApi'
@@ -19,6 +20,7 @@ import { DishCardSkeleton } from '../components/Skeleton'
 import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
 import { SortDropdown, CategoryGrid } from '../components/browse'
 import { CategoryImageCard } from '../components/CategoryImageCard'
+import { badgesApi } from '../api/badgesApi'
 
 // Use centralized browse categories
 const CATEGORIES = BROWSE_CATEGORIES
@@ -62,7 +64,10 @@ export function Browse() {
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
 
+  const [categoryExperts, setCategoryExperts] = useState([])
+
   const { location, radius, town } = useLocationContext()
+  const { stats: userStats } = useUserVotes(user?.id)
 
   // Search results from API using React Query hook
   // Handles cuisine/tag searches with proper caching and error handling
@@ -93,6 +98,20 @@ export function Browse() {
       navigate('/', { replace: true })
     }
   }, [searchParams, navigate])
+
+  // Fetch category experts when a category is selected
+  useEffect(() => {
+    if (!selectedCategory) {
+      setCategoryExperts([])
+      return
+    }
+
+    let cancelled = false
+    badgesApi.getCategoryExperts(selectedCategory, 5)
+      .then(experts => { if (!cancelled) setCategoryExperts(experts) })
+      .catch(() => { if (!cancelled) setCategoryExperts([]) })
+    return () => { cancelled = true }
+  }, [selectedCategory])
 
   // Debounce search query by 300ms - only when already showing dishes
   // On categories page, search only triggers on Enter key
@@ -220,7 +239,10 @@ export function Browse() {
     // Check if votes actually increased (data refreshed)
     if (after.total_votes > pendingVoteData.total_votes) {
       const afterRank = getDishRank(pendingVoteData.dish_id, dishes)
-      const impact = getImpactMessage(pendingVoteData, after, pendingVoteData.rank, afterRank)
+      const impact = getImpactMessage(
+        pendingVoteData, after, pendingVoteData.rank, afterRank,
+        userStats?.categoryProgress, after.category
+      )
       setImpactFeedback(impact)
       setPendingVoteData(null)
     }
@@ -605,6 +627,49 @@ export function Browse() {
               />
             </div>
           </div>
+
+          {/* Category Experts */}
+          {categoryExperts.length > 0 && !debouncedSearchQuery.trim() && (
+            <div className="px-4 pt-3 pb-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                Ask an Expert
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+                {categoryExperts.map((expert) => (
+                  <button
+                    key={expert.user_id}
+                    onClick={() => navigate(`/user/${expert.user_id}`)}
+                    className="flex flex-col items-center gap-1 flex-shrink-0 transition-transform active:scale-95"
+                  >
+                    <div className="relative">
+                      <div
+                        className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                        style={{
+                          background: expert.badge_tier === 'authority' ? '#9333EA' : '#3B82F6',
+                          boxShadow: `0 2px 8px -2px ${expert.badge_tier === 'authority' ? 'rgba(147, 51, 234, 0.4)' : 'rgba(59, 130, 246, 0.3)'}`,
+                        }}
+                      >
+                        {expert.display_name?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                      <div
+                        className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold ring-2"
+                        style={{
+                          background: expert.badge_tier === 'authority' ? '#9333EA' : '#3B82F6',
+                          color: 'white',
+                          ringColor: 'var(--color-surface)',
+                        }}
+                      >
+                        {expert.badge_tier === 'authority' ? 'A' : 'S'}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-medium truncate max-w-[60px]" style={{ color: 'var(--color-text-secondary)' }}>
+                      {expert.display_name?.split(' ')[0] || 'Expert'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Dish Grid */}
           <div className="px-4 py-4">

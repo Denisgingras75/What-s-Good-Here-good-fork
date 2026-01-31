@@ -9,6 +9,7 @@ export { EditFavoritesSection } from './EditFavoritesSection'
 export { PhotosInfoSection } from './PhotosInfoSection'
 export { MissionSection } from './MissionSection'
 export { UnratedDishCard } from './UnratedDishCard'
+export { ImpactCard } from './ImpactCard'
 
 // Rating Identity components
 export { RatingIdentityCard } from './RatingIdentityCard'

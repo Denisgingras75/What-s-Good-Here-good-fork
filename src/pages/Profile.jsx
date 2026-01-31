@@ -38,6 +38,7 @@ import {
   MissionSection,
   RatingIdentityCard,
   RevealNotification,
+  ImpactCard,
 } from '../components/profile'
 
 const TABS = [
@@ -68,8 +69,8 @@ export function Profile() {
   const { dishes: unratedDishes, count: unratedCount, loading: unratedLoading, refetch: refetchUnrated } = useUnratedDishes(user?.id)
   const { badges } = useBadges(user?.id)
 
-  // Rating Identity hooks (always called, but only used when feature is enabled)
-  const ratingIdentity = useRatingIdentity(FEATURES.RATING_IDENTITY_ENABLED ? user?.id : null)
+  // Rating Identity hooks — always fetch for ImpactCard; RatingIdentityCard UI is behind feature flag
+  const ratingIdentity = useRatingIdentity(user?.id)
   const revealNotifications = useRevealNotifications()
 
   const [selectedDish, setSelectedDish] = useState(null)
@@ -288,6 +289,7 @@ export function Profile() {
             stats={stats}
             badges={badges}
             followCounts={followCounts}
+            ratingIdentity={ratingIdentity}
             editingName={editingName}
             newName={newName}
             nameStatus={nameStatus}
@@ -297,6 +299,17 @@ export function Profile() {
             handleSaveName={handleSaveName}
             setFollowListModal={setFollowListModal}
           />
+
+          {/* Impact Card — adaptive influence metrics */}
+          {ratingIdentity && (
+            <div className="px-4 pt-4">
+              <ImpactCard
+                ratingIdentity={ratingIdentity}
+                followCounts={followCounts}
+                stats={stats}
+              />
+            </div>
+          )}
 
           {/* Rating Identity Card - behind feature flag */}
           {FEATURES.RATING_IDENTITY_ENABLED && ratingIdentity && (
@@ -351,7 +364,7 @@ export function Profile() {
                 }}
               >
                 <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl">📷</span>
+                  <CameraIcon size={28} />
                 </div>
                 <div className="flex-1 text-left">
                   <h3 className="font-bold text-white" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>

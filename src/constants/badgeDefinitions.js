@@ -1,4 +1,4 @@
-// Badge system definitions — rarity tiers, families, category badge helpers
+// Badge system definitions — rarity tiers, category mastery badge helpers
 import { CATEGORY_INFO, MAJOR_CATEGORIES } from './categories'
 
 // Rarity tiers (RPG-style)
@@ -28,24 +28,14 @@ export const RARITY_LABELS = {
   [RARITY.LEGENDARY]: 'Legendary',
 }
 
-// Badge families
+// Badge families — only Category Mastery is displayed
 export const BADGE_FAMILY = {
-  VOLUME: 'volume',
   CATEGORY: 'category',
-  DISCOVERY: 'discovery',
-  CONSISTENCY: 'consistency',
-  COMMUNITY: 'community',
-  INFLUENCE: 'influence',
 }
 
 // Family display info
 export const FAMILY_INFO = {
-  [BADGE_FAMILY.VOLUME]: { emoji: '🍽️', label: 'Volume' },
   [BADGE_FAMILY.CATEGORY]: { emoji: '🏅', label: 'Category Mastery' },
-  [BADGE_FAMILY.DISCOVERY]: { emoji: '🔭', label: 'Discovery' },
-  [BADGE_FAMILY.CONSISTENCY]: { emoji: '🎯', label: 'Consistency' },
-  [BADGE_FAMILY.COMMUNITY]: { emoji: '🤝', label: 'Community' },
-  [BADGE_FAMILY.INFLUENCE]: { emoji: '📣', label: 'Influence' },
 }
 
 // Maps rarity to celebration tier
@@ -56,48 +46,6 @@ export const CELEBRATION_TIER_MAP = {
   [RARITY.RARE]: 'rare',
   [RARITY.EPIC]: 'major',
   [RARITY.LEGENDARY]: 'major',
-}
-
-// Volume badge metadata (key -> { stat, threshold })
-// 'stat' is which field from evaluation stats to check
-export const VOLUME_BADGE_META = {
-  first_bite: { stat: 'totalDishes', threshold: 1 },
-  food_explorer: { stat: 'totalDishes', threshold: 10 },
-  taste_tester: { stat: 'totalDishes', threshold: 25 },
-  super_reviewer: { stat: 'totalDishes', threshold: 100 },
-  top_1_percent_reviewer: { stat: 'totalDishes', threshold: 125 },
-  neighborhood_explorer: { stat: 'totalRestaurants', threshold: 3 },
-  city_taster: { stat: 'totalRestaurants', threshold: 5 },
-  local_food_scout: { stat: 'totalRestaurants', threshold: 10 },
-  restaurant_trailblazer: { stat: 'totalRestaurants', threshold: 20 },
-  ultimate_explorer: { stat: 'totalRestaurants', threshold: 50 },
-}
-
-// Discovery/Community badge metadata (key -> threshold on dishesHelpedEstablish)
-export const DISCOVERY_BADGE_META = {
-  first_to_find: { threshold: 1 },
-  trailblazer: { threshold: 5 },
-  pioneer: { threshold: 15 },
-}
-
-export const COMMUNITY_BADGE_META = {
-  helping_hand: { threshold: 3 },
-  community_builder: { threshold: 10 },
-  cornerstone: { threshold: 25 },
-}
-
-// Consistency badge metadata
-export const CONSISTENCY_BADGE_META = {
-  steady_hand: { check: 'steady', minVotes: 20, maxAbsBias: 0.5 },
-  tough_critic: { check: 'low', minVotes: 20, maxBias: -1.5 },
-  generous_spirit: { check: 'high', minVotes: 20, minBias: 1.5 },
-}
-
-// Influence badge metadata
-export const INFLUENCE_BADGE_META = {
-  taste_maker: { threshold: 5 },
-  trusted_voice: { threshold: 15 },
-  taste_authority: { threshold: 30 },
 }
 
 // Category badge tiers

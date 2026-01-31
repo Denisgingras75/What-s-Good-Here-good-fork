@@ -107,7 +107,31 @@ export const badgesApi = {
       followerCount: 0,
       dishesHelpedEstablish: 0,
       categoryStats: [],
+      hiddenGemsFound: 0,
+      calledItCount: 0,
+      topDishVotes: 0,
+      firstVoterCount: 0,
     }
+  },
+
+  /**
+   * Get category experts (users with specialist/authority badges)
+   * @param {string} category - Category ID (e.g. 'pizza', 'seafood')
+   * @param {number} limit - Max results (default 5)
+   * @returns {Promise<Array>} Array of { user_id, display_name, badge_tier, follower_count }
+   */
+  async getCategoryExperts(category, limit = 5) {
+    const { data, error } = await supabase.rpc('get_category_experts', {
+      p_category: category,
+      p_limit: limit,
+    })
+
+    if (error) {
+      logger.error('Error fetching category experts:', error)
+      throw error
+    }
+
+    return data || []
   },
 
   /**

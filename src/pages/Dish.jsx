@@ -22,6 +22,7 @@ import { ThumbsUpIcon } from '../components/ThumbsUpIcon'
 import { ThumbsDownIcon } from '../components/ThumbsDownIcon'
 import { HearingIcon } from '../components/HearingIcon'
 import { EarIconTooltip } from '../components/EarIconTooltip'
+import { badgesApi } from '../api/badgesApi'
 import { getStorageItem, setStorageItem, STORAGE_KEYS } from '../lib/storage'
 
 /**
@@ -71,6 +72,7 @@ export function Dish() {
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [friendsVotes, setFriendsVotes] = useState([])
   const [friendsCompat, setFriendsCompat] = useState({}) // { userId: compatibility_pct }
+  const [categoryExperts, setCategoryExperts] = useState([])
   const [reviews, setReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
 
@@ -186,7 +188,7 @@ export function Dish() {
       setReviewsLoading(true)
 
       // Run all independent fetches in parallel
-      const [photosResult, reviewsResult, friendsResult] = await Promise.allSettled([
+      const [photosResult, reviewsResult, friendsResult, expertsResult] = await Promise.allSettled([
         // Photos (3 calls, already parallelized internally)
         Promise.all([
           dishPhotosApi.getFeaturedPhoto(dishId),
@@ -197,6 +199,8 @@ export function Dish() {
         votesApi.getReviewsForDish(dishId, { limit: 20 }),
         // Friends' votes (only if user is logged in)
         user ? followsApi.getFriendsVotesForDish(dishId) : Promise.resolve([]),
+        // Category experts (need dish data for category)
+        dish?.category ? badgesApi.getCategoryExperts(dish.category, 3) : Promise.resolve([]),
       ])
 
       // Handle photos result
@@ -225,10 +229,19 @@ export function Dish() {
         logger.error('Failed to fetch friends votes:', friendsResult.reason)
         setFriendsVotes([])
       }
+
+      // Handle category experts result
+      if (expertsResult.status === 'fulfilled') {
+        setCategoryExperts(expertsResult.value)
+      } else {
+        logger.error('Failed to fetch category experts:', expertsResult.reason)
+        setCategoryExperts([])
+      }
     }
 
     fetchSecondaryData()
-  }, [dishId, user])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dishId, user, dish?.category])
 
   // Fetch taste compatibility for each friend who voted
   useEffect(() => {
@@ -578,6 +591,39 @@ export function Dish() {
                       </Link>
                     )
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* Category Experts */}
+            {categoryExperts.length > 0 && (
+              <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {CATEGORY_INFO[dish.category]?.label || dish.category} Experts
+                </p>
+                <div className="flex gap-3">
+                  {categoryExperts.map((expert) => (
+                    <Link
+                      key={expert.user_id}
+                      to={`/user/${expert.user_id}`}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors hover:bg-[color:var(--color-surface-elevated)]"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs"
+                        style={{ background: expert.badge_tier === 'authority' ? '#9333EA' : '#3B82F6' }}
+                      >
+                        {expert.display_name?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                          {expert.display_name?.split(' ')[0] || 'Expert'}
+                        </p>
+                        <p className="text-[10px]" style={{ color: expert.badge_tier === 'authority' ? '#9333EA' : '#3B82F6' }}>
+                          {expert.badge_tier === 'authority' ? 'Authority' : 'Specialist'}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               </div>
             )}

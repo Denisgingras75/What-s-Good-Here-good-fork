@@ -208,6 +208,15 @@ export const TIER_THRESHOLDS = [
   { min: 5, level: 1, title: 'Explorer', icon: '🌱' },
 ]
 
+// Tier descriptions — what each tier means (honest, no fake unlocks)
+export const TIER_DESCRIPTIONS = {
+  Explorer:    'Getting started \u2014 building your taste profile',
+  Fan:         'Developing expertise \u2014 your preferences are forming',
+  Connoisseur: 'Deep knowledge \u2014 badge visible on your public profile',
+  Expert:      'Authority level \u2014 one of the most experienced raters',
+  Master:      'Elite status \u2014 among the top voices in this category',
+}
+
 // Major categories eligible for profile rank display
 // Sub-categories like fries, apps, tendys, breakfast sandwich are excluded
 export const MAJOR_CATEGORIES = new Set([

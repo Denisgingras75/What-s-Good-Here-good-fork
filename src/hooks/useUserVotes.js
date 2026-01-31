@@ -174,6 +174,20 @@ function calculateStats(data) {
     ? Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0][0]
     : null
 
+  // Rating variance (std dev of ratings) — 0-3.5 typical range
+  const ratingVariance = ratingsWithValue.length > 1
+    ? Math.sqrt(
+        ratingsWithValue.reduce((sum, v) => sum + Math.pow(v.rating_10 - avgRating, 2), 0) / ratingsWithValue.length
+      )
+    : 0
+
+  // Category concentration (Herfindahl index) — 1.0 = all one category, ~0.07 = perfectly spread
+  const catValues = Object.values(categoryCounts)
+  const catTotal = catValues.reduce((a, b) => a + b, 0)
+  const categoryConcentration = catTotal > 0
+    ? catValues.reduce((sum, c) => sum + Math.pow(c / catTotal, 2), 0)
+    : 0
+
   // Category tiers (only categories with 5+ votes)
   const categoryTiers = calculateCategoryTiers(categoryCounts)
 
@@ -203,6 +217,8 @@ function calculateStats(data) {
     worthItCount,
     avoidCount,
     avgRating,
+    ratingVariance,
+    categoryConcentration,
     topCategory,
     favoriteRestaurant,
     uniqueRestaurants,
@@ -223,6 +239,8 @@ export function useUserVotes(userId) {
     worthItCount: 0,
     avoidCount: 0,
     avgRating: null,
+    ratingVariance: 0,
+    categoryConcentration: 0,
     topCategory: null,
     favoriteRestaurant: null,
     uniqueRestaurants: 0,

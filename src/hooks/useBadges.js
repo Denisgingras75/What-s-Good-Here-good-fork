@@ -2,40 +2,31 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { badgesApi } from '../api/badgesApi'
 import { logger } from '../utils/logger'
 import {
-  VOLUME_BADGE_META,
-  DISCOVERY_BADGE_META,
-  COMMUNITY_BADGE_META,
-  CONSISTENCY_BADGE_META,
-  INFLUENCE_BADGE_META,
   CATEGORY_BADGE_TIERS,
   isCategoryBadge,
   parseCategoryBadgeKey,
 } from '../constants/badgeDefinitions'
+import { CATEGORY_INFO } from '../constants/categories'
 
 /**
  * Compute progress info for a single badge based on evaluation stats.
+ * Only category mastery badges have meaningful progress tracking.
+ * Returns { progress, target, accuracyStatus, requirementText }
  */
 function computeBadgeProgress(badge, evalStats) {
-  if (!evalStats) return { progress: 0, target: 1, accuracyStatus: null }
+  if (!evalStats) return { progress: 0, target: 1, accuracyStatus: null, requirementText: null }
 
   const family = badge.family || 'volume'
-
-  // Volume badges
-  if (family === 'volume' && VOLUME_BADGE_META[badge.key]) {
-    const meta = VOLUME_BADGE_META[badge.key]
-    const value = evalStats[meta.stat] || 0
-    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
-  }
 
   // Category mastery badges
   if (family === 'category' && isCategoryBadge(badge.key)) {
     const parsed = parseCategoryBadgeKey(badge.key)
-    if (!parsed) return { progress: 0, target: 1 }
+    if (!parsed) return { progress: 0, target: 1, requirementText: null }
 
     const tierMeta = CATEGORY_BADGE_TIERS[parsed.tier]
-    if (!tierMeta) return { progress: 0, target: 1 }
+    if (!tierMeta) return { progress: 0, target: 1, requirementText: null }
 
-    // Find category stats
+    const catInfo = CATEGORY_INFO[parsed.categoryId] || { label: parsed.categoryId }
     const catStats = (evalStats.categoryStats || []).find(
       c => c.category === parsed.categoryId
     )
@@ -43,63 +34,30 @@ function computeBadgeProgress(badge, evalStats) {
     const bias = catStats?.bias
     const absBias = bias != null ? Math.abs(bias) : null
 
+    const accuracyStatus = absBias != null
+      ? { met: absBias <= tierMeta.maxAbsBias, currentBias: bias, maxBias: tierMeta.maxAbsBias }
+      : null
+
+    const volumeRemaining = tierMeta.volumeThreshold - consensusRatings
+    const parts = []
+    if (volumeRemaining > 0) {
+      parts.push(`Rate ${volumeRemaining} more consensus-rated ${catInfo.label.toLowerCase()}${volumeRemaining === 1 ? '' : ' dishes'}`)
+    }
+    if (accuracyStatus && !accuracyStatus.met) {
+      parts.push('Improve accuracy to within range')
+    }
+    const requirementText = parts.length > 0 ? parts.join(', ') : null
+
     return {
       progress: Math.min(consensusRatings, tierMeta.volumeThreshold),
       target: tierMeta.volumeThreshold,
-      accuracyStatus: absBias != null
-        ? { met: absBias <= tierMeta.maxAbsBias, currentBias: bias, maxBias: tierMeta.maxAbsBias }
-        : null,
+      accuracyStatus,
+      requirementText,
     }
   }
 
-  // Discovery badges
-  if (family === 'discovery' && DISCOVERY_BADGE_META[badge.key]) {
-    const meta = DISCOVERY_BADGE_META[badge.key]
-    const value = evalStats.dishesHelpedEstablish || 0
-    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
-  }
-
-  // Community badges
-  if (family === 'community' && COMMUNITY_BADGE_META[badge.key]) {
-    const meta = COMMUNITY_BADGE_META[badge.key]
-    const value = evalStats.dishesHelpedEstablish || 0
-    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
-  }
-
-  // Consistency badges
-  if (family === 'consistency' && CONSISTENCY_BADGE_META[badge.key]) {
-    const meta = CONSISTENCY_BADGE_META[badge.key]
-    const votes = evalStats.votesWithConsensus || 0
-    const bias = evalStats.globalBias || 0
-
-    // Volume progress toward 20 consensus votes
-    const volumeProgress = Math.min(votes, meta.minVotes)
-
-    let accuracyMet = false
-    if (meta.check === 'steady') {
-      accuracyMet = Math.abs(bias) <= meta.maxAbsBias
-    } else if (meta.check === 'low') {
-      accuracyMet = bias <= meta.maxBias
-    } else if (meta.check === 'high') {
-      accuracyMet = bias >= meta.minBias
-    }
-
-    return {
-      progress: volumeProgress,
-      target: meta.minVotes,
-      accuracyStatus: { met: accuracyMet, currentBias: bias },
-    }
-  }
-
-  // Influence badges
-  if (family === 'influence' && INFLUENCE_BADGE_META[badge.key]) {
-    const meta = INFLUENCE_BADGE_META[badge.key]
-    const value = evalStats.followerCount || 0
-    return { progress: Math.min(value, meta.threshold), target: meta.threshold }
-  }
-
-  // Fallback for unknown badges
-  return { progress: 0, target: 1 }
+  // Fallback for non-category badges (still awarded by SQL, just no progress UI)
+  return { progress: 0, target: 1, requirementText: null }
 }
 
 export function useBadges(userId, { evaluateOnMount = false } = {}) {
@@ -203,7 +161,7 @@ export function useBadges(userId, { evaluateOnMount = false } = {}) {
   const badgesWithProgress = useMemo(() => {
     return allBadges.map(badge => {
       const unlocked = badges.find(b => b.badge_key === badge.key)
-      const { progress, target, accuracyStatus } = computeBadgeProgress(badge, evalStats)
+      const { progress, target, accuracyStatus, requirementText } = computeBadgeProgress(badge, evalStats)
 
       return {
         ...badge,
@@ -216,6 +174,7 @@ export function useBadges(userId, { evaluateOnMount = false } = {}) {
         family: badge.family || 'volume',
         category: badge.category || null,
         accuracyStatus: accuracyStatus || null,
+        requirementText: requirementText || null,
       }
     })
   }, [allBadges, badges, evalStats])

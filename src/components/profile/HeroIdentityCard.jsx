@@ -1,4 +1,7 @@
 import { useNavigate } from 'react-router-dom'
+import { RANKS, getRankForBadgeCount } from '../../constants/ranks'
+import { TIER_DESCRIPTIONS } from '../../constants/categories'
+import { calculateArchetype, getArchetypeById } from '../../utils/calculateArchetype'
 
 /**
  * Hero Identity Card for the Profile page
@@ -25,6 +28,7 @@ export function HeroIdentityCard({
   stats,
   badges,
   followCounts,
+  ratingIdentity,
   editingName,
   newName,
   nameStatus,
@@ -52,26 +56,25 @@ export function HeroIdentityCard({
   const unlockedBadges = badges?.filter(b => b.unlocked) || []
   const badgeCount = unlockedBadges.length
 
-  // Get near-term goal (closest to unlocking)
-  const getNearTermGoal = () => {
-    if (stats.categoryProgress.length > 0) {
-      const closest = stats.categoryProgress[0]
-      return `${closest.votesNeeded} vote${closest.votesNeeded === 1 ? '' : 's'} to ${closest.nextTier.title} in ${closest.label}`
-    }
-    if (stats.totalVotes === 0) {
-      return 'Rate your first dish to get started'
-    }
-    return null
-  }
+  // Calculate rank
+  const currentRank = getRankForBadgeCount(badgeCount)
 
-  const nearTermGoal = getNearTermGoal()
+  // Calculate archetype
+  const archetypeResult = calculateArchetype(stats, ratingIdentity, followCounts)
+  const archetype = archetypeResult.id ? getArchetypeById(archetypeResult.id) : null
+
+  // Top category for expertise progress
+  const topProgress = stats.categoryProgress.length > 0 ? stats.categoryProgress[0] : null
+  const topTier = stats.categoryTiers.length > 0 ? stats.categoryTiers[0] : null
+  const expertiseCategory = topProgress || topTier
+  const isCloseToNextTier = topProgress && topProgress.votesNeeded <= 3
 
   return (
     <div
       className="relative px-4 pt-8 pb-6 overflow-hidden"
       style={{
         background: `
-          radial-gradient(ellipse 90% 50% at 20% 0%, rgba(200, 90, 84, 0.06) 0%, transparent 70%),
+          radial-gradient(ellipse 90% 50% at 20% 0%, ${currentRank.color}08 0%, transparent 70%),
           radial-gradient(ellipse 70% 60% at 80% 100%, rgba(217, 167, 101, 0.04) 0%, transparent 70%),
           var(--color-bg)
         `,
@@ -88,17 +91,26 @@ export function HeroIdentityCard({
 
       {/* Avatar + Name row */}
       <div className="flex items-center gap-4">
-        {/* Avatar with glow ring */}
+        {/* Avatar with rank-colored ring */}
         <div className="relative flex-shrink-0">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
             style={{
               background: 'var(--color-primary)',
-              boxShadow: '0 4px 20px -4px rgba(200, 90, 84, 0.4), 0 0 0 3px rgba(200, 90, 84, 0.15)',
+              boxShadow: `0 4px 20px -4px ${currentRank.color}60, 0 0 0 ${badgeCount >= 5 ? '4px' : badgeCount >= 1 ? '3px' : '2px'} ${currentRank.color}30`,
             }}
           >
             {profile?.display_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
           </div>
+          {/* Rank emoji badge */}
+          {badgeCount >= 1 && (
+            <div
+              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md"
+              style={{ background: currentRank.color, border: '2px solid var(--color-bg)' }}
+            >
+              {currentRank.emoji}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -198,62 +210,98 @@ export function HeroIdentityCard({
         </div>
       </div>
 
-      {/* Primary Identity Title */}
+      {/* Rank Title + Archetype */}
       <div className="mt-5">
+        {/* Rank name */}
         <h2
           className="font-bold"
           style={{
-            color: 'var(--color-primary)',
+            color: currentRank.color,
             fontSize: '17px',
             letterSpacing: '-0.01em',
           }}
         >
-          {getPrimaryTitle()}
+          {currentRank.emoji} {currentRank.title}
         </h2>
-        {/* Secondary line: rank info + badges */}
+
+        {/* Category title */}
         <p
-          className="mt-1 font-medium"
+          className="font-bold mt-0.5"
           style={{
-            color: 'var(--color-text-tertiary)',
-            fontSize: '13px',
+            color: 'var(--color-primary)',
+            fontSize: '15px',
           }}
         >
-          {stats.totalVotes > 0 ? `${stats.totalVotes} ratings` : 'Getting started'}
-          {badgeCount > 0 && ` \u00B7 ${badgeCount} badge${badgeCount === 1 ? '' : 's'} earned`}
+          {getPrimaryTitle()}
         </p>
+
+        {/* Archetype subtitle */}
+        {archetype && archetypeResult.confidence === 'established' && (
+          <p className="mt-1 font-medium" style={{ color: archetype.color, fontSize: '13px' }}>
+            {archetype.emoji} {archetype.label}
+          </p>
+        )}
+        {archetype && archetypeResult.confidence === 'emerging' && (
+          <p className="mt-1" style={{ color: 'var(--color-text-tertiary)', fontSize: '13px' }}>
+            trending toward {archetype.label.replace('The ', '')}
+          </p>
+        )}
       </div>
 
-      {/* Near-term Goal CTA */}
-      {nearTermGoal && (
+      {/* Compact Stats Row */}
+      <div className="flex items-center gap-4 mt-3" style={{ fontSize: '13px' }}>
+        {badgeCount > 0 && (
+          <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <span style={{ color: currentRank.color }}>{currentRank.emoji}</span>
+            <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{badgeCount}</span>
+          </span>
+        )}
+        {stats.totalVotes > 0 && (
+          <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <span>🍴</span>
+            <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.totalVotes}</span>
+          </span>
+        )}
+        {stats.uniqueRestaurants > 0 && (
+          <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <span>🏠</span>
+            <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.uniqueRestaurants}</span>
+          </span>
+        )}
+      </div>
+
+      {/* Expertise Progress */}
+      {topProgress && (
         <button
           onClick={() => navigate('/badges')}
-          className="mt-5 w-full p-3.5 rounded-xl text-left transition-all hover:opacity-90 active:scale-[0.99]"
+          className="mt-4 w-full text-left p-3.5 rounded-xl transition-all hover:opacity-90 active:scale-[0.99]"
           style={{
-            background: 'var(--color-primary-muted)',
-            border: '1px solid var(--color-primary)',
-            boxShadow: '0 2px 12px -4px rgba(200, 90, 84, 0.2)',
+            background: 'var(--color-surface-elevated)',
+            border: `1px solid ${isCloseToNextTier ? 'rgba(245, 158, 11, 0.4)' : 'var(--color-divider)'}`,
           }}
         >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p
-                className="font-semibold uppercase"
-                style={{
-                  color: 'var(--color-text-tertiary)',
-                  fontSize: '10px',
-                  letterSpacing: '0.1em',
-                }}
-              >
-                Next Goal
-              </p>
-              <p className="font-semibold mt-0.5" style={{ color: 'var(--color-primary)', fontSize: '13px' }}>
-                {nearTermGoal}
-              </p>
-            </div>
-            <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-primary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              {topProgress.emoji} {topProgress.label}: {topProgress.currentTier?.title || 'Newcomer'} → {topProgress.nextTier.title}
+            </span>
+            <span className="text-xs font-bold" style={{ color: isCloseToNextTier ? '#F59E0B' : 'var(--color-text-tertiary)' }}>
+              {topProgress.count}/{topProgress.nextTier.min}
+            </span>
           </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-divider)' }}>
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ${isCloseToNextTier ? 'animate-glow-breathe' : ''}`}
+              style={{
+                width: `${Math.min(topProgress.progress * 100, 100)}%`,
+                background: isCloseToNextTier
+                  ? 'linear-gradient(90deg, #F59E0B, #FBBF24)'
+                  : 'var(--color-primary)',
+              }}
+            />
+          </div>
+          <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+            {TIER_DESCRIPTIONS[topProgress.nextTier.title] || ''}
+          </p>
         </button>
       )}
     </div>
