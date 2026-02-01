@@ -33,6 +33,7 @@ export function Admin() {
   // Restaurant manager state
   const [inviteRestaurantId, setInviteRestaurantId] = useState('')
   const [inviteLink, setInviteLink] = useState('')
+  const inviteInputRef = useRef(null)
   const [managers, setManagers] = useState([])
   const [managersLoading, setManagersLoading] = useState(false)
   const [inviteSearch, setInviteSearch] = useState('')
@@ -695,6 +696,7 @@ export function Admin() {
                   </p>
                   <div className="flex items-center gap-2">
                     <input
+                      ref={inviteInputRef}
                       type="text"
                       readOnly
                       value={inviteLink}
@@ -702,32 +704,19 @@ export function Admin() {
                       style={{ borderColor: 'var(--color-divider)', background: 'var(--color-surface)' }}
                     />
                     <button
-                      onClick={() => {
-                        // Try modern clipboard API first, fall back to execCommand for mobile Safari
-                        if (navigator.clipboard?.writeText) {
-                          navigator.clipboard.writeText(inviteLink)
-                            .then(() => setMessage({ type: 'success', text: 'Link copied!' }))
-                            .catch(() => {
-                              // Fallback for when clipboard API is denied
-                              const input = document.querySelector('input[readonly][value="' + CSS.escape(inviteLink) + '"]')
-                              if (input) {
-                                input.select()
-                                document.execCommand('copy')
-                                setMessage({ type: 'success', text: 'Link copied!' })
-                              } else {
-                                setMessage({ type: 'error', text: 'Failed to copy. Select and copy manually.' })
-                              }
-                            })
-                        } else {
-                          const textarea = document.createElement('textarea')
-                          textarea.value = inviteLink
-                          textarea.style.position = 'fixed'
-                          textarea.style.opacity = '0'
-                          document.body.appendChild(textarea)
-                          textarea.select()
-                          document.execCommand('copy')
-                          document.body.removeChild(textarea)
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(inviteLink)
                           setMessage({ type: 'success', text: 'Link copied!' })
+                        } catch {
+                          // Fallback: select the input and copy via execCommand
+                          const input = inviteInputRef.current
+                          if (input) {
+                            input.focus()
+                            input.setSelectionRange(0, input.value.length)
+                            document.execCommand('copy')
+                            setMessage({ type: 'success', text: 'Link copied!' })
+                          }
                         }
                       }}
                       className="px-3 py-1 rounded text-xs font-medium text-white"
