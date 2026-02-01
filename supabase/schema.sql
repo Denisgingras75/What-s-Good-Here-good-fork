@@ -1,0 +1,1812 @@
+-- =============================================
+-- What's Good Here - Consolidated Database Schema
+-- =============================================
+-- Single source of truth for the complete database.
+-- Organized by section; tables in dependency order.
+--
+-- To rebuild from scratch, run this file in Supabase SQL Editor.
+-- For the existing production database, this serves as documentation
+-- of the current state.
+-- =============================================
+
+
+-- =============================================
+-- 0. EXTENSIONS
+-- =============================================
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
+-- =============================================
+-- 1. TABLES (18 tables in dependency order)
+-- =============================================
+
+-- 1a. restaurants
+CREATE TABLE IF NOT EXISTS restaurants (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  address TEXT NOT NULL,
+  lat DECIMAL(10, 8) NOT NULL,
+  lng DECIMAL(11, 8) NOT NULL,
+  is_open BOOLEAN DEFAULT true,
+  cuisine TEXT,
+  town TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 1b. dishes
+CREATE TABLE IF NOT EXISTS dishes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id UUID REFERENCES restaurants(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price DECIMAL(6, 2),
+  photo_url TEXT,
+  parent_dish_id UUID REFERENCES dishes(id) ON DELETE SET NULL,
+  display_order INT DEFAULT 0,
+  tags TEXT[] DEFAULT '{}',
+  cuisine TEXT,
+  avg_rating DECIMAL(3, 1),
+  total_votes INT DEFAULT 0,
+  yes_votes INT DEFAULT 0,
+  consensus_rating NUMERIC(3, 1),
+  consensus_ready BOOLEAN DEFAULT FALSE,
+  consensus_votes INT DEFAULT 0,
+  consensus_calculated_at TIMESTAMPTZ,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 1c. votes
+CREATE TABLE IF NOT EXISTS votes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  dish_id UUID REFERENCES dishes(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  would_order_again BOOLEAN NOT NULL,
+  rating_10 DECIMAL(3, 1),
+  review_text TEXT,
+  review_created_at TIMESTAMP WITH TIME ZONE,
+  vote_position INT,
+  scored_at TIMESTAMPTZ,
+  category_snapshot TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(dish_id, user_id),
+  CONSTRAINT review_text_max_length CHECK (review_text IS NULL OR length(review_text) <= 200)
+);
+
+-- 1d. profiles (created by Supabase auth trigger; defined here for completeness)
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  display_name TEXT,
+  has_onboarded BOOLEAN DEFAULT false,
+  preferred_categories TEXT[] DEFAULT '{}',
+  follower_count INTEGER DEFAULT 0,
+  following_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 1e. favorites
+CREATE TABLE IF NOT EXISTS favorites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  dish_id UUID NOT NULL REFERENCES dishes(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, dish_id)
+);
+
+-- 1f. admins
+CREATE TABLE IF NOT EXISTS admins (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_by UUID REFERENCES auth.users(id)
+);
+
+-- 1g. dish_photos
+CREATE TABLE IF NOT EXISTS dish_photos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  dish_id UUID REFERENCES dishes(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  photo_url TEXT NOT NULL,
+  width INT,
+  height INT,
+  mime_type TEXT,
+  file_size_bytes BIGINT,
+  avg_brightness REAL,
+  bright_pixel_pct REAL,
+  dark_pixel_pct REAL,
+  quality_score INT,
+  status TEXT DEFAULT 'community',
+  reject_reason TEXT,
+  source_type TEXT DEFAULT 'user',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(dish_id, user_id),
+  CONSTRAINT dish_photos_status_check CHECK (status IN ('featured', 'community', 'hidden', 'rejected')),
+  CONSTRAINT dish_photos_source_type_check CHECK (source_type IN ('user', 'restaurant'))
+);
+
+-- 1h. follows
+CREATE TABLE IF NOT EXISTS follows (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  follower_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  followed_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(follower_id, followed_id),
+  CHECK (follower_id != followed_id)
+);
+
+-- 1i. notifications
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  data JSONB DEFAULT '{}',
+  read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 1j. user_rating_stats
+CREATE TABLE IF NOT EXISTS user_rating_stats (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  rating_bias NUMERIC(3, 1) DEFAULT 0.0,
+  bias_label TEXT DEFAULT 'New Voter',
+  votes_with_consensus INT DEFAULT 0,
+  votes_pending INT DEFAULT 0,
+  dishes_helped_establish INT DEFAULT 0,
+  category_biases JSONB DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 1k. bias_events
+CREATE TABLE IF NOT EXISTS bias_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  dish_id UUID NOT NULL REFERENCES dishes(id) ON DELETE CASCADE,
+  dish_name TEXT NOT NULL,
+  user_rating NUMERIC(3, 1) NOT NULL,
+  consensus_rating NUMERIC(3, 1) NOT NULL,
+  deviation NUMERIC(3, 1) NOT NULL,
+  was_early_voter BOOLEAN DEFAULT FALSE,
+  bias_before NUMERIC(3, 1),
+  bias_after NUMERIC(3, 1),
+  seen BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 1l. user_streaks
+CREATE TABLE IF NOT EXISTS user_streaks (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  current_streak INTEGER NOT NULL DEFAULT 0,
+  longest_streak INTEGER NOT NULL DEFAULT 0,
+  votes_this_week INTEGER NOT NULL DEFAULT 0,
+  week_start DATE NOT NULL DEFAULT (date_trunc('week', now())::date),
+  last_vote_date DATE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 1m. badges
+CREATE TABLE IF NOT EXISTS badges (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  subtitle TEXT,
+  description TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  is_public_eligible BOOLEAN NOT NULL DEFAULT false,
+  sort_order INTEGER NOT NULL DEFAULT 100,
+  rarity TEXT NOT NULL DEFAULT 'common',
+  family TEXT NOT NULL DEFAULT 'discovery',
+  category TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 1n. user_badges
+CREATE TABLE IF NOT EXISTS user_badges (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  badge_key TEXT NOT NULL REFERENCES badges(key) ON DELETE CASCADE,
+  unlocked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  metadata_json JSONB DEFAULT '{}',
+  UNIQUE(user_id, badge_key)
+);
+
+-- 1o. specials
+CREATE TABLE IF NOT EXISTS specials (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  deal_name TEXT NOT NULL,
+  description TEXT,
+  price DECIMAL(10, 2),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ,
+  created_by UUID REFERENCES auth.users(id)
+);
+
+-- 1p. restaurant_managers
+CREATE TABLE IF NOT EXISTS restaurant_managers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'manager',
+  invited_at TIMESTAMPTZ DEFAULT NOW(),
+  accepted_at TIMESTAMPTZ,
+  created_by UUID REFERENCES auth.users(id),
+  UNIQUE(user_id, restaurant_id)
+);
+
+-- 1q. restaurant_invites
+CREATE TABLE IF NOT EXISTS restaurant_invites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  token TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(24), 'hex'),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  created_by UUID NOT NULL REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '7 days',
+  used_by UUID REFERENCES auth.users(id),
+  used_at TIMESTAMPTZ
+);
+
+-- 1r. rate_limits
+CREATE TABLE IF NOT EXISTS rate_limits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  action TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =============================================
+-- 2. INDEXES
+-- =============================================
+
+-- restaurants
+CREATE INDEX IF NOT EXISTS idx_restaurants_location ON restaurants(lat, lng);
+CREATE INDEX IF NOT EXISTS idx_restaurants_lat_lng ON restaurants(lat, lng);
+CREATE INDEX IF NOT EXISTS idx_restaurants_open_lat_lng ON restaurants(is_open, lat, lng) WHERE is_open = true;
+CREATE INDEX IF NOT EXISTS idx_restaurants_cuisine ON restaurants(cuisine);
+
+-- dishes
+CREATE INDEX IF NOT EXISTS idx_dishes_restaurant ON dishes(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_dishes_category ON dishes(category);
+CREATE INDEX IF NOT EXISTS idx_dishes_parent ON dishes(parent_dish_id);
+CREATE INDEX IF NOT EXISTS idx_dishes_tags ON dishes USING GIN(tags);
+CREATE INDEX IF NOT EXISTS idx_dishes_consensus ON dishes(consensus_ready) WHERE consensus_ready = TRUE;
+CREATE INDEX IF NOT EXISTS idx_dishes_restaurant_category ON dishes(restaurant_id, category);
+
+-- votes
+CREATE INDEX IF NOT EXISTS idx_votes_dish ON votes(dish_id);
+CREATE INDEX IF NOT EXISTS idx_votes_user ON votes(user_id);
+CREATE INDEX IF NOT EXISTS idx_votes_created ON votes(created_at);
+CREATE INDEX IF NOT EXISTS idx_votes_review_text ON votes(dish_id) WHERE review_text IS NOT NULL AND review_text != '';
+CREATE INDEX IF NOT EXISTS idx_votes_unscored ON votes(dish_id) WHERE scored_at IS NULL;
+
+-- profiles
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_display_name_unique ON profiles(LOWER(display_name)) WHERE display_name IS NOT NULL;
+
+-- dish_photos
+CREATE INDEX IF NOT EXISTS idx_dish_photos_dish ON dish_photos(dish_id);
+CREATE INDEX IF NOT EXISTS idx_dish_photos_user ON dish_photos(user_id);
+CREATE INDEX IF NOT EXISTS idx_dish_photos_status ON dish_photos(dish_id, status, quality_score DESC);
+
+-- follows
+CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_follows_followed ON follows(followed_id);
+CREATE INDEX IF NOT EXISTS idx_follows_created_at ON follows(created_at DESC);
+
+-- notifications
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications(user_id, created_at DESC);
+
+-- user_rating_stats
+CREATE INDEX IF NOT EXISTS idx_user_rating_stats_bias ON user_rating_stats(rating_bias);
+
+-- bias_events
+CREATE INDEX IF NOT EXISTS idx_bias_events_user ON bias_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_bias_events_unseen ON bias_events(user_id, seen) WHERE seen = FALSE;
+
+-- user_streaks
+CREATE INDEX IF NOT EXISTS idx_user_streaks_votes_week ON user_streaks(votes_this_week DESC);
+CREATE INDEX IF NOT EXISTS idx_user_streaks_current_streak ON user_streaks(current_streak DESC);
+CREATE INDEX IF NOT EXISTS idx_user_streaks_week_start ON user_streaks(week_start);
+
+-- user_badges
+CREATE INDEX IF NOT EXISTS idx_user_badges_user ON user_badges(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_badges_badge ON user_badges(badge_key);
+CREATE INDEX IF NOT EXISTS idx_user_badges_unlocked ON user_badges(unlocked_at DESC);
+
+-- specials
+CREATE INDEX IF NOT EXISTS idx_specials_active ON specials(is_active, restaurant_id);
+
+-- restaurant_managers
+CREATE INDEX IF NOT EXISTS idx_restaurant_managers_user ON restaurant_managers(user_id);
+CREATE INDEX IF NOT EXISTS idx_restaurant_managers_restaurant ON restaurant_managers(restaurant_id);
+
+-- rate_limits
+CREATE INDEX IF NOT EXISTS idx_rate_limits_user_action ON rate_limits(user_id, action, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_cleanup ON rate_limits(created_at);
+
+
+-- =============================================
+-- 3. ROW LEVEL SECURITY
+-- =============================================
+-- Uses optimized (select auth.uid()) pattern for per-row caching.
+
+-- Enable RLS on all tables
+ALTER TABLE restaurants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dishes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dish_photos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_rating_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bias_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_streaks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE specials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE restaurant_managers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE restaurant_invites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+
+-- restaurants: public read, admin write (+ manager policies below)
+CREATE POLICY "Public read access" ON restaurants FOR SELECT USING (true);
+CREATE POLICY "Admins can insert restaurants" ON restaurants FOR INSERT WITH CHECK (is_admin());
+CREATE POLICY "Admins can update restaurants" ON restaurants FOR UPDATE USING (is_admin());
+CREATE POLICY "Admins can delete restaurants" ON restaurants FOR DELETE USING (is_admin());
+
+-- dishes: public read, admin + manager write
+CREATE POLICY "Public read access" ON dishes FOR SELECT USING (true);
+CREATE POLICY "Admin or manager insert dishes" ON dishes FOR INSERT WITH CHECK (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager update dishes" ON dishes FOR UPDATE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admins can delete dishes" ON dishes FOR DELETE USING (is_admin());
+
+-- votes: public read, users manage own (optimized auth.uid())
+CREATE POLICY "Public read access" ON votes FOR SELECT USING (true);
+CREATE POLICY "Users can insert own votes" ON votes FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
+CREATE POLICY "Users can update own votes" ON votes FOR UPDATE USING ((select auth.uid()) = user_id);
+CREATE POLICY "Users can delete own votes" ON votes FOR DELETE USING ((select auth.uid()) = user_id);
+
+-- profiles: public read (if display_name set), users manage own
+CREATE POLICY "profiles_select_public_or_own" ON profiles FOR SELECT USING (auth.uid() = id OR display_name IS NOT NULL);
+CREATE POLICY "profiles_insert_own" ON profiles FOR INSERT WITH CHECK ((select auth.uid()) = id);
+CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
+CREATE POLICY "profiles_delete_own" ON profiles FOR DELETE USING ((select auth.uid()) = id);
+
+-- favorites: users manage own only
+CREATE POLICY "Users can read own favorites" ON favorites FOR SELECT USING ((select auth.uid()) = user_id);
+CREATE POLICY "Users can insert own favorites" ON favorites FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
+CREATE POLICY "Users can delete own favorites" ON favorites FOR DELETE USING ((select auth.uid()) = user_id);
+
+-- admins: admins can read
+CREATE POLICY "Admins can read admins" ON admins FOR SELECT USING (EXISTS (SELECT 1 FROM admins WHERE user_id = (select auth.uid())));
+
+-- dish_photos: public read, users manage own
+CREATE POLICY "Public read access" ON dish_photos FOR SELECT USING (true);
+CREATE POLICY "Users can insert own photos" ON dish_photos FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
+CREATE POLICY "Users can update own photos" ON dish_photos FOR UPDATE USING ((select auth.uid()) = user_id);
+CREATE POLICY "Users can delete own photos" ON dish_photos FOR DELETE USING ((select auth.uid()) = user_id);
+
+-- follows: public read, users manage own
+CREATE POLICY "follows_select_public" ON follows FOR SELECT USING (true);
+CREATE POLICY "follows_insert_own" ON follows FOR INSERT WITH CHECK ((select auth.uid()) = follower_id);
+CREATE POLICY "follows_delete_own" ON follows FOR DELETE USING ((select auth.uid()) = follower_id);
+
+-- notifications: users see own, system inserts
+CREATE POLICY "notifications_select_own" ON notifications FOR SELECT USING ((select auth.uid()) = user_id);
+CREATE POLICY "notifications_update_own" ON notifications FOR UPDATE USING ((select auth.uid()) = user_id);
+CREATE POLICY "notifications_insert_system" ON notifications FOR INSERT WITH CHECK (auth.role() = 'service_role');
+
+-- user_rating_stats: public read
+CREATE POLICY "Public can read stats" ON user_rating_stats FOR SELECT USING (TRUE);
+
+-- bias_events: users read + update own
+CREATE POLICY "Users can read own events" ON bias_events FOR SELECT USING ((select auth.uid()) = user_id);
+CREATE POLICY "Users can mark events as seen" ON bias_events FOR UPDATE USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
+
+-- user_streaks: public read, users manage own
+CREATE POLICY "user_streaks_select_public" ON user_streaks FOR SELECT USING (true);
+CREATE POLICY "user_streaks_update_own" ON user_streaks FOR UPDATE USING ((select auth.uid()) = user_id);
+CREATE POLICY "user_streaks_insert_own" ON user_streaks FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
+
+-- badges: public read
+CREATE POLICY "Public read badges" ON badges FOR SELECT USING (true);
+
+-- user_badges: users read own + public-eligible badges
+CREATE POLICY "Users can read own badges" ON user_badges FOR SELECT USING (
+  (select auth.uid()) = user_id
+  OR EXISTS (SELECT 1 FROM badges b WHERE b.key = badge_key AND b.is_public_eligible = true)
+);
+CREATE POLICY "System can insert badges" ON user_badges FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
+
+-- specials: conditional read, admin + manager write
+CREATE POLICY "Read specials" ON specials FOR SELECT USING (is_active = true OR is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager insert specials" ON specials FOR INSERT WITH CHECK (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager update specials" ON specials FOR UPDATE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager delete specials" ON specials FOR DELETE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+
+-- restaurant_managers: admins + own rows
+CREATE POLICY "Admins read all managers" ON restaurant_managers FOR SELECT USING (is_admin());
+CREATE POLICY "Managers read own rows" ON restaurant_managers FOR SELECT USING ((select auth.uid()) = user_id);
+CREATE POLICY "Admins manage all managers" ON restaurant_managers FOR ALL USING (is_admin());
+
+-- restaurant_invites: admins only (public preview via SECURITY DEFINER function)
+CREATE POLICY "Admins manage invites" ON restaurant_invites FOR ALL USING (is_admin());
+
+-- rate_limits: users see own
+CREATE POLICY "Users can view own rate limits" ON rate_limits FOR SELECT USING ((select auth.uid()) = user_id);
+
+
+-- =============================================
+-- 4. HELPER FUNCTIONS
+-- =============================================
+
+-- Check if current user is an admin
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM admins WHERE user_id = (select auth.uid())
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Check if current user is an accepted manager for a restaurant
+CREATE OR REPLACE FUNCTION is_restaurant_manager(p_restaurant_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM restaurant_managers
+    WHERE user_id = (select auth.uid())
+      AND restaurant_id = p_restaurant_id
+      AND accepted_at IS NOT NULL
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Get bias label from MAD (always-positive scale)
+CREATE OR REPLACE FUNCTION get_bias_label(bias NUMERIC)
+RETURNS TEXT AS $$
+BEGIN
+  RETURN CASE
+    WHEN bias IS NULL THEN 'New Voter'
+    WHEN bias < 0.5 THEN 'Consensus Voter'
+    WHEN bias < 1.0 THEN 'Has Opinions'
+    WHEN bias < 2.0 THEN 'Strong Opinions'
+    ELSE 'Wild Card'
+  END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+
+-- =============================================
+-- 5. CORE FUNCTIONS
+-- =============================================
+
+-- Get ranked dishes with bounding box optimization, town filter, variant aggregation
+CREATE OR REPLACE FUNCTION get_ranked_dishes(
+  user_lat DECIMAL,
+  user_lng DECIMAL,
+  radius_miles INT DEFAULT 50,
+  filter_category TEXT DEFAULT NULL,
+  filter_town TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+  dish_id UUID,
+  dish_name TEXT,
+  restaurant_id UUID,
+  restaurant_name TEXT,
+  restaurant_town TEXT,
+  category TEXT,
+  tags TEXT[],
+  cuisine TEXT,
+  price DECIMAL,
+  photo_url TEXT,
+  total_votes BIGINT,
+  yes_votes BIGINT,
+  percent_worth_it INT,
+  avg_rating DECIMAL,
+  distance_miles DECIMAL,
+  has_variants BOOLEAN,
+  variant_count INT,
+  best_variant_name TEXT,
+  best_variant_rating DECIMAL
+) AS $$
+DECLARE
+  lat_delta DECIMAL := radius_miles / 69.0;
+  lng_delta DECIMAL := radius_miles / (69.0 * COS(RADIANS(user_lat)));
+BEGIN
+  RETURN QUERY
+  WITH nearby_restaurants AS (
+    SELECT r.id, r.name, r.town, r.lat, r.lng, r.cuisine
+    FROM restaurants r
+    WHERE r.is_open = true
+      AND r.lat BETWEEN (user_lat - lat_delta) AND (user_lat + lat_delta)
+      AND r.lng BETWEEN (user_lng - lng_delta) AND (user_lng + lng_delta)
+      AND (filter_town IS NULL OR r.town = filter_town)
+  ),
+  restaurants_with_distance AS (
+    SELECT
+      nr.id, nr.name, nr.town, nr.lat, nr.lng, nr.cuisine,
+      ROUND((
+        3959 * ACOS(
+          LEAST(1.0, GREATEST(-1.0,
+            COS(RADIANS(user_lat)) * COS(RADIANS(nr.lat)) *
+            COS(RADIANS(nr.lng) - RADIANS(user_lng)) +
+            SIN(RADIANS(user_lat)) * SIN(RADIANS(nr.lat))
+          ))
+        )
+      )::NUMERIC, 2) AS distance
+    FROM nearby_restaurants nr
+  ),
+  filtered_restaurants AS (
+    SELECT * FROM restaurants_with_distance WHERE distance <= radius_miles
+  ),
+  variant_stats AS (
+    SELECT
+      d.parent_dish_id,
+      COUNT(DISTINCT d.id)::INT AS child_count,
+      SUM(COALESCE(ds.vote_count, 0))::BIGINT AS total_child_votes,
+      SUM(COALESCE(ds.yes_count, 0))::BIGINT AS total_child_yes
+    FROM dishes d
+    LEFT JOIN (
+      SELECT v.dish_id, COUNT(*)::BIGINT AS vote_count,
+        SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END)::BIGINT AS yes_count
+      FROM votes v GROUP BY v.dish_id
+    ) ds ON ds.dish_id = d.id
+    WHERE d.parent_dish_id IS NOT NULL
+    GROUP BY d.parent_dish_id
+  ),
+  best_variants AS (
+    SELECT DISTINCT ON (d.parent_dish_id)
+      d.parent_dish_id,
+      d.name AS best_name,
+      ROUND(AVG(v.rating_10)::NUMERIC, 1) AS best_rating
+    FROM dishes d
+    LEFT JOIN votes v ON v.dish_id = d.id
+    WHERE d.parent_dish_id IS NOT NULL
+    GROUP BY d.parent_dish_id, d.id, d.name
+    HAVING COUNT(v.id) >= 1
+    ORDER BY d.parent_dish_id, AVG(v.rating_10) DESC NULLS LAST, COUNT(v.id) DESC
+  )
+  SELECT
+    d.id AS dish_id,
+    d.name AS dish_name,
+    fr.id AS restaurant_id,
+    fr.name AS restaurant_name,
+    fr.town AS restaurant_town,
+    d.category,
+    d.tags,
+    fr.cuisine,
+    d.price,
+    d.photo_url,
+    COALESCE(vs.total_child_votes, COUNT(v.id))::BIGINT AS total_votes,
+    COALESCE(vs.total_child_yes, SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END))::BIGINT AS yes_votes,
+    CASE
+      WHEN COALESCE(vs.total_child_votes, COUNT(v.id)) > 0
+      THEN ROUND(100.0 * COALESCE(vs.total_child_yes, SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END)) / COALESCE(vs.total_child_votes, COUNT(v.id)))::INT
+      ELSE 0
+    END AS percent_worth_it,
+    COALESCE(ROUND(AVG(v.rating_10), 1), 0) AS avg_rating,
+    fr.distance AS distance_miles,
+    (vs.child_count IS NOT NULL AND vs.child_count > 0) AS has_variants,
+    COALESCE(vs.child_count, 0)::INT AS variant_count,
+    bv.best_name AS best_variant_name,
+    bv.best_rating AS best_variant_rating
+  FROM dishes d
+  INNER JOIN filtered_restaurants fr ON d.restaurant_id = fr.id
+  LEFT JOIN votes v ON d.id = v.dish_id
+  LEFT JOIN variant_stats vs ON vs.parent_dish_id = d.id
+  LEFT JOIN best_variants bv ON bv.parent_dish_id = d.id
+  WHERE (filter_category IS NULL OR d.category = filter_category)
+    AND d.parent_dish_id IS NULL
+  GROUP BY d.id, d.name, fr.id, fr.name, fr.town, d.category, d.tags, fr.cuisine,
+           d.price, d.photo_url, fr.distance,
+           vs.total_child_votes, vs.total_child_yes, vs.child_count,
+           bv.best_name, bv.best_rating
+  ORDER BY avg_rating DESC NULLS LAST, total_votes DESC;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- Get dishes for a specific restaurant with variant aggregation
+CREATE OR REPLACE FUNCTION get_restaurant_dishes(
+  p_restaurant_id UUID
+)
+RETURNS TABLE (
+  dish_id UUID,
+  dish_name TEXT,
+  restaurant_id UUID,
+  restaurant_name TEXT,
+  category TEXT,
+  price DECIMAL,
+  photo_url TEXT,
+  total_votes BIGINT,
+  yes_votes BIGINT,
+  percent_worth_it INT,
+  avg_rating DECIMAL,
+  has_variants BOOLEAN,
+  variant_count INT,
+  best_variant_id UUID,
+  best_variant_name TEXT,
+  best_variant_rating DECIMAL
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH variant_stats AS (
+    SELECT
+      d.parent_dish_id,
+      COUNT(DISTINCT d.id)::INT AS child_count,
+      SUM(COALESCE(ds.vote_count, 0))::BIGINT AS total_child_votes,
+      SUM(COALESCE(ds.yes_count, 0))::BIGINT AS total_child_yes,
+      CASE
+        WHEN SUM(COALESCE(ds.vote_count, 0)) > 0
+        THEN ROUND((SUM(COALESCE(ds.rating_sum, 0)) / NULLIF(SUM(COALESCE(ds.vote_count, 0)), 0))::NUMERIC, 1)
+        ELSE NULL
+      END AS combined_avg_rating
+    FROM dishes d
+    LEFT JOIN (
+      SELECT v.dish_id, COUNT(*)::BIGINT AS vote_count,
+        SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END)::BIGINT AS yes_count,
+        SUM(COALESCE(v.rating_10, 0))::DECIMAL AS rating_sum
+      FROM votes v GROUP BY v.dish_id
+    ) ds ON ds.dish_id = d.id
+    WHERE d.parent_dish_id IS NOT NULL
+    GROUP BY d.parent_dish_id
+  ),
+  best_variants AS (
+    SELECT DISTINCT ON (d.parent_dish_id)
+      d.parent_dish_id, d.id AS best_id, d.name AS best_name,
+      ROUND(AVG(v.rating_10)::NUMERIC, 1) AS best_rating
+    FROM dishes d
+    LEFT JOIN votes v ON v.dish_id = d.id
+    WHERE d.parent_dish_id IS NOT NULL
+    GROUP BY d.parent_dish_id, d.id, d.name
+    HAVING COUNT(v.id) >= 1
+    ORDER BY d.parent_dish_id, AVG(v.rating_10) DESC NULLS LAST, COUNT(v.id) DESC
+  ),
+  dish_vote_stats AS (
+    SELECT d.id AS dish_id, COUNT(v.id)::BIGINT AS direct_votes,
+      SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END)::BIGINT AS direct_yes,
+      ROUND(AVG(v.rating_10)::NUMERIC, 1) AS direct_avg
+    FROM dishes d LEFT JOIN votes v ON v.dish_id = d.id
+    WHERE d.parent_dish_id IS NULL
+    GROUP BY d.id
+  )
+  SELECT
+    d.id AS dish_id, d.name AS dish_name, r.id AS restaurant_id, r.name AS restaurant_name,
+    d.category, d.price, d.photo_url,
+    COALESCE(vs.total_child_votes, dvs.direct_votes, 0)::BIGINT AS total_votes,
+    COALESCE(vs.total_child_yes, dvs.direct_yes, 0)::BIGINT AS yes_votes,
+    CASE
+      WHEN COALESCE(vs.total_child_votes, dvs.direct_votes, 0) > 0
+      THEN ROUND(100.0 * COALESCE(vs.total_child_yes, dvs.direct_yes, 0) / COALESCE(vs.total_child_votes, dvs.direct_votes, 1))::INT
+      ELSE 0
+    END AS percent_worth_it,
+    COALESCE(vs.combined_avg_rating, dvs.direct_avg) AS avg_rating,
+    (vs.child_count IS NOT NULL AND vs.child_count > 0) AS has_variants,
+    COALESCE(vs.child_count, 0)::INT AS variant_count,
+    bv.best_id AS best_variant_id, bv.best_name AS best_variant_name, bv.best_rating AS best_variant_rating
+  FROM dishes d
+  INNER JOIN restaurants r ON d.restaurant_id = r.id
+  LEFT JOIN variant_stats vs ON vs.parent_dish_id = d.id
+  LEFT JOIN best_variants bv ON bv.parent_dish_id = d.id
+  LEFT JOIN dish_vote_stats dvs ON dvs.dish_id = d.id
+  WHERE d.restaurant_id = p_restaurant_id
+    AND r.is_open = true
+    AND d.parent_dish_id IS NULL
+  GROUP BY d.id, d.name, r.id, r.name, d.category, d.price, d.photo_url,
+           vs.total_child_votes, vs.total_child_yes, vs.combined_avg_rating, vs.child_count,
+           dvs.direct_votes, dvs.direct_yes, dvs.direct_avg,
+           bv.best_id, bv.best_name, bv.best_rating
+  ORDER BY
+    CASE WHEN COALESCE(vs.total_child_votes, dvs.direct_votes, 0) >= 5 THEN 0 ELSE 1 END,
+    CASE
+      WHEN COALESCE(vs.total_child_votes, dvs.direct_votes, 0) > 0
+      THEN ROUND(100.0 * COALESCE(vs.total_child_yes, dvs.direct_yes, 0) / COALESCE(vs.total_child_votes, dvs.direct_votes, 1))
+      ELSE 0
+    END DESC,
+    COALESCE(vs.total_child_votes, dvs.direct_votes, 0) DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get variants for a parent dish
+CREATE OR REPLACE FUNCTION get_dish_variants(
+  p_parent_dish_id UUID
+)
+RETURNS TABLE (
+  dish_id UUID,
+  dish_name TEXT,
+  price DECIMAL,
+  photo_url TEXT,
+  display_order INT,
+  total_votes BIGINT,
+  yes_votes BIGINT,
+  percent_worth_it INT,
+  avg_rating DECIMAL
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    d.id AS dish_id, d.name AS dish_name, d.price, d.photo_url, d.display_order,
+    COUNT(v.id)::BIGINT AS total_votes,
+    SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END)::BIGINT AS yes_votes,
+    CASE
+      WHEN COUNT(v.id) > 0
+      THEN ROUND(100.0 * SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END) / COUNT(v.id))::INT
+      ELSE 0
+    END AS percent_worth_it,
+    ROUND(AVG(v.rating_10)::NUMERIC, 1) AS avg_rating
+  FROM dishes d
+  LEFT JOIN votes v ON d.id = v.dish_id
+  WHERE d.parent_dish_id = p_parent_dish_id
+  GROUP BY d.id, d.name, d.price, d.photo_url, d.display_order
+  ORDER BY d.display_order, d.name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get best review snippet for a dish
+CREATE OR REPLACE FUNCTION get_smart_snippet(p_dish_id UUID)
+RETURNS TABLE (
+  review_text TEXT,
+  rating_10 DECIMAL,
+  display_name TEXT,
+  user_id UUID,
+  review_created_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT v.review_text, v.rating_10, p.display_name, v.user_id, v.review_created_at
+  FROM votes v
+  INNER JOIN profiles p ON v.user_id = p.id
+  WHERE v.dish_id = p_dish_id
+    AND v.review_text IS NOT NULL AND v.review_text != ''
+  ORDER BY
+    CASE WHEN v.rating_10 >= 9 THEN 0 ELSE 1 END,
+    v.rating_10 DESC NULLS LAST,
+    v.review_created_at DESC NULLS LAST
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- =============================================
+-- 6. SOCIAL FUNCTIONS
+-- =============================================
+
+-- Get follower count for a user
+CREATE OR REPLACE FUNCTION get_follower_count(user_id UUID)
+RETURNS INTEGER LANGUAGE SQL STABLE AS $$
+  SELECT COUNT(*)::INTEGER FROM follows WHERE followed_id = user_id;
+$$;
+
+-- Get following count for a user
+CREATE OR REPLACE FUNCTION get_following_count(user_id UUID)
+RETURNS INTEGER LANGUAGE SQL STABLE AS $$
+  SELECT COUNT(*)::INTEGER FROM follows WHERE follower_id = user_id;
+$$;
+
+-- Check if user A follows user B
+CREATE OR REPLACE FUNCTION is_following(follower UUID, followed UUID)
+RETURNS BOOLEAN LANGUAGE SQL STABLE AS $$
+  SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = follower AND followed_id = followed);
+$$;
+
+-- Get friends' votes for a dish (with category expertise)
+CREATE OR REPLACE FUNCTION get_friends_votes_for_dish(
+  p_user_id UUID,
+  p_dish_id UUID
+)
+RETURNS TABLE (
+  user_id UUID,
+  display_name TEXT,
+  rating_10 DECIMAL(3, 1),
+  would_order_again BOOLEAN,
+  voted_at TIMESTAMPTZ,
+  category_expertise TEXT
+)
+LANGUAGE SQL STABLE AS $$
+  SELECT
+    p.id AS user_id, p.display_name, v.rating_10, v.would_order_again,
+    v.created_at AS voted_at,
+    CASE
+      WHEN EXISTS (SELECT 1 FROM user_badges ub WHERE ub.user_id = p.id AND ub.badge_key = 'authority_' || REPLACE(d.category, ' ', '_')) THEN 'authority'
+      WHEN EXISTS (SELECT 1 FROM user_badges ub WHERE ub.user_id = p.id AND ub.badge_key = 'specialist_' || REPLACE(d.category, ' ', '_')) THEN 'specialist'
+      ELSE NULL
+    END AS category_expertise
+  FROM follows f
+  JOIN profiles p ON p.id = f.followed_id
+  JOIN votes v ON v.user_id = f.followed_id AND v.dish_id = p_dish_id
+  JOIN dishes d ON d.id = p_dish_id
+  WHERE f.follower_id = p_user_id
+  ORDER BY v.created_at DESC;
+$$;
+
+-- Get friends' votes for a restaurant (with category expertise)
+CREATE OR REPLACE FUNCTION get_friends_votes_for_restaurant(
+  p_user_id UUID,
+  p_restaurant_id UUID
+)
+RETURNS TABLE (
+  user_id UUID,
+  display_name TEXT,
+  dish_id UUID,
+  dish_name TEXT,
+  rating_10 DECIMAL(3, 1),
+  would_order_again BOOLEAN,
+  voted_at TIMESTAMPTZ,
+  category_expertise TEXT
+)
+LANGUAGE SQL STABLE AS $$
+  SELECT
+    p.id AS user_id, p.display_name, d.id AS dish_id, d.name AS dish_name,
+    v.rating_10, v.would_order_again, v.created_at AS voted_at,
+    CASE
+      WHEN EXISTS (SELECT 1 FROM user_badges ub WHERE ub.user_id = p.id AND ub.badge_key = 'authority_' || REPLACE(d.category, ' ', '_')) THEN 'authority'
+      WHEN EXISTS (SELECT 1 FROM user_badges ub WHERE ub.user_id = p.id AND ub.badge_key = 'specialist_' || REPLACE(d.category, ' ', '_')) THEN 'specialist'
+      ELSE NULL
+    END AS category_expertise
+  FROM follows f
+  JOIN profiles p ON p.id = f.followed_id
+  JOIN votes v ON v.user_id = f.followed_id
+  JOIN dishes d ON d.id = v.dish_id AND d.restaurant_id = p_restaurant_id
+  WHERE f.follower_id = p_user_id
+  ORDER BY d.name, v.created_at DESC;
+$$;
+
+-- Taste compatibility between two users
+CREATE OR REPLACE FUNCTION get_taste_compatibility(
+  p_user_id UUID,
+  p_other_user_id UUID
+)
+RETURNS TABLE (
+  shared_dishes INT,
+  avg_difference DECIMAL(3, 1),
+  compatibility_pct INT
+)
+LANGUAGE SQL STABLE AS $$
+  WITH shared AS (
+    SELECT a.rating_10 AS rating_a, b.rating_10 AS rating_b
+    FROM votes a
+    JOIN votes b ON a.dish_id = b.dish_id
+    WHERE a.user_id = p_user_id AND b.user_id = p_other_user_id
+      AND a.rating_10 IS NOT NULL AND b.rating_10 IS NOT NULL
+  )
+  SELECT
+    COUNT(*)::INT AS shared_dishes,
+    ROUND(AVG(ABS(rating_a - rating_b)), 1) AS avg_difference,
+    CASE
+      WHEN COUNT(*) >= 3 THEN ROUND(100 - (AVG(ABS(rating_a - rating_b)) / 9.0 * 100))::INT
+      ELSE NULL
+    END AS compatibility_pct
+  FROM shared;
+$$;
+
+-- Find users with similar taste who caller doesn't follow
+CREATE OR REPLACE FUNCTION get_similar_taste_users(
+  p_user_id UUID,
+  p_limit INT DEFAULT 5
+)
+RETURNS TABLE (
+  user_id UUID,
+  display_name TEXT,
+  shared_dishes INT,
+  compatibility_pct INT
+)
+LANGUAGE SQL STABLE AS $$
+  WITH candidates AS (
+    SELECT b.user_id AS other_id, COUNT(*)::INT AS shared,
+      ROUND(100 - (AVG(ABS(a.rating_10 - b.rating_10)) / 9.0 * 100))::INT AS compat
+    FROM votes a
+    JOIN votes b ON a.dish_id = b.dish_id AND b.user_id != p_user_id AND b.rating_10 IS NOT NULL
+    WHERE a.user_id = p_user_id AND a.rating_10 IS NOT NULL
+    GROUP BY b.user_id HAVING COUNT(*) >= 3
+  )
+  SELECT c.other_id AS user_id, p.display_name, c.shared AS shared_dishes, c.compat AS compatibility_pct
+  FROM candidates c
+  JOIN profiles p ON p.id = c.other_id
+  WHERE NOT EXISTS (SELECT 1 FROM follows f WHERE f.follower_id = p_user_id AND f.followed_id = c.other_id)
+  ORDER BY c.compat DESC, c.shared DESC
+  LIMIT p_limit;
+$$;
+
+
+-- =============================================
+-- 7. RATING IDENTITY FUNCTIONS (MAD-based)
+-- =============================================
+
+-- Get user's rating identity (MAD: Mean Absolute Deviation)
+CREATE OR REPLACE FUNCTION get_user_rating_identity(target_user_id UUID)
+RETURNS TABLE (
+  rating_bias NUMERIC(3, 1),
+  bias_label TEXT,
+  votes_with_consensus INT,
+  votes_pending INT,
+  dishes_helped_establish INT,
+  category_biases JSONB
+) AS $$
+DECLARE
+  calculated_bias NUMERIC(3, 1);
+  calculated_votes_with_consensus INT;
+  calculated_votes_pending INT;
+  calculated_dishes_helped INT;
+  calculated_category_biases JSONB;
+BEGIN
+  -- Calculate MAD (mean absolute deviation) dynamically
+  SELECT ROUND(AVG(ABS(v.rating_10 - d.avg_rating)), 1), COUNT(*)::INT
+  INTO calculated_bias, calculated_votes_with_consensus
+  FROM votes v JOIN dishes d ON v.dish_id = d.id
+  WHERE v.user_id = target_user_id AND v.rating_10 IS NOT NULL
+    AND d.avg_rating IS NOT NULL AND d.total_votes >= 5;
+
+  -- Count pending votes
+  SELECT COUNT(*)::INT INTO calculated_votes_pending
+  FROM votes v JOIN dishes d ON v.dish_id = d.id
+  WHERE v.user_id = target_user_id AND v.rating_10 IS NOT NULL
+    AND (d.total_votes < 5 OR d.avg_rating IS NULL);
+
+  -- Count dishes helped establish
+  SELECT COUNT(*)::INT INTO calculated_dishes_helped
+  FROM votes v JOIN dishes d ON v.dish_id = d.id
+  WHERE v.user_id = target_user_id AND v.vote_position <= 3
+    AND v.rating_10 IS NOT NULL AND d.total_votes >= 5;
+
+  -- Per-category biases stay SIGNED (directional for taste phrases)
+  SELECT COALESCE(jsonb_object_agg(category, bias), '{}'::jsonb)
+  INTO calculated_category_biases
+  FROM (
+    SELECT COALESCE(v.category_snapshot, d.category) AS category,
+      ROUND(AVG(v.rating_10 - d.avg_rating), 1) AS bias
+    FROM votes v JOIN dishes d ON v.dish_id = d.id
+    WHERE v.user_id = target_user_id AND v.rating_10 IS NOT NULL
+      AND d.avg_rating IS NOT NULL AND d.total_votes >= 5
+      AND COALESCE(v.category_snapshot, d.category) IS NOT NULL
+    GROUP BY COALESCE(v.category_snapshot, d.category)
+  ) cat_biases
+  WHERE category IS NOT NULL;
+
+  RETURN QUERY SELECT
+    COALESCE(calculated_bias, 0.0)::NUMERIC(3, 1),
+    get_bias_label(COALESCE(calculated_bias, 0.0)),
+    COALESCE(calculated_votes_with_consensus, 0),
+    COALESCE(calculated_votes_pending, 0),
+    COALESCE(calculated_dishes_helped, 0),
+    COALESCE(calculated_category_biases, '{}'::JSONB);
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Get unseen reveal notifications
+CREATE OR REPLACE FUNCTION get_unseen_reveals(target_user_id UUID)
+RETURNS TABLE (
+  id UUID, dish_id UUID, dish_name TEXT,
+  user_rating NUMERIC(3, 1), consensus_rating NUMERIC(3, 1), deviation NUMERIC(3, 1),
+  was_early_voter BOOLEAN, bias_before NUMERIC(3, 1), bias_after NUMERIC(3, 1),
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  IF (select auth.uid()) != target_user_id THEN
+    RAISE EXCEPTION 'Access denied';
+  END IF;
+  RETURN QUERY
+  SELECT be.id, be.dish_id, be.dish_name, be.user_rating, be.consensus_rating, be.deviation,
+    be.was_early_voter, be.bias_before, be.bias_after, be.created_at
+  FROM bias_events be
+  WHERE be.user_id = target_user_id AND be.seen = FALSE
+  ORDER BY be.created_at DESC LIMIT 10;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Mark reveals as seen
+CREATE OR REPLACE FUNCTION mark_reveals_seen(event_ids UUID[])
+RETURNS VOID AS $$
+BEGIN
+  UPDATE bias_events SET seen = TRUE
+  WHERE id = ANY(event_ids) AND user_id = (select auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- =============================================
+-- 8. BADGE FUNCTIONS
+-- =============================================
+
+-- Get all data needed for badge evaluation in one round-trip
+CREATE OR REPLACE FUNCTION get_badge_evaluation_stats(p_user_id UUID)
+RETURNS JSON AS $$
+DECLARE
+  v_total_dishes BIGINT;
+  v_total_restaurants BIGINT;
+  v_global_bias NUMERIC(3, 1);
+  v_votes_with_consensus INT;
+  v_follower_count BIGINT;
+  v_dishes_helped_establish INT;
+  v_category_stats JSON;
+  v_hidden_gems INT;
+  v_called_it INT;
+  v_top_dish_votes INT;
+  v_first_voter_count INT;
+BEGIN
+  -- Basic volume stats
+  SELECT COUNT(DISTINCT v.dish_id), COUNT(DISTINCT d.restaurant_id)
+  INTO v_total_dishes, v_total_restaurants
+  FROM votes v JOIN dishes d ON v.dish_id = d.id WHERE v.user_id = p_user_id;
+
+  -- Global bias and consensus stats
+  SELECT COALESCE(urs.rating_bias, 0.0), COALESCE(urs.votes_with_consensus, 0), COALESCE(urs.dishes_helped_establish, 0)
+  INTO v_global_bias, v_votes_with_consensus, v_dishes_helped_establish
+  FROM user_rating_stats urs WHERE urs.user_id = p_user_id;
+
+  IF v_global_bias IS NULL THEN v_global_bias := 0.0; END IF;
+  IF v_votes_with_consensus IS NULL THEN v_votes_with_consensus := 0; END IF;
+  IF v_dishes_helped_establish IS NULL THEN v_dishes_helped_establish := 0; END IF;
+
+  -- Follower count
+  SELECT COUNT(*) INTO v_follower_count FROM follows WHERE followed_id = p_user_id;
+
+  -- Per-category stats
+  SELECT COALESCE(json_agg(cat_row), '[]'::json) INTO v_category_stats
+  FROM (
+    SELECT v.category_snapshot AS category, COUNT(*) AS total_ratings,
+      COUNT(*) FILTER (WHERE d.consensus_ready = TRUE) AS consensus_ratings,
+      ROUND(AVG(v.rating_10 - d.avg_rating) FILTER (WHERE d.consensus_ready = TRUE AND v.rating_10 IS NOT NULL), 1) AS bias
+    FROM votes v JOIN dishes d ON v.dish_id = d.id
+    WHERE v.user_id = p_user_id AND v.category_snapshot IS NOT NULL
+    GROUP BY v.category_snapshot
+  ) cat_row;
+
+  -- Hidden gems found
+  SELECT COUNT(DISTINCT v.dish_id) INTO v_hidden_gems
+  FROM votes v JOIN dishes d ON v.dish_id = d.id
+  WHERE v.user_id = p_user_id AND v.vote_position <= 3 AND d.avg_rating >= 8.0 AND d.total_votes >= 10;
+  IF v_hidden_gems IS NULL THEN v_hidden_gems := 0; END IF;
+
+  -- Called it count
+  SELECT COUNT(DISTINCT v.dish_id) INTO v_called_it
+  FROM votes v JOIN dishes d ON v.dish_id = d.id
+  WHERE v.user_id = p_user_id AND v.vote_position <= 5 AND v.rating_10 >= 8
+    AND d.consensus_ready = TRUE AND d.avg_rating >= 8.0;
+  IF v_called_it IS NULL THEN v_called_it := 0; END IF;
+
+  -- Top dish votes
+  SELECT COUNT(DISTINCT v.dish_id) INTO v_top_dish_votes
+  FROM votes v JOIN dishes d ON v.dish_id = d.id
+  WHERE v.user_id = p_user_id AND d.total_votes >= 5
+    AND d.avg_rating = (SELECT MAX(d2.avg_rating) FROM dishes d2 WHERE d2.restaurant_id = d.restaurant_id AND d2.total_votes >= 5);
+  IF v_top_dish_votes IS NULL THEN v_top_dish_votes := 0; END IF;
+
+  -- First voter count
+  SELECT COUNT(*) INTO v_first_voter_count
+  FROM votes v WHERE v.user_id = p_user_id AND v.vote_position = 1;
+  IF v_first_voter_count IS NULL THEN v_first_voter_count := 0; END IF;
+
+  RETURN json_build_object(
+    'totalDishes', v_total_dishes, 'totalRestaurants', v_total_restaurants,
+    'globalBias', v_global_bias, 'votesWithConsensus', v_votes_with_consensus,
+    'followerCount', v_follower_count, 'dishesHelpedEstablish', v_dishes_helped_establish,
+    'categoryStats', v_category_stats,
+    'hiddenGemsFound', v_hidden_gems, 'calledItCount', v_called_it,
+    'topDishVotes', v_top_dish_votes, 'firstVoterCount', v_first_voter_count
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Evaluate and award badges (cleanup version: category 10/20, no volume badges)
+CREATE OR REPLACE FUNCTION evaluate_user_badges(p_user_id UUID)
+RETURNS TABLE (
+  badge_key TEXT,
+  newly_unlocked BOOLEAN
+) AS $$
+DECLARE
+  v_stats JSON;
+  v_global_bias NUMERIC;
+  v_votes_with_consensus INT;
+  v_follower_count BIGINT;
+  v_hidden_gems INT;
+  v_called_it INT;
+  v_badge RECORD;
+  v_already_has BOOLEAN;
+  v_threshold INT;
+  v_cat_stat RECORD;
+  v_cat_consensus INT;
+  v_cat_bias NUMERIC;
+  v_parsed_tier TEXT;
+BEGIN
+  v_stats := get_badge_evaluation_stats(p_user_id);
+
+  v_global_bias := (v_stats->>'globalBias')::NUMERIC;
+  v_votes_with_consensus := (v_stats->>'votesWithConsensus')::INT;
+  v_follower_count := (v_stats->>'followerCount')::BIGINT;
+  v_hidden_gems := (v_stats->>'hiddenGemsFound')::INT;
+  v_called_it := (v_stats->>'calledItCount')::INT;
+
+  FOR v_badge IN SELECT b.key, b.family, b.category FROM badges b ORDER BY b.sort_order DESC
+  LOOP
+    SELECT EXISTS(SELECT 1 FROM user_badges ub WHERE ub.user_id = p_user_id AND ub.badge_key = v_badge.key)
+    INTO v_already_has;
+    IF v_already_has THEN CONTINUE; END IF;
+
+    CASE v_badge.family
+
+      -- Category mastery badges (thresholds: 10/20)
+      WHEN 'category' THEN
+        IF v_badge.category IS NULL THEN CONTINUE; END IF;
+        IF v_badge.key LIKE 'specialist_%' THEN v_parsed_tier := 'specialist';
+        ELSIF v_badge.key LIKE 'authority_%' THEN v_parsed_tier := 'authority';
+        ELSE CONTINUE; END IF;
+
+        v_cat_consensus := 0; v_cat_bias := NULL;
+        FOR v_cat_stat IN SELECT * FROM json_to_recordset(v_stats->'categoryStats') AS x(category TEXT, total_ratings INT, consensus_ratings INT, bias NUMERIC)
+        LOOP
+          IF v_cat_stat.category = v_badge.category THEN
+            v_cat_consensus := COALESCE(v_cat_stat.consensus_ratings, 0);
+            v_cat_bias := v_cat_stat.bias; EXIT;
+          END IF;
+        END LOOP;
+
+        IF v_parsed_tier = 'specialist' THEN
+          IF v_cat_consensus >= 10 AND v_cat_bias IS NOT NULL AND ABS(v_cat_bias) <= 1.5 THEN
+            INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+            badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+          END IF;
+        ELSIF v_parsed_tier = 'authority' THEN
+          IF v_cat_consensus >= 20 AND v_cat_bias IS NOT NULL AND ABS(v_cat_bias) <= 1.0 THEN
+            INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+            badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+          END IF;
+        END IF;
+
+      -- Discovery badges: hidden gems + called-it
+      WHEN 'discovery' THEN
+        IF v_badge.key IN ('hidden_gem_finder', 'gem_hunter', 'gem_collector') THEN
+          CASE v_badge.key
+            WHEN 'hidden_gem_finder' THEN v_threshold := 1;
+            WHEN 'gem_hunter' THEN v_threshold := 5;
+            WHEN 'gem_collector' THEN v_threshold := 10;
+            ELSE NULL;
+          END CASE;
+          IF v_hidden_gems >= v_threshold THEN
+            INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+            badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+          END IF;
+          CONTINUE;
+        END IF;
+
+        IF v_badge.key IN ('good_call', 'taste_prophet', 'oracle') THEN
+          CASE v_badge.key
+            WHEN 'good_call' THEN v_threshold := 1;
+            WHEN 'taste_prophet' THEN v_threshold := 3;
+            WHEN 'oracle' THEN v_threshold := 5;
+            ELSE NULL;
+          END CASE;
+          IF v_called_it >= v_threshold THEN
+            INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+            badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+          END IF;
+        END IF;
+
+      -- Consistency badges: rating style (require 20 consensus votes)
+      WHEN 'consistency' THEN
+        IF v_votes_with_consensus < 20 THEN CONTINUE; END IF;
+        CASE v_badge.key
+          WHEN 'steady_hand' THEN
+            IF ABS(v_global_bias) <= 0.5 THEN
+              INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+              badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+            END IF;
+          WHEN 'tough_critic' THEN
+            IF v_global_bias <= -1.5 THEN
+              INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+              badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+            END IF;
+          WHEN 'generous_spirit' THEN
+            IF v_global_bias >= 1.5 THEN
+              INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+              badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+            END IF;
+          ELSE NULL;
+        END CASE;
+
+      -- Influence badges: follower milestones (10/25)
+      WHEN 'influence' THEN
+        CASE v_badge.key
+          WHEN 'taste_maker' THEN v_threshold := 10;
+          WHEN 'trusted_voice' THEN v_threshold := 25;
+          ELSE CONTINUE;
+        END CASE;
+        IF v_follower_count >= v_threshold THEN
+          INSERT INTO user_badges (user_id, badge_key) VALUES (p_user_id, v_badge.key);
+          badge_key := v_badge.key; newly_unlocked := true; RETURN NEXT;
+        END IF;
+
+      ELSE NULL;
+    END CASE;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get user's unlocked badges
+CREATE OR REPLACE FUNCTION get_user_badges(p_user_id UUID, p_public_only BOOLEAN DEFAULT false)
+RETURNS TABLE (
+  badge_key TEXT, name TEXT, subtitle TEXT, description TEXT, icon TEXT,
+  is_public_eligible BOOLEAN, sort_order INTEGER, unlocked_at TIMESTAMP WITH TIME ZONE,
+  rarity TEXT, family TEXT, category TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT b.key AS badge_key, b.name, b.subtitle, b.description, b.icon,
+    b.is_public_eligible, b.sort_order, ub.unlocked_at, b.rarity, b.family, b.category
+  FROM user_badges ub JOIN badges b ON ub.badge_key = b.key
+  WHERE ub.user_id = p_user_id AND (NOT p_public_only OR b.is_public_eligible = true)
+  ORDER BY b.sort_order ASC, ub.unlocked_at DESC;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- Get public badges for display (max 6)
+CREATE OR REPLACE FUNCTION get_public_badges(p_user_id UUID)
+RETURNS TABLE (
+  badge_key TEXT, name TEXT, subtitle TEXT, description TEXT, icon TEXT,
+  unlocked_at TIMESTAMP WITH TIME ZONE, rarity TEXT, family TEXT, category TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT b.key AS badge_key, b.name, b.subtitle, b.description, b.icon,
+    ub.unlocked_at, b.rarity, b.family, b.category
+  FROM user_badges ub JOIN badges b ON ub.badge_key = b.key
+  WHERE ub.user_id = p_user_id AND b.is_public_eligible = true
+  ORDER BY b.sort_order ASC, ub.unlocked_at DESC LIMIT 6;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- Get category experts (deduped: one row per user, highest tier)
+CREATE OR REPLACE FUNCTION get_category_experts(
+  p_category TEXT,
+  p_limit INT DEFAULT 5
+)
+RETURNS TABLE (
+  user_id UUID,
+  display_name TEXT,
+  badge_tier TEXT,
+  follower_count BIGINT
+)
+LANGUAGE SQL STABLE SECURITY DEFINER AS $$
+  SELECT DISTINCT ON (ub.user_id)
+    ub.user_id, p.display_name,
+    CASE WHEN b.key LIKE 'authority_%' THEN 'authority' ELSE 'specialist' END AS badge_tier,
+    COALESCE(fc.cnt, 0) AS follower_count
+  FROM user_badges ub
+  JOIN badges b ON ub.badge_key = b.key
+  JOIN profiles p ON ub.user_id = p.id
+  LEFT JOIN (SELECT followed_id, COUNT(*) AS cnt FROM follows GROUP BY followed_id) fc ON fc.followed_id = ub.user_id
+  WHERE b.category = p_category AND b.family = 'category'
+  ORDER BY ub.user_id,
+    CASE WHEN b.key LIKE 'authority_%' THEN 0 ELSE 1 END,
+    COALESCE(fc.cnt, 0) DESC
+  LIMIT p_limit;
+$$;
+
+-- Get expert vote counts per dish at a restaurant
+CREATE OR REPLACE FUNCTION get_expert_votes_for_restaurant(p_restaurant_id UUID)
+RETURNS TABLE (dish_id UUID, specialist_count INT, authority_count INT)
+LANGUAGE SQL STABLE AS $$
+  SELECT v.dish_id,
+    COUNT(*) FILTER (WHERE ub.badge_key LIKE 'specialist_%')::INT AS specialist_count,
+    COUNT(*) FILTER (WHERE ub.badge_key LIKE 'authority_%')::INT AS authority_count
+  FROM votes v
+  JOIN dishes d ON d.id = v.dish_id AND d.restaurant_id = p_restaurant_id
+  JOIN user_badges ub ON ub.user_id = v.user_id
+    AND ub.badge_key IN ('specialist_' || REPLACE(d.category, ' ', '_'), 'authority_' || REPLACE(d.category, ' ', '_'))
+  GROUP BY v.dish_id;
+$$;
+
+
+-- =============================================
+-- 9. STREAK & LEADERBOARD FUNCTIONS
+-- =============================================
+
+-- Get user's streak info
+CREATE OR REPLACE FUNCTION get_user_streak_info(p_user_id UUID)
+RETURNS TABLE (
+  current_streak INTEGER, longest_streak INTEGER, votes_this_week INTEGER,
+  last_vote_date DATE, streak_status TEXT
+)
+LANGUAGE plpgsql STABLE SECURITY DEFINER AS $$
+DECLARE
+  v_today DATE; v_yesterday DATE; v_record RECORD;
+BEGIN
+  v_today := CURRENT_DATE;
+  v_yesterday := v_today - INTERVAL '1 day';
+
+  SELECT us.current_streak, us.longest_streak, us.votes_this_week, us.last_vote_date
+  INTO v_record FROM user_streaks us WHERE us.user_id = p_user_id;
+
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT 0, 0, 0, NULL::DATE, 'none'::TEXT;
+    RETURN;
+  END IF;
+
+  RETURN QUERY SELECT v_record.current_streak, v_record.longest_streak, v_record.votes_this_week,
+    v_record.last_vote_date,
+    CASE
+      WHEN v_record.last_vote_date = v_today THEN 'active'
+      WHEN v_record.last_vote_date = v_yesterday THEN 'at_risk'
+      ELSE 'broken'
+    END AS streak_status;
+END;
+$$;
+
+-- Get friends leaderboard (mutual follows)
+CREATE OR REPLACE FUNCTION get_friends_leaderboard(p_user_id UUID, p_limit INTEGER DEFAULT 10)
+RETURNS TABLE (
+  user_id UUID, display_name TEXT, votes_this_week INTEGER,
+  current_streak INTEGER, is_current_user BOOLEAN, rank INTEGER
+)
+LANGUAGE plpgsql STABLE SECURITY DEFINER AS $$
+BEGIN
+  RETURN QUERY
+  WITH mutual_friends AS (
+    SELECT f1.followed_id AS friend_id
+    FROM follows f1 INNER JOIN follows f2 ON f1.followed_id = f2.follower_id AND f1.follower_id = f2.followed_id
+    WHERE f1.follower_id = p_user_id
+  ),
+  all_participants AS (
+    SELECT friend_id AS participant_id FROM mutual_friends
+    UNION SELECT p_user_id AS participant_id
+  ),
+  ranked AS (
+    SELECT ap.participant_id, p.display_name,
+      COALESCE(us.votes_this_week, 0) AS votes_this_week,
+      COALESCE(us.current_streak, 0) AS current_streak,
+      ap.participant_id = p_user_id AS is_current_user,
+      ROW_NUMBER() OVER (ORDER BY COALESCE(us.votes_this_week, 0) DESC, COALESCE(us.current_streak, 0) DESC) AS rank
+    FROM all_participants ap
+    LEFT JOIN user_streaks us ON us.user_id = ap.participant_id
+    LEFT JOIN profiles p ON p.id = ap.participant_id
+    WHERE us.week_start = date_trunc('week', CURRENT_DATE)::date OR us.week_start IS NULL OR ap.participant_id = p_user_id
+  )
+  SELECT r.participant_id, COALESCE(r.display_name, 'Anonymous'),
+    r.votes_this_week, r.current_streak, r.is_current_user, r.rank::INTEGER
+  FROM ranked r ORDER BY r.rank LIMIT p_limit;
+END;
+$$;
+
+-- Get time until weekly reset (seconds)
+CREATE OR REPLACE FUNCTION get_weekly_reset_countdown()
+RETURNS INTEGER LANGUAGE SQL STABLE AS $$
+  SELECT EXTRACT(EPOCH FROM (date_trunc('week', CURRENT_DATE + INTERVAL '1 week') - NOW()))::INTEGER;
+$$;
+
+
+-- =============================================
+-- 10. NOTIFICATION FUNCTIONS
+-- =============================================
+
+-- Get unread notification count
+CREATE OR REPLACE FUNCTION get_unread_notification_count(p_user_id UUID)
+RETURNS INTEGER LANGUAGE SQL STABLE SECURITY DEFINER AS $$
+  SELECT CASE
+    WHEN auth.role() = 'service_role' OR (select auth.uid()) = p_user_id THEN
+      (SELECT COUNT(*)::INTEGER FROM notifications WHERE user_id = p_user_id AND read = FALSE)
+    ELSE 0
+  END;
+$$;
+
+-- Mark all notifications as read
+CREATE OR REPLACE FUNCTION mark_all_notifications_read(p_user_id UUID)
+RETURNS VOID LANGUAGE SQL SECURITY DEFINER AS $$
+  UPDATE notifications SET read = TRUE
+  WHERE user_id = p_user_id AND read = FALSE
+    AND (auth.role() = 'service_role' OR (select auth.uid()) = p_user_id);
+$$;
+
+
+-- =============================================
+-- 11. RATE LIMITING FUNCTIONS
+-- =============================================
+
+-- Check and record rate limit
+CREATE OR REPLACE FUNCTION check_and_record_rate_limit(
+  p_action TEXT, p_max_attempts INT DEFAULT 10, p_window_seconds INT DEFAULT 60
+)
+RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_user_id UUID; v_count INT; v_oldest TIMESTAMPTZ; v_cutoff TIMESTAMPTZ; v_retry_after INT;
+BEGIN
+  v_user_id := (select auth.uid());
+  IF v_user_id IS NULL THEN
+    RETURN jsonb_build_object('allowed', false, 'error', 'Not authenticated');
+  END IF;
+
+  v_cutoff := NOW() - (p_window_seconds || ' seconds')::INTERVAL;
+
+  SELECT COUNT(*), MIN(created_at) INTO v_count, v_oldest
+  FROM rate_limits WHERE user_id = v_user_id AND action = p_action AND created_at > v_cutoff;
+
+  IF v_count >= p_max_attempts THEN
+    v_retry_after := EXTRACT(EPOCH FROM (v_oldest + (p_window_seconds || ' seconds')::INTERVAL - NOW()))::INT;
+    IF v_retry_after < 0 THEN v_retry_after := 0; END IF;
+    RETURN jsonb_build_object('allowed', false, 'retry_after_seconds', v_retry_after,
+      'message', 'Too many attempts. Please wait ' || v_retry_after || ' seconds.');
+  END IF;
+
+  INSERT INTO rate_limits (user_id, action) VALUES (v_user_id, p_action);
+
+  IF random() < 0.01 THEN
+    DELETE FROM rate_limits WHERE created_at < NOW() - INTERVAL '1 hour';
+  END IF;
+
+  RETURN jsonb_build_object('allowed', true);
+END;
+$$;
+
+-- Convenience: vote rate limiting (10 per minute)
+CREATE OR REPLACE FUNCTION check_vote_rate_limit()
+RETURNS JSONB LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT check_and_record_rate_limit('vote', 10, 60);
+$$;
+
+-- Convenience: photo upload rate limiting (5 per minute)
+CREATE OR REPLACE FUNCTION check_photo_upload_rate_limit()
+RETURNS JSONB LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT check_and_record_rate_limit('photo_upload', 5, 60);
+$$;
+
+
+-- =============================================
+-- 12. RESTAURANT MANAGER FUNCTIONS
+-- =============================================
+
+-- Get invite details (public preview, no auth required)
+CREATE OR REPLACE FUNCTION get_invite_details(p_token TEXT)
+RETURNS JSON AS $$
+DECLARE
+  v_invite RECORD;
+BEGIN
+  SELECT ri.*, r.name AS restaurant_name INTO v_invite
+  FROM restaurant_invites ri JOIN restaurants r ON r.id = ri.restaurant_id
+  WHERE ri.token = p_token;
+
+  IF NOT FOUND THEN RETURN json_build_object('valid', false, 'error', 'Invite not found'); END IF;
+  IF v_invite.used_by IS NOT NULL THEN RETURN json_build_object('valid', false, 'error', 'Invite already used'); END IF;
+  IF v_invite.expires_at < NOW() THEN RETURN json_build_object('valid', false, 'error', 'Invite has expired'); END IF;
+
+  RETURN json_build_object('valid', true, 'restaurant_name', v_invite.restaurant_name,
+    'restaurant_id', v_invite.restaurant_id, 'expires_at', v_invite.expires_at);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Accept a restaurant invite (atomic)
+CREATE OR REPLACE FUNCTION accept_restaurant_invite(p_token TEXT)
+RETURNS JSON AS $$
+DECLARE
+  v_invite RECORD; v_user_id UUID;
+BEGIN
+  v_user_id := (select auth.uid());
+  IF v_user_id IS NULL THEN RETURN json_build_object('success', false, 'error', 'Not authenticated'); END IF;
+
+  SELECT ri.*, r.name AS restaurant_name INTO v_invite
+  FROM restaurant_invites ri JOIN restaurants r ON r.id = ri.restaurant_id
+  WHERE ri.token = p_token FOR UPDATE OF ri;
+
+  IF NOT FOUND THEN RETURN json_build_object('success', false, 'error', 'Invite not found'); END IF;
+  IF v_invite.used_by IS NOT NULL THEN RETURN json_build_object('success', false, 'error', 'Invite already used'); END IF;
+  IF v_invite.expires_at < NOW() THEN RETURN json_build_object('success', false, 'error', 'Invite has expired'); END IF;
+
+  INSERT INTO restaurant_managers (user_id, restaurant_id, role, accepted_at, created_by)
+  VALUES (v_user_id, v_invite.restaurant_id, 'manager', NOW(), v_invite.created_by)
+  ON CONFLICT (user_id, restaurant_id) DO UPDATE SET accepted_at = NOW();
+
+  UPDATE restaurant_invites SET used_by = v_user_id, used_at = NOW() WHERE id = v_invite.id;
+
+  RETURN json_build_object('success', true, 'restaurant_id', v_invite.restaurant_id,
+    'restaurant_name', v_invite.restaurant_name);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- =============================================
+-- 13. TRIGGERS
+-- =============================================
+
+-- 13a. Update follow counts on follow/unfollow
+CREATE OR REPLACE FUNCTION update_follow_counts()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE profiles SET following_count = following_count + 1 WHERE id = NEW.follower_id;
+    UPDATE profiles SET follower_count = follower_count + 1 WHERE id = NEW.followed_id;
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE profiles SET following_count = GREATEST(0, following_count - 1) WHERE id = OLD.follower_id;
+    UPDATE profiles SET follower_count = GREATEST(0, follower_count - 1) WHERE id = OLD.followed_id;
+    RETURN OLD;
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_update_follow_counts ON follows;
+CREATE TRIGGER trigger_update_follow_counts
+  AFTER INSERT OR DELETE ON follows FOR EACH ROW EXECUTE FUNCTION update_follow_counts();
+
+-- 13b. Create notification on new follow
+CREATE OR REPLACE FUNCTION notify_on_follow()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  follower_name TEXT;
+BEGIN
+  SELECT display_name INTO follower_name FROM profiles WHERE id = NEW.follower_id;
+  INSERT INTO notifications (user_id, type, data)
+  VALUES (NEW.followed_id, 'follow', jsonb_build_object('follower_id', NEW.follower_id, 'follower_name', COALESCE(follower_name, 'Someone')));
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_notify_on_follow ON follows;
+CREATE TRIGGER trigger_notify_on_follow
+  AFTER INSERT ON follows FOR EACH ROW EXECUTE FUNCTION notify_on_follow();
+
+-- 13c. Set vote_position and category_snapshot on vote insert
+CREATE OR REPLACE FUNCTION on_vote_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+  current_vote_count INT;
+  dish_category TEXT;
+BEGIN
+  SELECT COUNT(*) INTO current_vote_count FROM votes WHERE dish_id = NEW.dish_id AND id != NEW.id;
+  NEW.vote_position := current_vote_count + 1;
+
+  SELECT category INTO dish_category FROM dishes WHERE id = NEW.dish_id;
+  NEW.category_snapshot := dish_category;
+
+  IF NEW.rating_10 IS NOT NULL THEN
+    INSERT INTO user_rating_stats (user_id, votes_pending) VALUES (NEW.user_id, 1)
+    ON CONFLICT (user_id) DO UPDATE SET votes_pending = user_rating_stats.votes_pending + 1, updated_at = NOW();
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS vote_insert_trigger ON votes;
+CREATE TRIGGER vote_insert_trigger BEFORE INSERT ON votes FOR EACH ROW EXECUTE FUNCTION on_vote_insert();
+
+-- 13d. Check consensus after vote (MAD version)
+CREATE OR REPLACE FUNCTION check_consensus_after_vote()
+RETURNS TRIGGER AS $$
+DECLARE
+  total_votes_count INT;
+  consensus_avg NUMERIC(3, 1);
+  v RECORD;
+  user_bias_before NUMERIC(3, 1);
+  user_bias_after NUMERIC(3, 1);
+  user_deviation NUMERIC(3, 1);
+  is_early BOOLEAN;
+  dish_name_snapshot TEXT;
+  consensus_threshold INT := 5;
+BEGIN
+  IF NEW.rating_10 IS NULL THEN RETURN NEW; END IF;
+
+  SELECT COUNT(*), ROUND(AVG(rating_10), 1) INTO total_votes_count, consensus_avg
+  FROM votes WHERE dish_id = NEW.dish_id AND rating_10 IS NOT NULL;
+
+  IF total_votes_count >= consensus_threshold THEN
+    IF NOT EXISTS (SELECT 1 FROM dishes WHERE id = NEW.dish_id AND consensus_ready = TRUE) THEN
+      SELECT name INTO dish_name_snapshot FROM dishes WHERE id = NEW.dish_id;
+
+      UPDATE dishes SET consensus_rating = consensus_avg, consensus_ready = TRUE,
+        consensus_votes = total_votes_count, consensus_calculated_at = NOW()
+      WHERE id = NEW.dish_id;
+
+      FOR v IN SELECT * FROM votes WHERE dish_id = NEW.dish_id AND scored_at IS NULL AND rating_10 IS NOT NULL
+      LOOP
+        user_deviation := ROUND(v.rating_10 - consensus_avg, 1);
+        is_early := v.vote_position <= 3;
+
+        SELECT rating_bias INTO user_bias_before FROM user_rating_stats WHERE user_id = v.user_id;
+        IF user_bias_before IS NULL THEN user_bias_before := 0.0; END IF;
+
+        UPDATE votes SET scored_at = NOW() WHERE id = v.id;
+
+        -- Use ABS for overall bias (MAD)
+        SELECT ROUND(AVG(ABS(votes.rating_10 - d.consensus_rating)), 1) INTO user_bias_after
+        FROM votes JOIN dishes d ON votes.dish_id = d.id
+        WHERE votes.user_id = v.user_id AND d.consensus_ready = TRUE
+          AND votes.rating_10 IS NOT NULL AND votes.scored_at IS NOT NULL;
+
+        IF user_bias_after IS NULL THEN user_bias_after := ABS(user_deviation); END IF;
+
+        INSERT INTO bias_events (user_id, dish_id, dish_name, user_rating, consensus_rating, deviation, was_early_voter, bias_before, bias_after)
+        VALUES (v.user_id, v.dish_id, dish_name_snapshot, v.rating_10, consensus_avg, user_deviation, is_early, user_bias_before, user_bias_after);
+
+        INSERT INTO user_rating_stats (user_id, rating_bias, votes_with_consensus, votes_pending, dishes_helped_establish, bias_label)
+        VALUES (v.user_id, user_bias_after, 1, -1, CASE WHEN is_early THEN 1 ELSE 0 END, get_bias_label(user_bias_after))
+        ON CONFLICT (user_id) DO UPDATE SET
+          rating_bias = user_bias_after,
+          votes_with_consensus = user_rating_stats.votes_with_consensus + 1,
+          votes_pending = GREATEST(0, user_rating_stats.votes_pending - 1),
+          dishes_helped_establish = user_rating_stats.dishes_helped_establish + CASE WHEN is_early THEN 1 ELSE 0 END,
+          bias_label = get_bias_label(user_bias_after),
+          updated_at = NOW();
+
+        -- Category biases stay SIGNED
+        UPDATE user_rating_stats SET category_biases = jsonb_set(
+          COALESCE(category_biases, '{}'::jsonb), ARRAY[v.category_snapshot],
+          (SELECT to_jsonb(ROUND(AVG(votes.rating_10 - d.consensus_rating), 1))
+           FROM votes JOIN dishes d ON votes.dish_id = d.id
+           WHERE votes.user_id = v.user_id AND d.consensus_ready = TRUE
+             AND votes.rating_10 IS NOT NULL AND votes.scored_at IS NOT NULL
+             AND votes.category_snapshot = v.category_snapshot), TRUE)
+        WHERE user_id = v.user_id;
+      END LOOP;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS consensus_check_trigger ON votes;
+CREATE TRIGGER consensus_check_trigger AFTER INSERT ON votes FOR EACH ROW EXECUTE FUNCTION check_consensus_after_vote();
+
+-- 13e. Update dish avg_rating on vote changes
+CREATE OR REPLACE FUNCTION update_dish_avg_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE dishes SET avg_rating = sub.avg_r, total_votes = sub.cnt
+  FROM (
+    SELECT ROUND(AVG(rating_10), 1) AS avg_r, COUNT(*) AS cnt
+    FROM votes WHERE dish_id = COALESCE(NEW.dish_id, OLD.dish_id) AND rating_10 IS NOT NULL
+  ) sub
+  WHERE dishes.id = COALESCE(NEW.dish_id, OLD.dish_id);
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS update_dish_rating_on_vote ON votes;
+CREATE TRIGGER update_dish_rating_on_vote
+  AFTER INSERT OR UPDATE OR DELETE ON votes FOR EACH ROW EXECUTE FUNCTION update_dish_avg_rating();
+
+-- 13f. Update streak on vote
+CREATE OR REPLACE FUNCTION update_user_streak_on_vote()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_today DATE; v_yesterday DATE; v_current_week_start DATE;
+  v_existing RECORD; v_new_streak INTEGER; v_votes_this_week INTEGER;
+BEGIN
+  v_today := CURRENT_DATE;
+  v_yesterday := v_today - INTERVAL '1 day';
+  v_current_week_start := date_trunc('week', v_today)::date;
+
+  SELECT * INTO v_existing FROM user_streaks WHERE user_id = NEW.user_id;
+
+  IF NOT FOUND THEN
+    INSERT INTO user_streaks (user_id, current_streak, longest_streak, votes_this_week, week_start, last_vote_date)
+    VALUES (NEW.user_id, 1, 1, 1, v_current_week_start, v_today);
+    RETURN NEW;
+  END IF;
+
+  IF v_existing.last_vote_date = v_today THEN v_new_streak := v_existing.current_streak;
+  ELSIF v_existing.last_vote_date = v_yesterday THEN v_new_streak := v_existing.current_streak + 1;
+  ELSIF v_existing.last_vote_date IS NULL THEN v_new_streak := 1;
+  ELSE v_new_streak := 1; END IF;
+
+  IF v_existing.week_start = v_current_week_start THEN
+    v_votes_this_week := LEAST(v_existing.votes_this_week + 1, 10);
+  ELSE v_votes_this_week := 1; END IF;
+
+  UPDATE user_streaks SET current_streak = v_new_streak,
+    longest_streak = GREATEST(v_existing.longest_streak, v_new_streak),
+    votes_this_week = v_votes_this_week, week_start = v_current_week_start,
+    last_vote_date = v_today, updated_at = NOW()
+  WHERE user_id = NEW.user_id;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_update_streak_on_vote ON votes;
+CREATE TRIGGER trigger_update_streak_on_vote
+  AFTER INSERT ON votes FOR EACH ROW EXECUTE FUNCTION update_user_streak_on_vote();
+
+
+-- =============================================
+-- 14. GRANTS
+-- =============================================
+
+GRANT EXECUTE ON FUNCTION get_smart_snippet(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_smart_snippet(UUID) TO anon;
+GRANT EXECUTE ON FUNCTION get_user_streak_info TO authenticated;
+GRANT EXECUTE ON FUNCTION get_friends_leaderboard TO authenticated;
+GRANT EXECUTE ON FUNCTION get_weekly_reset_countdown TO authenticated;
+GRANT EXECUTE ON FUNCTION check_and_record_rate_limit TO authenticated;
+GRANT EXECUTE ON FUNCTION check_vote_rate_limit TO authenticated;
+GRANT EXECUTE ON FUNCTION check_photo_upload_rate_limit TO authenticated;
+
+
+-- =============================================
+-- 15. STORAGE POLICIES
+-- =============================================
+
+-- dish-photos bucket
+DROP POLICY IF EXISTS "dish_photos_public_read" ON storage.objects;
+CREATE POLICY "dish_photos_public_read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'dish-photos');
+
+DROP POLICY IF EXISTS "dish_photos_insert_own" ON storage.objects;
+CREATE POLICY "dish_photos_insert_own" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'dish-photos' AND (select auth.uid()) = owner);
+
+DROP POLICY IF EXISTS "dish_photos_update_own" ON storage.objects;
+CREATE POLICY "dish_photos_update_own" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'dish-photos' AND (select auth.uid()) = owner);
+
+DROP POLICY IF EXISTS "dish_photos_delete_own" ON storage.objects;
+CREATE POLICY "dish_photos_delete_own" ON storage.objects
+  FOR DELETE USING (bucket_id = 'dish-photos' AND (select auth.uid()) = owner);
+
+
+-- =============================================
+-- 16. BADGE SEED DATA (41 badges after cleanup)
+-- =============================================
+-- Families: category, discovery, consistency, influence
+-- Deleted: volume (10), community (3), old discovery (3), order-this (3),
+--          first-reviewer (3), taste_authority (1), soup/pokebowl/fried_chicken/entree (8)
+
+INSERT INTO badges (key, name, subtitle, description, icon, is_public_eligible, sort_order, rarity, family, category) VALUES
+  -- Hidden Gem badges (discovery)
+  ('hidden_gem_finder', 'Hidden Gem Finder', 'Spotted potential', 'Voted early on a dish that became a hidden gem', '💎', false, 84, 'common', 'discovery', NULL),
+  ('gem_hunter', 'Gem Hunter', 'Sharp eye for quality', 'Found 5 hidden gems before the crowd', '🔍', false, 82, 'uncommon', 'discovery', NULL),
+  ('gem_collector', 'Gem Collector', 'Treasure hunter', 'Discovered 10 hidden gems early', '🏆', true, 80, 'rare', 'discovery', NULL),
+
+  -- Called It badges (discovery)
+  ('good_call', 'Good Call', 'Nailed it', 'Predicted a dish would be great and the crowd agreed', '📞', false, 102, 'common', 'discovery', NULL),
+  ('taste_prophet', 'Taste Prophet', 'Ahead of the curve', 'Called it right on 3 dishes before consensus', '🔮', false, 100, 'uncommon', 'discovery', NULL),
+  ('oracle', 'Oracle', 'The taste whisperer', 'Predicted 5 crowd favorites before anyone else', '🌟', true, 98, 'rare', 'discovery', NULL),
+
+  -- Consistency badges
+  ('steady_hand', 'Steady Hand', 'Right on target', 'Global bias within 0.5 of consensus with 20+ rated', '🎯', true, 60, 'uncommon', 'consistency', NULL),
+  ('tough_critic', 'Tough Critic', 'Holding the line', 'Consistently rates below consensus (bias <= -1.5)', '🧐', false, 58, 'uncommon', 'consistency', NULL),
+  ('generous_spirit', 'Generous Spirit', 'Spreading the love', 'Consistently rates above consensus (bias >= 1.5)', '💛', false, 56, 'uncommon', 'consistency', NULL),
+
+  -- Influence badges (10/25 thresholds)
+  ('taste_maker', 'Taste Maker', 'Building a following', '10+ followers trust your taste', '📣', false, 48, 'uncommon', 'influence', NULL),
+  ('trusted_voice', 'Trusted Voice', 'People listen', '25+ followers trust your taste', '🎙️', true, 46, 'rare', 'influence', NULL),
+
+  -- Category Mastery badges (13 categories x 2 tiers = 26)
+  ('specialist_pizza', 'Pizza Specialist', 'Pizza expert', '10+ consensus-rated pizza dishes with accurate taste', '🍕', true, 40, 'rare', 'category', 'pizza'),
+  ('authority_pizza', 'Pizza Authority', 'Pizza master', '20+ consensus-rated pizza dishes with elite accuracy', '🍕', true, 39, 'epic', 'category', 'pizza'),
+  ('specialist_burger', 'Burger Specialist', 'Burger expert', '10+ consensus-rated burger dishes with accurate taste', '🍔', true, 40, 'rare', 'category', 'burger'),
+  ('authority_burger', 'Burger Authority', 'Burger master', '20+ consensus-rated burger dishes with elite accuracy', '🍔', true, 39, 'epic', 'category', 'burger'),
+  ('specialist_taco', 'Taco Specialist', 'Taco expert', '10+ consensus-rated taco dishes with accurate taste', '🌮', true, 40, 'rare', 'category', 'taco'),
+  ('authority_taco', 'Taco Authority', 'Taco master', '20+ consensus-rated taco dishes with elite accuracy', '🌮', true, 39, 'epic', 'category', 'taco'),
+  ('specialist_wings', 'Wings Specialist', 'Wings expert', '10+ consensus-rated wing dishes with accurate taste', '🍗', true, 40, 'rare', 'category', 'wings'),
+  ('authority_wings', 'Wings Authority', 'Wings master', '20+ consensus-rated wing dishes with elite accuracy', '🍗', true, 39, 'epic', 'category', 'wings'),
+  ('specialist_sushi', 'Sushi Specialist', 'Sushi expert', '10+ consensus-rated sushi dishes with accurate taste', '🍣', true, 40, 'rare', 'category', 'sushi'),
+  ('authority_sushi', 'Sushi Authority', 'Sushi master', '20+ consensus-rated sushi dishes with elite accuracy', '🍣', true, 39, 'epic', 'category', 'sushi'),
+  ('specialist_sandwich', 'Sandwich Specialist', 'Sandwich expert', '10+ consensus-rated sandwich dishes with accurate taste', '🥪', true, 40, 'rare', 'category', 'sandwich'),
+  ('authority_sandwich', 'Sandwich Authority', 'Sandwich master', '20+ consensus-rated sandwich dishes with elite accuracy', '🥪', true, 39, 'epic', 'category', 'sandwich'),
+  ('specialist_pasta', 'Pasta Specialist', 'Pasta expert', '10+ consensus-rated pasta dishes with accurate taste', '🍝', true, 40, 'rare', 'category', 'pasta'),
+  ('authority_pasta', 'Pasta Authority', 'Pasta master', '20+ consensus-rated pasta dishes with elite accuracy', '🍝', true, 39, 'epic', 'category', 'pasta'),
+  ('specialist_lobster_roll', 'Lobster Roll Specialist', 'Lobster roll expert', '10+ consensus-rated lobster roll dishes with accurate taste', '🦞', true, 40, 'rare', 'category', 'lobster roll'),
+  ('authority_lobster_roll', 'Lobster Roll Authority', 'Lobster roll master', '20+ consensus-rated lobster roll dishes with elite accuracy', '🦞', true, 39, 'epic', 'category', 'lobster roll'),
+  ('specialist_seafood', 'Seafood Specialist', 'Seafood expert', '10+ consensus-rated seafood dishes with accurate taste', '🦐', true, 40, 'rare', 'category', 'seafood'),
+  ('authority_seafood', 'Seafood Authority', 'Seafood master', '20+ consensus-rated seafood dishes with elite accuracy', '🦐', true, 39, 'epic', 'category', 'seafood'),
+  ('specialist_chowder', 'Chowder Specialist', 'Chowder expert', '10+ consensus-rated chowder dishes with accurate taste', '🍲', true, 40, 'rare', 'category', 'chowder'),
+  ('authority_chowder', 'Chowder Authority', 'Chowder master', '20+ consensus-rated chowder dishes with elite accuracy', '🍲', true, 39, 'epic', 'category', 'chowder'),
+  ('specialist_breakfast', 'Breakfast Specialist', 'Breakfast expert', '10+ consensus-rated breakfast dishes with accurate taste', '🍳', true, 40, 'rare', 'category', 'breakfast'),
+  ('authority_breakfast', 'Breakfast Authority', 'Breakfast master', '20+ consensus-rated breakfast dishes with elite accuracy', '🍳', true, 39, 'epic', 'category', 'breakfast'),
+  ('specialist_salad', 'Salad Specialist', 'Salad expert', '10+ consensus-rated salad dishes with accurate taste', '🥗', true, 40, 'rare', 'category', 'salad'),
+  ('authority_salad', 'Salad Authority', 'Salad master', '20+ consensus-rated salad dishes with elite accuracy', '🥗', true, 39, 'epic', 'category', 'salad'),
+  ('specialist_dessert', 'Dessert Specialist', 'Dessert expert', '10+ consensus-rated dessert dishes with accurate taste', '🍰', true, 40, 'rare', 'category', 'dessert'),
+  ('authority_dessert', 'Dessert Authority', 'Dessert master', '20+ consensus-rated dessert dishes with elite accuracy', '🍰', true, 39, 'epic', 'category', 'dessert'),
+  ('specialist_steak', 'Steak Specialist', 'Steak connoisseur', 'Rated 10+ consensus-rated steak dishes with low bias', '🥩', true, 29, 'rare', 'category', 'steak'),
+  ('authority_steak', 'Steak Authority', 'Steak master', 'Rated 20+ consensus-rated steak dishes with very low bias', '🥩', true, 28, 'epic', 'category', 'steak'),
+  ('specialist_tendys', 'Tenders Specialist', 'Tender expert', 'Rated 10+ consensus-rated tenders dishes with low bias', '🍗', true, 31, 'rare', 'category', 'tendys'),
+  ('authority_tendys', 'Tenders Authority', 'Tender master', 'Rated 20+ consensus-rated tenders dishes with very low bias', '🍗', true, 30, 'epic', 'category', 'tendys')
+ON CONFLICT (key) DO UPDATE SET
+  name = EXCLUDED.name, subtitle = EXCLUDED.subtitle, description = EXCLUDED.description,
+  icon = EXCLUDED.icon, is_public_eligible = EXCLUDED.is_public_eligible,
+  sort_order = EXCLUDED.sort_order, rarity = EXCLUDED.rarity, family = EXCLUDED.family,
+  category = EXCLUDED.category;
