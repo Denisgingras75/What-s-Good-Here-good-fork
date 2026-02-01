@@ -38,7 +38,7 @@ describe('Admin API', () => {
 
       const mockSelect = vi.fn(() => ({
         eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValueOnce({ data: { id: 'admin-1' }, error: null }),
+          maybeSingle: vi.fn().mockResolvedValueOnce({ data: { id: 'admin-1' }, error: null }),
         })),
       }))
       supabase.from.mockReturnValueOnce({ select: mockSelect })
@@ -56,7 +56,7 @@ describe('Admin API', () => {
 
       const mockSelect = vi.fn(() => ({
         eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } }),
+          maybeSingle: vi.fn().mockResolvedValueOnce({ data: null, error: null }),
         })),
       }))
       supabase.from.mockReturnValueOnce({ select: mockSelect })
@@ -73,7 +73,7 @@ describe('Admin API', () => {
 
       const mockSelect = vi.fn(() => ({
         eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValueOnce({ data: null, error: { code: 'OTHER_ERROR' } }),
+          maybeSingle: vi.fn().mockResolvedValueOnce({ data: null, error: { code: 'OTHER_ERROR' } }),
         })),
       }))
       supabase.from.mockReturnValueOnce({ select: mockSelect })

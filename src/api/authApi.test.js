@@ -136,7 +136,7 @@ describe('Auth API', () => {
       const mockVote = { would_order_again: true, rating_10: 8 }
       const selectFn = vi.fn(() => ({
         eq: vi.fn(function() { return this }),
-        single: vi.fn().mockResolvedValueOnce({ data: mockVote, error: null }),
+        maybeSingle: vi.fn().mockResolvedValueOnce({ data: mockVote, error: null }),
       }))
 
       supabase.from.mockReturnValueOnce({ select: selectFn })
@@ -149,7 +149,7 @@ describe('Auth API', () => {
     it('should return null if vote not found', async () => {
       const selectFn = vi.fn(() => ({
         eq: vi.fn(function() { return this }),
-        single: vi.fn().mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } }),
+        maybeSingle: vi.fn().mockResolvedValueOnce({ data: null, error: null }),
       }))
 
       supabase.from.mockReturnValueOnce({ select: selectFn })

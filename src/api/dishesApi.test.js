@@ -50,6 +50,7 @@ describe('dishesApi', () => {
         user_lng: -70.6444,
         radius_miles: 10,
         filter_category: 'seafood',
+        filter_town: null,
       })
       expect(result).toEqual(mockData)
     })
@@ -68,6 +69,7 @@ describe('dishesApi', () => {
         user_lng: -70.6444,
         radius_miles: 10,
         filter_category: null,
+        filter_town: null,
       })
     })
 
