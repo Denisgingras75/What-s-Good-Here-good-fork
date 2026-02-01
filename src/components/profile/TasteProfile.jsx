@@ -44,18 +44,13 @@ function describeTaste(categoryStats) {
   return phrases.length > 0 ? phrases : null
 }
 
-function formatBias(bias) {
-  if (bias === 0 || bias == null) return '0.0'
-  return bias > 0 ? `+${bias.toFixed(1)}` : bias.toFixed(1)
-}
-
-function getBiasColor(bias) {
-  if (bias == null || bias === 0) return 'var(--color-text-secondary)'
-  if (bias < -1) return '#ef4444'
-  if (bias < 0) return '#f97316'
-  if (bias > 1) return '#10b981'
-  if (bias > 0) return '#22c55e'
-  return 'var(--color-text-primary)'
+// MAD is always positive — lower = closer to consensus
+function getSpreadColor(mad) {
+  if (mad == null) return 'var(--color-text-secondary)'
+  if (mad < 0.5) return '#10b981'   // Green — consensus voter
+  if (mad < 1.0) return '#22c55e'   // Light green — has opinions
+  if (mad < 2.0) return '#f97316'   // Orange — strong opinions
+  return '#ef4444'                   // Red — wild card
 }
 
 /**
@@ -169,9 +164,9 @@ export function TasteProfile({ userId }) {
           <div className="flex items-baseline gap-3 mb-3">
             <span
               className="text-3xl font-bold tabular-nums"
-              style={{ color: getBiasColor(ratingBias.ratingBias) }}
+              style={{ color: getSpreadColor(ratingBias.ratingBias) }}
             >
-              {formatBias(ratingBias.ratingBias)}
+              {ratingBias.ratingBias.toFixed(1)}
             </span>
             <span
               className="text-sm font-semibold"
@@ -192,15 +187,38 @@ export function TasteProfile({ userId }) {
             }}
           >
             <p>
-              Your score of <strong style={{ color: 'var(--color-text-primary)' }}>{formatBias(ratingBias.ratingBias)}</strong> means
-              you rate dishes an average of {Math.abs(ratingBias.ratingBias).toFixed(1)} points{' '}
-              {ratingBias.ratingBias < 0 ? 'lower' : 'higher'} than the crowd consensus.
+              When you rate a dish, we compare your score to the crowd average.
+              Your number is how far off you typically are — in either direction.
             </p>
             <p className="mt-1.5">
-              We compare your rating on each dish to its average score once it has enough votes.
-              A negative number means you're a tougher critic; positive means you're more generous.
+              You average <strong style={{ color: 'var(--color-text-primary)' }}>{ratingBias.ratingBias.toFixed(1)} points</strong> away
+              from the crowd on each dish.
             </p>
-            <p className="mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+
+            <div className="mt-2.5 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-bold tabular-nums w-10 text-right" style={{ color: '#10b981' }}>0–0.5</span>
+                <span style={{ color: 'var(--color-text-primary)' }}>Consensus Voter</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>— you and the crowd mostly agree</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold tabular-nums w-10 text-right" style={{ color: '#22c55e' }}>0.5–1</span>
+                <span style={{ color: 'var(--color-text-primary)' }}>Has Opinions</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>— slight disagreements here and there</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold tabular-nums w-10 text-right" style={{ color: '#f97316' }}>1–2</span>
+                <span style={{ color: 'var(--color-text-primary)' }}>Strong Opinions</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>— you often see things differently</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold tabular-nums w-10 text-right" style={{ color: '#ef4444' }}>2+</span>
+                <span style={{ color: 'var(--color-text-primary)' }}>Wild Card</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>— your taste is uniquely your own</span>
+              </div>
+            </div>
+
+            <p className="mt-2.5" style={{ color: 'var(--color-text-tertiary)' }}>
               Based on {ratingBias.votesWithConsensus} dish{ratingBias.votesWithConsensus === 1 ? '' : 'es'} with enough votes to compare.
             </p>
           </div>

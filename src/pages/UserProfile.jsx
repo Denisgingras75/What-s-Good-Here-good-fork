@@ -7,8 +7,13 @@ import { votesApi } from '../api/votesApi'
 import { FollowListModal } from '../components/FollowListModal'
 import { ProfileSkeleton } from '../components/Skeleton'
 import { VotedDishCard, ReviewCard, ReviewDetailModal, FoodMap } from '../components/profile'
+import { ThumbsUpIcon } from '../components/ThumbsUpIcon'
+import { ThumbsDownIcon } from '../components/ThumbsDownIcon'
+import { ReviewsIcon } from '../components/ReviewsIcon'
 import { profileApi } from '../api/profileApi'
 import { supabase } from '../lib/supabase'
+
+const MAX_VISIBLE_DISHES = 5
 
 /**
  * Public User Profile Page
@@ -26,12 +31,11 @@ export function UserProfile() {
   const [followLoading, setFollowLoading] = useState(false)
   const [followListModal, setFollowListModal] = useState(null) // 'followers' | 'following' | null
   const [myRatings, setMyRatings] = useState({}) // { dishId: rating }
-  const [showAllRatings, setShowAllRatings] = useState(false)
   const [userReviews, setUserReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
-  const [showAllReviews, setShowAllReviews] = useState(false)
   const [selectedReview, setSelectedReview] = useState(null)
-  const [activityTab, setActivityTab] = useState('ratings') // 'ratings' | 'reviews'
+  const [activeTab, setActiveTab] = useState('worth-it') // 'worth-it' | 'avoid' | 'reviews'
+  const [expandedTabs, setExpandedTabs] = useState({})
   const [tasteCompat, setTasteCompat] = useState(null)
   const [ratingBias, setRatingBias] = useState(null)
 
@@ -204,19 +208,26 @@ export function UserProfile() {
     }
   }
 
-  // Compute stats from recent votes
-  const { uniqueRestaurants, foodMapStats } = useMemo(() => {
+  // Compute stats and split votes from recent votes
+  const { uniqueRestaurants, foodMapStats, worthItVotes, avoidVotes } = useMemo(() => {
     if (!profile?.recent_votes?.length) {
-      return { uniqueRestaurants: 0, foodMapStats: { totalVotes: 0, uniqueRestaurants: 0, categoryCounts: {} } }
+      return { uniqueRestaurants: 0, foodMapStats: { totalVotes: 0, uniqueRestaurants: 0, categoryCounts: {} }, worthItVotes: [], avoidVotes: [] }
     }
     const restaurantNames = new Set()
     const catCounts = {}
+    const worthIt = []
+    const avoid = []
     profile.recent_votes.forEach(vote => {
       if (vote.dish?.restaurant_name) {
         restaurantNames.add(vote.dish.restaurant_name)
       }
       if (vote.dish?.category) {
         catCounts[vote.dish.category] = (catCounts[vote.dish.category] || 0) + 1
+      }
+      if (vote.would_order_again) {
+        worthIt.push(vote)
+      } else {
+        avoid.push(vote)
       }
     })
     return {
@@ -226,6 +237,8 @@ export function UserProfile() {
         uniqueRestaurants: restaurantNames.size,
         categoryCounts: catCounts,
       },
+      worthItVotes: worthIt,
+      avoidVotes: avoid,
     }
   }, [profile?.recent_votes])
 
@@ -383,14 +396,13 @@ export function UserProfile() {
                 <span
                   className="font-bold tabular-nums"
                   style={{
-                    color: ratingBias.ratingBias < -1 ? '#ef4444'
-                      : ratingBias.ratingBias < 0 ? '#f97316'
-                      : ratingBias.ratingBias > 1 ? '#10b981'
-                      : ratingBias.ratingBias > 0 ? '#22c55e'
-                      : 'var(--color-text-secondary)',
+                    color: ratingBias.ratingBias < 0.5 ? '#10b981'
+                      : ratingBias.ratingBias < 1.0 ? '#22c55e'
+                      : ratingBias.ratingBias < 2.0 ? '#f97316'
+                      : '#ef4444',
                   }}
                 >
-                  {ratingBias.ratingBias > 0 ? '+' : ''}{ratingBias.ratingBias.toFixed(1)}
+                  {ratingBias.ratingBias.toFixed(1)}
                 </span>
                 <span style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
                   {ratingBias.biasLabel}
@@ -443,134 +455,133 @@ export function UserProfile() {
         </div>
       )}
 
-      {/* Activity Section with Tabs */}
-      <div className="px-4 py-4">
-        {/* Tab Bar */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setActivityTab('ratings')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-              activityTab === 'ratings'
-                ? 'text-white shadow-md'
-                : 'text-[color:var(--color-text-secondary)]'
-            }`}
-            style={activityTab === 'ratings'
-              ? { background: 'var(--color-primary)' }
-              : { background: 'var(--color-surface-elevated)' }}
-          >
-            {profile.display_name}'s Ratings
-            <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs ${
-              activityTab === 'ratings' ? 'bg-white/20' : 'bg-black/10'
-            }`}>
-              {profile.recent_votes?.length || 0}
-            </span>
-          </button>
-          <button
-            onClick={() => setActivityTab('reviews')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-              activityTab === 'reviews'
-                ? 'text-white shadow-md'
-                : 'text-[color:var(--color-text-secondary)]'
-            }`}
-            style={activityTab === 'reviews'
-              ? { background: 'var(--color-primary)' }
-              : { background: 'var(--color-surface-elevated)' }}
-          >
-            Written Reviews
-            <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs ${
-              activityTab === 'reviews' ? 'bg-white/20' : 'bg-black/10'
-            }`}>
-              {userReviews.length}
-            </span>
-          </button>
+      {/* Tabs */}
+      <div
+        className="sticky top-0 z-10 py-2.5"
+        style={{
+          background: 'var(--color-surface)',
+          boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.2)',
+          borderBottom: '1px solid var(--color-divider)',
+        }}
+      >
+        <div className="flex gap-1.5 overflow-x-auto px-4 pb-0.5 scrollbar-hide">
+          {[
+            { id: 'worth-it', label: 'Good Here', icon: 'thumbsUp', count: worthItVotes.length },
+            { id: 'avoid', label: 'Not Good Here', icon: 'thumbsDown', count: avoidVotes.length },
+            { id: 'reviews', label: 'Reviews', icon: 'reviews', count: userReviews.length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl font-medium transition-all whitespace-nowrap active:scale-[0.97] ${
+                activeTab === tab.id
+                  ? 'text-white'
+                  : 'text-[color:var(--color-text-secondary)]'
+              }`}
+              style={{
+                fontSize: '13px',
+                ...(activeTab === tab.id
+                  ? {
+                      background: 'var(--color-primary)',
+                      boxShadow: '0 2px 8px -2px rgba(200, 90, 84, 0.4)',
+                    }
+                  : { background: 'var(--color-surface-elevated)' }),
+              }}
+            >
+              {tab.icon === 'thumbsUp' ? <ThumbsUpIcon size={28} active={activeTab === tab.id} /> : tab.icon === 'thumbsDown' ? <ThumbsDownIcon size={28} active={activeTab === tab.id} /> : <ReviewsIcon size={40} active={activeTab === tab.id} />}
+              <span>{tab.label}</span>
+              <span
+                className={`ml-0.5 px-1.5 py-0.5 rounded-full font-semibold ${
+                  activeTab === tab.id ? 'bg-white/20' : 'bg-black/20'
+                }`}
+                style={{ fontSize: '11px' }}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Tab Content */}
-        {activityTab === 'ratings' ? (
-          // Ratings Tab
-          profile.recent_votes?.length > 0 ? (
-            <div className="space-y-3">
-              {(showAllRatings ? profile.recent_votes : profile.recent_votes.slice(0, 5)).map((vote, index) => (
-                <VotedDishCard
-                  key={index}
-                  dish={{
-                    dish_id: vote.dish?.id,
-                    dish_name: vote.dish?.name,
-                    photo_url: vote.dish?.photo_url,
-                    category: vote.dish?.category,
-                    restaurant_name: vote.dish?.restaurant_name,
-                    avg_rating: vote.dish?.avg_rating,
-                  }}
-                  variant="other-profile"
-                  theirRating={vote.rating}
-                  myRating={myRatings[vote.dish?.id]}
-                  wouldOrderAgain={vote.would_order_again}
-                />
-              ))}
+      {/* Tab Content */}
+      <div className="p-4 pt-5">
+        {(() => {
+          const tabDishes = activeTab === 'worth-it' ? worthItVotes
+            : activeTab === 'avoid' ? avoidVotes
+            : userReviews
+          const isLoading = activeTab === 'reviews' ? reviewsLoading : false
+          const isTabExpanded = expandedTabs[activeTab] || false
+          const visibleDishes = isTabExpanded ? tabDishes : tabDishes.slice(0, MAX_VISIBLE_DISHES)
+          const hiddenCount = tabDishes.length - MAX_VISIBLE_DISHES
+          const hasMoreDishes = hiddenCount > 0
+
+          if (isLoading) {
+            return (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--color-surface-elevated)' }} />
+                ))}
+              </div>
+            )
+          }
+
+          if (tabDishes.length === 0) {
+            return (
+              <div className="py-8 text-center">
+                <img src="/empty-plate.png" alt="" className="w-14 h-14 mx-auto mb-2 rounded-full object-cover" />
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  {activeTab === 'worth-it' ? 'No dishes rated good here yet'
+                    : activeTab === 'avoid' ? 'No dishes rated not good here yet'
+                    : 'No reviews yet'}
+                </p>
+              </div>
+            )
+          }
+
+          return (
+            <div className="space-y-3.5">
+              {activeTab === 'reviews' ? (
+                visibleDishes.map((review) => (
+                  <ReviewCard key={review.id} review={review} onClick={() => setSelectedReview(review)} />
+                ))
+              ) : (
+                visibleDishes.map((vote, index) => (
+                  <VotedDishCard
+                    key={vote.dish?.id || index}
+                    dish={{
+                      dish_id: vote.dish?.id,
+                      dish_name: vote.dish?.name,
+                      photo_url: vote.dish?.photo_url,
+                      category: vote.dish?.category,
+                      restaurant_name: vote.dish?.restaurant_name,
+                      avg_rating: vote.dish?.avg_rating,
+                    }}
+                    variant="other-profile"
+                    theirRating={vote.rating}
+                    myRating={myRatings[vote.dish?.id]}
+                    wouldOrderAgain={vote.would_order_again}
+                  />
+                ))
+              )}
 
               {/* View more / View less button */}
-              {profile.recent_votes.length > 5 && (
+              {hasMoreDishes && (
                 <button
-                  onClick={() => setShowAllRatings(!showAllRatings)}
-                  className="w-full py-3 text-center rounded-xl border-2 border-dashed hover:bg-white/5 transition-colors"
+                  onClick={() => setExpandedTabs(prev => ({ ...prev, [activeTab]: !isTabExpanded }))}
+                  className="w-full py-3 text-center rounded-xl border-2 border-dashed transition-all hover:bg-[color:var(--color-surface-elevated)] hover:border-[color:var(--color-primary)] active:scale-[0.99]"
                   style={{ borderColor: 'var(--color-divider)' }}
                 >
-                  <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
-                    {showAllRatings
+                  <span className="font-semibold" style={{ color: 'var(--color-primary)', fontSize: '13px' }}>
+                    {isTabExpanded
                       ? 'Show less'
-                      : `View ${profile.recent_votes.length - 5} more ${profile.recent_votes.length - 5 === 1 ? 'rating' : 'ratings'}`
+                      : `View ${hiddenCount} more ${activeTab === 'reviews' ? (hiddenCount === 1 ? 'review' : 'reviews') : (hiddenCount === 1 ? 'dish' : 'dishes')}`
                     }
                   </span>
                 </button>
               )}
             </div>
-          ) : (
-            <div className="py-8 text-center">
-              <img src="/empty-plate.png" alt="" className="w-14 h-14 mx-auto mb-2 rounded-full object-cover" />
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                No ratings yet
-              </p>
-            </div>
           )
-        ) : (
-          // Reviews Tab
-          reviewsLoading ? (
-            <div className="space-y-3">
-              {[...Array(2)].map((_, i) => (
-                <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--color-surface-elevated)' }} />
-              ))}
-            </div>
-          ) : userReviews.length > 0 ? (
-            <div className="space-y-3">
-              {(showAllReviews ? userReviews : userReviews.slice(0, 5)).map((review) => (
-                <ReviewCard key={review.id} review={review} onClick={() => setSelectedReview(review)} />
-              ))}
-
-              {/* View more / View less button */}
-              {userReviews.length > 5 && (
-                <button
-                  onClick={() => setShowAllReviews(!showAllReviews)}
-                  className="w-full py-3 text-center rounded-xl border-2 border-dashed hover:bg-white/5 transition-colors"
-                  style={{ borderColor: 'var(--color-divider)' }}
-                >
-                  <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
-                    {showAllReviews
-                      ? 'Show less'
-                      : `View ${userReviews.length - 5} more ${userReviews.length - 5 === 1 ? 'review' : 'reviews'}`
-                    }
-                  </span>
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="py-8 text-center">
-              <div className="text-4xl mb-2">📝</div>
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                No reviews yet
-              </p>
-            </div>
-          )
-        )}
+        })()}
       </div>
 
       {/* Follow List Modal */}
