@@ -54,7 +54,9 @@ export const votesApi = {
         .rpc('check_vote_rate_limit')
 
       if (rateLimitError) {
-        // If server rate limit check fails, allow the vote (graceful degradation)
+        // SECURITY: Fail closed - if rate limit check fails, block the vote
+        logger.error('Vote rate limit check failed:', rateLimitError)
+        throw new Error('Unable to verify vote limit. Please try again.')
       } else if (serverRateLimit && !serverRateLimit.allowed) {
         throw new Error(serverRateLimit.message || 'Too many votes. Please wait.')
       }
