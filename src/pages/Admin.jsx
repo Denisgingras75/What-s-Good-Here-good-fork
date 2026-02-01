@@ -704,20 +704,24 @@ export function Admin() {
                       style={{ borderColor: 'var(--color-divider)', background: 'var(--color-surface)' }}
                     />
                     <button
-                      onClick={async () => {
+                      onClick={() => {
+                        // Use a temporary textarea for maximum compatibility.
+                        // navigator.clipboard.writeText loses user-gesture context
+                        // on mobile Safari when called with async/await.
+                        const ta = document.createElement('textarea')
+                        ta.value = inviteLink
+                        ta.style.position = 'fixed'
+                        ta.style.left = '-9999px'
+                        document.body.appendChild(ta)
+                        ta.focus()
+                        ta.select()
                         try {
-                          await navigator.clipboard.writeText(inviteLink)
+                          document.execCommand('copy')
                           setMessage({ type: 'success', text: 'Link copied!' })
                         } catch {
-                          // Fallback: select the input and copy via execCommand
-                          const input = inviteInputRef.current
-                          if (input) {
-                            input.focus()
-                            input.setSelectionRange(0, input.value.length)
-                            document.execCommand('copy')
-                            setMessage({ type: 'success', text: 'Link copied!' })
-                          }
+                          setMessage({ type: 'error', text: 'Copy failed — please select and copy manually' })
                         }
+                        document.body.removeChild(ta)
                       }}
                       className="px-3 py-1 rounded text-xs font-medium text-white"
                       style={{ background: 'var(--color-primary)' }}
