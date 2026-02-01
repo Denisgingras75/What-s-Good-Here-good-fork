@@ -28,7 +28,7 @@ export function PhotosInfoSection() {
       {expanded && (
         <div className="px-4 pb-4">
           <p className="text-sm text-[color:var(--color-text-secondary)] mb-4">
-            When you add a photo, we automatically sort it so the clearest ones represent each dish. Everyone can contribute — not all photos are shown the same way.
+            When you add a photo, we score it for clarity and show it in the community gallery for that dish. Higher-quality photos appear first.
           </p>
 
           <div className="space-y-2">

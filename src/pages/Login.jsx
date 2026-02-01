@@ -230,7 +230,7 @@ export function Login() {
                 </div>
                 <div className="flex items-center gap-3">
                   <CameraIcon size={20} />
-                  <p><strong style={{ color: 'var(--color-text-primary)' }}>Snap a photo</strong> — yours could become the featured image! If not, it'll still show in the community gallery.</p>
+                  <p><strong style={{ color: 'var(--color-text-primary)' }}>Snap a photo</strong> — it'll show in the community gallery for that dish.</p>
                 </div>
               </div>
             </div>

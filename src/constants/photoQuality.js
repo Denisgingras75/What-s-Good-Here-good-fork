@@ -59,8 +59,8 @@ export const PHOTO_TIERS = {
   featured: {
     icon: '⭐',
     label: 'Featured',
-    description: 'May be used as the main image for a dish',
-    uploadDescription: 'Your photo may be shown as the main image for this dish.',
+    description: 'Shown prominently in the community gallery',
+    uploadDescription: 'Your photo will appear prominently in the community gallery for this dish.',
     color: '#F59E0B', // amber
   },
   community: {
@@ -76,7 +76,7 @@ export const PHOTO_TIERS = {
     description: 'Only shown under "See all photos"',
     uploadDescription: 'Your photo is saved and visible under "See all photos."',
     color: '#6B7280', // gray
-    tip: 'Tip: Better lighting or a closer shot can help it become Featured.',
+    tip: 'Tip: Better lighting or a closer shot can help it rank higher in the gallery.',
   },
 }
 

@@ -48,9 +48,9 @@ export function PhotoUploadConfirmation({
       {showInfo && (
         <div className="photo-info-content">
           <ul>
-            <li>Photos are automatically sorted so the clearest ones represent each dish.</li>
+            <li>Photos are scored by clarity and shown in the community gallery.</li>
             <li>Everyone can contribute — not all photos are shown the same way.</li>
-            <li>Featured photos may appear as the main dish image.</li>
+            <li>Higher-quality photos appear first in the gallery.</li>
           </ul>
         </div>
       )}
