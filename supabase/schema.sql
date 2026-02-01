@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS dishes (
   consensus_ready BOOLEAN DEFAULT FALSE,
   consensus_votes INT DEFAULT 0,
   consensus_calculated_at TIMESTAMPTZ,
+  value_score DECIMAL(6, 2),
+  value_percentile DECIMAL(5, 2),
+  category_median_price DECIMAL(6, 2),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -254,6 +257,16 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   action TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
+-- 1s. category_median_prices (view)
+CREATE OR REPLACE VIEW category_median_prices AS
+SELECT category,
+  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price) AS median_price,
+  COUNT(*) AS dish_count
+FROM dishes
+WHERE price IS NOT NULL AND price > 0 AND total_votes >= 8
+GROUP BY category;
 
 
 -- =============================================
@@ -513,7 +526,9 @@ RETURNS TABLE (
   has_variants BOOLEAN,
   variant_count INT,
   best_variant_name TEXT,
-  best_variant_rating DECIMAL
+  best_variant_rating DECIMAL,
+  value_score DECIMAL,
+  value_percentile DECIMAL
 ) AS $$
 DECLARE
   lat_delta DECIMAL := radius_miles / 69.0;
@@ -595,7 +610,9 @@ BEGIN
     (vs.child_count IS NOT NULL AND vs.child_count > 0) AS has_variants,
     COALESCE(vs.child_count, 0)::INT AS variant_count,
     bv.best_name AS best_variant_name,
-    bv.best_rating AS best_variant_rating
+    bv.best_rating AS best_variant_rating,
+    d.value_score,
+    d.value_percentile
   FROM dishes d
   INNER JOIN filtered_restaurants fr ON d.restaurant_id = fr.id
   LEFT JOIN votes v ON d.id = v.dish_id
@@ -606,7 +623,8 @@ BEGIN
   GROUP BY d.id, d.name, fr.id, fr.name, fr.town, d.category, d.tags, fr.cuisine,
            d.price, d.photo_url, fr.distance,
            vs.total_child_votes, vs.total_child_yes, vs.child_count,
-           bv.best_name, bv.best_rating
+           bv.best_name, bv.best_rating,
+           d.value_score, d.value_percentile
   ORDER BY avg_rating DESC NULLS LAST, total_votes DESC;
 END;
 $$ LANGUAGE plpgsql STABLE;
@@ -1709,6 +1727,92 @@ $$;
 DROP TRIGGER IF EXISTS trigger_update_streak_on_vote ON votes;
 CREATE TRIGGER trigger_update_streak_on_vote
   AFTER INSERT ON votes FOR EACH ROW EXECUTE FUNCTION update_user_streak_on_vote();
+
+-- 13g. Compute value_score on dish insert/update
+CREATE OR REPLACE FUNCTION compute_value_score()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_median DECIMAL;
+BEGIN
+  -- Null out if dish doesn't qualify
+  IF NEW.price IS NULL OR NEW.price <= 0 OR NEW.total_votes < 8 OR NEW.avg_rating IS NULL THEN
+    NEW.value_score := NULL;
+    NEW.category_median_price := NULL;
+    RETURN NEW;
+  END IF;
+
+  -- Look up category median price
+  SELECT median_price INTO v_median
+  FROM category_median_prices
+  WHERE category = NEW.category;
+
+  IF v_median IS NULL THEN
+    NEW.value_score := NULL;
+    NEW.category_median_price := NULL;
+    RETURN NEW;
+  END IF;
+
+  NEW.category_median_price := v_median;
+  NEW.value_score := ROUND(
+    ((0.50 * NEW.avg_rating + 0.50 * (NEW.avg_rating / LOG(GREATEST(NEW.price / v_median, 0.1) + 2))) * 10)::NUMERIC,
+    2
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_compute_value_score ON dishes;
+CREATE TRIGGER trigger_compute_value_score
+  BEFORE INSERT OR UPDATE OF avg_rating, total_votes, price, category ON dishes
+  FOR EACH ROW EXECUTE FUNCTION compute_value_score();
+
+-- 13h. Batch recalculate value percentiles (called by pg_cron every 2 hours)
+CREATE OR REPLACE FUNCTION recalculate_value_percentiles()
+RETURNS VOID AS $$
+BEGIN
+  -- Refresh category_median_price and value_score on all qualifying rows
+  UPDATE dishes d SET
+    category_median_price = cmp.median_price,
+    value_score = ROUND(
+      ((0.50 * d.avg_rating + 0.50 * (d.avg_rating / LOG(GREATEST(d.price / cmp.median_price, 0.1) + 2))) * 10)::NUMERIC,
+      2
+    )
+  FROM category_median_prices cmp
+  WHERE cmp.category = d.category
+    AND d.price IS NOT NULL AND d.price > 0
+    AND d.total_votes >= 8
+    AND d.avg_rating IS NOT NULL;
+
+  -- Zero out non-qualifying dishes
+  UPDATE dishes SET value_score = NULL, value_percentile = NULL, category_median_price = NULL
+  WHERE price IS NULL OR price <= 0 OR total_votes < 8 OR avg_rating IS NULL;
+
+  -- Assign percentiles only to categories with >= 8 qualifying dishes
+  UPDATE dishes d SET value_percentile = ranked.pct
+  FROM (
+    SELECT id,
+      ROUND((PERCENT_RANK() OVER (PARTITION BY category ORDER BY value_score ASC) * 100)::NUMERIC, 2) AS pct
+    FROM dishes
+    WHERE value_score IS NOT NULL
+      AND category IN (
+        SELECT category FROM dishes WHERE value_score IS NOT NULL GROUP BY category HAVING COUNT(*) >= 8
+      )
+  ) ranked
+  WHERE d.id = ranked.id;
+
+  -- Zero out percentile for categories with fewer than 8 qualifying dishes
+  UPDATE dishes SET value_percentile = NULL
+  WHERE value_score IS NOT NULL
+    AND category NOT IN (
+      SELECT category FROM dishes WHERE value_score IS NOT NULL GROUP BY category HAVING COUNT(*) >= 8
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- pg_cron: recalculate value percentiles every 2 hours
+-- Run manually in Supabase SQL Editor:
+-- SELECT cron.schedule('recalculate-value-percentiles', '0 */2 * * *', $$SELECT recalculate_value_percentiles()$$);
 
 
 -- =============================================

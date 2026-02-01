@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { MIN_VOTES_FOR_RANKING } from '../../constants/app'
 import { getRatingColor } from '../../utils/ranking'
 import { RestaurantAvatar } from '../RestaurantAvatar'
+import { ValueBadge } from '../browse/ValueBadge'
 
 // Compact dish row for homepage rankings
-export const RankedDishRow = memo(function RankedDishRow({ dish, rank }) {
+export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy }) {
   const navigate = useNavigate()
   const {
     dish_id,
@@ -15,6 +16,8 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank }) {
     avg_rating,
     total_votes,
     distance_miles,
+    price,
+    value_percentile,
   } = dish
 
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
@@ -69,11 +72,15 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank }) {
 
       {/* Dish Info */}
       <div className="flex-1 min-w-0 text-left">
-        <h3 className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
-          {dish_name}
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
+            {dish_name}
+          </h3>
+          <ValueBadge valuePercentile={value_percentile} />
+        </div>
         <p className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>
           {restaurant_name}
+          {sortBy === 'best_value' && price != null && ` · $${Number(price).toFixed(0)}`}
           {distance_miles && ` · ${Number(distance_miles).toFixed(1)} mi`}
         </p>
       </div>
