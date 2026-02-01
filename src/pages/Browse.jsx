@@ -110,8 +110,19 @@ export function Browse() {
     }
 
     let cancelled = false
-    badgesApi.getCategoryExperts(selectedCategory, 5)
-      .then(experts => { if (!cancelled) setCategoryExperts(experts) })
+    badgesApi.getCategoryExperts(selectedCategory, 10)
+      .then(experts => {
+        if (cancelled) return
+        // Deduplicate by user_id, keeping highest tier (authority > specialist)
+        const seen = new Map()
+        experts.forEach(e => {
+          const existing = seen.get(e.user_id)
+          if (!existing || e.badge_tier === 'authority') {
+            seen.set(e.user_id, e)
+          }
+        })
+        setCategoryExperts(Array.from(seen.values()).slice(0, 5))
+      })
       .catch(() => { if (!cancelled) setCategoryExperts([]) })
     return () => { cancelled = true }
   }, [selectedCategory])
@@ -135,7 +146,7 @@ export function Browse() {
 
     if (specialist?.unlocked && authority) {
       const remaining = authority.target - authority.progress
-      if (remaining >= 1 && remaining <= 3) {
+      if (remaining >= 1 && remaining <= 5) {
         return { remaining, label: `${catInfo.label} Authority`, emoji: catInfo.emoji }
       }
       return null
@@ -143,7 +154,7 @@ export function Browse() {
 
     if (specialist && !specialist.unlocked) {
       const remaining = specialist.target - specialist.progress
-      if (remaining >= 1 && remaining <= 3) {
+      if (remaining >= 1 && remaining <= 5) {
         return { remaining, label: `${catInfo.label} Specialist`, emoji: catInfo.emoji }
       }
     }
