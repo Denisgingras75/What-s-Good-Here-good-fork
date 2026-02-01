@@ -100,6 +100,56 @@ export const profileApi = {
   },
 
   /**
+   * Get per-category taste stats for a user (bias relative to consensus).
+   * Uses the existing get_badge_evaluation_stats RPC which returns categoryStats.
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} Array of { category, total_ratings, consensus_ratings, bias }
+   */
+  async getTasteStats(userId) {
+    try {
+      if (!userId) return []
+
+      const { data, error } = await supabase.rpc('get_badge_evaluation_stats', {
+        p_user_id: userId,
+      })
+
+      if (error) throw error
+
+      return data?.categoryStats || []
+    } catch (error) {
+      logger.error('Error fetching taste stats:', error)
+      return []
+    }
+  },
+
+  /**
+   * Get user's overall rating bias (deviation from consensus).
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} { ratingBias, biasLabel, votesWithConsensus }
+   */
+  async getRatingBias(userId) {
+    try {
+      if (!userId) return { ratingBias: 0, biasLabel: 'New Voter', votesWithConsensus: 0 }
+
+      const { data, error } = await supabase.rpc('get_user_rating_identity', {
+        target_user_id: userId,
+      })
+
+      if (error) throw error
+
+      const row = data?.[0] || data
+      return {
+        ratingBias: row?.rating_bias ?? 0,
+        biasLabel: row?.bias_label ?? 'New Voter',
+        votesWithConsensus: row?.votes_with_consensus ?? 0,
+      }
+    } catch (error) {
+      logger.error('Error fetching rating bias:', error)
+      return { ratingBias: 0, biasLabel: 'New Voter', votesWithConsensus: 0 }
+    }
+  },
+
+  /**
    * Get or create a profile for current authenticated user
    * @returns {Promise<Object>} Profile object
    */

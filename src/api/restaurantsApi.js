@@ -99,6 +99,24 @@ export const restaurantsApi = {
    * @param {string} restaurantId - Restaurant ID
    * @returns {Promise<Object>} Restaurant object
    */
+  /**
+   * Get total restaurant count
+   * @returns {Promise<number>} Total number of restaurants
+   */
+  async getCount() {
+    try {
+      const { count, error } = await supabase
+        .from('restaurants')
+        .select('id', { count: 'exact', head: true })
+
+      if (error) throw error
+      return count || 0
+    } catch (error) {
+      logger.error('Error fetching restaurant count:', error)
+      return 0
+    }
+  },
+
   async getById(restaurantId) {
     try {
       const { data, error } = await supabase

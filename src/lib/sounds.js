@@ -1,17 +1,12 @@
-// Sound system for bite and badge sounds
+// Sound system for bite sounds
 
 let crunchSound = null
-let badgeSound = null
 
 // Initialize sounds on first user interaction
 export function preloadSounds() {
   crunchSound = new Audio('/sounds/crunch.wav')
   crunchSound.preload = 'auto'
   crunchSound.volume = 0.5
-
-  badgeSound = new Audio('/sounds/badge-unlock.mp3')
-  badgeSound.preload = 'auto'
-  badgeSound.volume = 0.5
 }
 
 // Check if sounds are muted
@@ -48,12 +43,4 @@ export function playBiteSound() {
   crunchSound.play().catch(() => {})
 }
 
-// Play badge unlock chime
-export function playBadgeSound() {
-  if (isSoundMuted()) return
-  if (!badgeSound) return
-
-  badgeSound.currentTime = 0
-  badgeSound.play().catch(() => {})
-}
 

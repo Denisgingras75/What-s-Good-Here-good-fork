@@ -1,18 +1,12 @@
-import { useNavigate } from 'react-router-dom'
-import { calculateArchetype, getArchetypeById } from '../../utils/calculateArchetype'
-import { BADGE_FAMILY, filterSupersededBadges } from '../../constants/badgeDefinitions'
-
 /**
  * Hero Identity Card for the Profile page
- * Shows user avatar, name, follow stats, archetype, and badge count
+ * Shows user avatar, name, follow stats, and simple stats line
  */
 export function HeroIdentityCard({
   user,
   profile,
   stats,
-  badges,
   followCounts,
-  ratingIdentity,
   editingName,
   newName,
   nameStatus,
@@ -22,28 +16,6 @@ export function HeroIdentityCard({
   handleSaveName,
   setFollowListModal,
 }) {
-  const navigate = useNavigate()
-
-  // Calculate badges earned (exclude specialist when authority exists for same category)
-  const unlockedBadges = filterSupersededBadges(badges?.filter(b => b.unlocked) || [])
-  const badgeCount = unlockedBadges.length
-  const categoryBadgeCount = unlockedBadges.filter(b => b.family === BADGE_FAMILY.CATEGORY).length
-
-  // Calculate archetype
-  const archetypeResult = calculateArchetype({ ...stats, categoryBadgeCount }, ratingIdentity, followCounts)
-  const archetype = archetypeResult.id ? getArchetypeById(archetypeResult.id) : null
-
-  // Primary identity title from archetype or rating personality
-  const getPrimaryTitle = () => {
-    if (archetype && archetypeResult.confidence === 'established') {
-      return `${archetype.emoji} ${archetype.label}`
-    }
-    if (stats.ratingPersonality) {
-      return stats.ratingPersonality.title
-    }
-    return 'Food Explorer'
-  }
-
   return (
     <div
       className="relative px-4 pt-8 pb-6 overflow-hidden"
@@ -77,15 +49,6 @@ export function HeroIdentityCard({
           >
             {profile?.display_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
           </div>
-          {/* Badge count indicator */}
-          {badgeCount >= 1 && (
-            <div
-              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md"
-              style={{ background: 'var(--color-primary)', border: '2px solid var(--color-bg)' }}
-            >
-              {badgeCount}
-            </div>
-          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -185,68 +148,12 @@ export function HeroIdentityCard({
         </div>
       </div>
 
-      {/* Identity Title */}
-      <div className="mt-5">
-        <h2
-          className="font-bold"
-          style={{
-            color: 'var(--color-primary)',
-            fontSize: '17px',
-            letterSpacing: '-0.01em',
-          }}
-        >
-          {getPrimaryTitle()}
-        </h2>
-
-        {/* Archetype subtitle (emerging) */}
-        {archetype && archetypeResult.confidence === 'emerging' && (
-          <p className="mt-1" style={{ color: 'var(--color-text-tertiary)', fontSize: '13px' }}>
-            trending toward {archetype.label.replace('The ', '')}
-          </p>
-        )}
-      </div>
-
-      {/* Compact Stats Row */}
-      <div className="flex items-center gap-4 mt-3" style={{ fontSize: '13px' }}>
-        {badgeCount > 0 && (
-          <button
-            onClick={() => navigate('/badges')}
-            className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            <span>🏅</span>
-            <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{badgeCount}</span>
-            <span>badge{badgeCount !== 1 ? 's' : ''}</span>
-          </button>
-        )}
-        {ratingIdentity && ratingIdentity.votesWithConsensus > 0 && (
-          <button
-            onClick={() => navigate('/rating-style')}
-            className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            <span style={{
-              color: ratingIdentity.ratingBias < 0 ? '#f97316' : ratingIdentity.ratingBias > 0 ? '#22c55e' : 'var(--color-text-secondary)',
-              fontWeight: 700,
-            }}>
-              {ratingIdentity.ratingBias > 0 ? '+' : ''}{ratingIdentity.ratingBias?.toFixed(1) || '0.0'}
-            </span>
-            <span>{ratingIdentity.biasLabel}</span>
-          </button>
-        )}
-        {stats.totalVotes > 0 && (
-          <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
-            <span>🍴</span>
-            <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.totalVotes}</span>
-          </span>
-        )}
-        {stats.uniqueRestaurants > 0 && (
-          <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
-            <span>🏠</span>
-            <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.uniqueRestaurants}</span>
-          </span>
-        )}
-      </div>
+      {/* Stats Line */}
+      {stats.totalVotes > 0 && (
+        <p className="mt-4 text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+          {stats.totalVotes} {stats.totalVotes === 1 ? 'dish' : 'dishes'}{stats.uniqueRestaurants > 0 ? ` \u00B7 ${stats.uniqueRestaurants} restaurants` : ''}
+        </p>
+      )}
     </div>
   )
 }

@@ -6,11 +6,9 @@ import { followsApi } from '../api/followsApi'
 import { votesApi } from '../api/votesApi'
 import { FollowListModal } from '../components/FollowListModal'
 import { ProfileSkeleton } from '../components/Skeleton'
-import { VotedDishCard, ReviewCard, ReviewDetailModal } from '../components/profile'
+import { VotedDishCard, ReviewCard, ReviewDetailModal, FoodMap } from '../components/profile'
+import { profileApi } from '../api/profileApi'
 import { supabase } from '../lib/supabase'
-import { useRatingIdentity } from '../hooks/useRatingIdentity'
-import { calculateArchetype, getArchetypeById } from '../utils/calculateArchetype'
-import { getRarityColor, RARITY_LABELS, BADGE_FAMILY, filterSupersededBadges } from '../constants/badgeDefinitions'
 
 /**
  * Public User Profile Page
@@ -35,6 +33,7 @@ export function UserProfile() {
   const [selectedReview, setSelectedReview] = useState(null)
   const [activityTab, setActivityTab] = useState('ratings') // 'ratings' | 'reviews'
   const [tasteCompat, setTasteCompat] = useState(null)
+  const [ratingBias, setRatingBias] = useState(null)
 
   // Check if viewing own profile
   const isOwnProfile = currentUser?.id === userId
@@ -45,9 +44,6 @@ export function UserProfile() {
       navigate('/profile', { replace: true })
     }
   }, [isOwnProfile, navigate])
-
-  // Fetch rating identity for this user (behind feature flag)
-  const ratingIdentity = useRatingIdentity(userId)
 
   // Fetch profile data
   useEffect(() => {
@@ -103,6 +99,12 @@ export function UserProfile() {
     }
     fetchCompatibility()
   }, [currentUser, userId, isOwnProfile])
+
+  // Fetch rating bias
+  useEffect(() => {
+    if (!userId) return
+    profileApi.getRatingBias(userId).then(setRatingBias)
+  }, [userId])
 
   // Fetch current user's ratings for the same dishes (for comparison)
   useEffect(() => {
@@ -202,54 +204,30 @@ export function UserProfile() {
     }
   }
 
-  // Get rating personality based on avg rating
-  const getRatingPersonality = (avgRating) => {
-    if (!avgRating) return null
-    if (avgRating >= 8.5) return { emoji: '😍', title: 'Loves Everything' }
-    if (avgRating >= 7.0) return { emoji: '😊', title: 'Generous Rater' }
-    if (avgRating >= 5.5) return { emoji: '🤔', title: 'Fair Judge' }
-    return { emoji: '😤', title: 'Tough Critic' }
-  }
-
-  // Calculate archetype stats from recent_votes
-  const { ratingVariance, categoryConcentration, uniqueRestaurants } = useMemo(() => {
+  // Compute stats from recent votes
+  const { uniqueRestaurants, foodMapStats } = useMemo(() => {
     if (!profile?.recent_votes?.length) {
-      return { ratingVariance: 0, categoryConcentration: 0, uniqueRestaurants: 0 }
+      return { uniqueRestaurants: 0, foodMapStats: { totalVotes: 0, uniqueRestaurants: 0, categoryCounts: {} } }
     }
-
-    // Count votes per category + unique restaurants
-    const categoryCounts = {}
     const restaurantNames = new Set()
+    const catCounts = {}
     profile.recent_votes.forEach(vote => {
-      const cat = vote.dish?.category
-      if (cat) {
-        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
-      }
       if (vote.dish?.restaurant_name) {
         restaurantNames.add(vote.dish.restaurant_name)
       }
+      if (vote.dish?.category) {
+        catCounts[vote.dish.category] = (catCounts[vote.dish.category] || 0) + 1
+      }
     })
-
-    // Rating variance (std dev)
-    const avgRating = profile.stats?.avg_rating || 0
-    const ratingsWithValue = profile.recent_votes.filter(v => v.rating != null)
-    const variance = ratingsWithValue.length > 1
-      ? Math.sqrt(ratingsWithValue.reduce((sum, v) => sum + Math.pow(v.rating - avgRating, 2), 0) / ratingsWithValue.length)
-      : 0
-
-    // Category concentration (Herfindahl index)
-    const catValues = Object.values(categoryCounts)
-    const catTotal = catValues.reduce((a, b) => a + b, 0)
-    const concentration = catTotal > 0
-      ? catValues.reduce((sum, c) => sum + Math.pow(c / catTotal, 2), 0)
-      : 0
-
     return {
-      ratingVariance: variance,
-      categoryConcentration: concentration,
       uniqueRestaurants: restaurantNames.size,
+      foodMapStats: {
+        totalVotes: profile.recent_votes.length,
+        uniqueRestaurants: restaurantNames.size,
+        categoryCounts: catCounts,
+      },
     }
-  }, [profile?.recent_votes, profile?.stats?.avg_rating])
+  }, [profile?.recent_votes])
 
   if (loading) {
     return <ProfileSkeleton />
@@ -276,29 +254,7 @@ export function UserProfile() {
     )
   }
 
-  const personality = getRatingPersonality(profile.stats?.avg_rating)
-
-  const displayBadges = filterSupersededBadges(profile.badges || [])
-  const badgeCount = displayBadges.length
-  const categoryBadgeCount = displayBadges.filter(b => b.family === BADGE_FAMILY.CATEGORY).length
   const totalVotes = profile.stats?.total_votes || 0
-
-  // Archetype
-  const archetypeResult = calculateArchetype(
-    { totalVotes, avgRating: profile.stats?.avg_rating || 0, ratingVariance, categoryConcentration, categoryBadgeCount },
-    ratingIdentity,
-    { followers: profile.follower_count || 0, following: profile.following_count || 0 }
-  )
-  const archetype = archetypeResult.id ? getArchetypeById(archetypeResult.id) : null
-
-  // Primary identity title
-  const getPrimaryTitle = () => {
-    if (archetype && archetypeResult.confidence === 'established') {
-      return `${archetype.emoji} ${archetype.label}`
-    }
-    if (personality) return personality.title
-    return 'Food Explorer'
-  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
@@ -336,15 +292,6 @@ export function UserProfile() {
             >
               {profile.display_name?.charAt(0).toUpperCase() || '?'}
             </div>
-            {/* Badge count indicator */}
-            {badgeCount >= 1 && (
-              <div
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md"
-                style={{ background: 'var(--color-primary)', border: '2px solid var(--color-bg)' }}
-              >
-                {badgeCount}
-              </div>
-            )}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -424,57 +371,34 @@ export function UserProfile() {
           </div>
         )}
 
-        {/* Identity Title */}
-        <div className="mt-5">
-          <h3
-            className="font-bold"
-            style={{
-              color: 'var(--color-primary)',
-              fontSize: '17px',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {getPrimaryTitle()}
-          </h3>
-          {archetype && archetypeResult.confidence === 'emerging' && (
-            <p className="mt-1" style={{ color: 'var(--color-text-tertiary)', fontSize: '13px' }}>
-              trending toward {archetype.label.replace('The ', '')}
-            </p>
-          )}
-        </div>
-
-        {/* Compact Stats Row */}
-        <div className="flex items-center gap-4 mt-3" style={{ fontSize: '13px' }}>
-          {badgeCount > 0 && (
-            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
-              <span>🏅</span>
-              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{badgeCount}</span>
+        {/* Stats Line */}
+        {totalVotes > 0 && (
+          <div className="mt-4 flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+            <span>
+              {totalVotes} {totalVotes === 1 ? 'dish' : 'dishes'}{uniqueRestaurants > 0 ? ` \u00B7 ${uniqueRestaurants} restaurants` : ''}
             </span>
-          )}
-          {ratingIdentity && ratingIdentity.votesWithConsensus > 0 && (
-            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
-              <span style={{
-                color: ratingIdentity.ratingBias < 0 ? '#f97316' : ratingIdentity.ratingBias > 0 ? '#22c55e' : 'var(--color-text-secondary)',
-                fontWeight: 700,
-              }}>
-                {ratingIdentity.ratingBias > 0 ? '+' : ''}{ratingIdentity.ratingBias?.toFixed(1) || '0.0'}
-              </span>
-              <span>{ratingIdentity.biasLabel}</span>
-            </span>
-          )}
-          {totalVotes > 0 && (
-            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
-              <span>🍴</span>
-              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{totalVotes}</span>
-            </span>
-          )}
-          {uniqueRestaurants > 0 && (
-            <span className="flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
-              <span>🏠</span>
-              <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{uniqueRestaurants}</span>
-            </span>
-          )}
-        </div>
+            {ratingBias && ratingBias.votesWithConsensus > 0 && (
+              <>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>&middot;</span>
+                <span
+                  className="font-bold tabular-nums"
+                  style={{
+                    color: ratingBias.ratingBias < -1 ? '#ef4444'
+                      : ratingBias.ratingBias < 0 ? '#f97316'
+                      : ratingBias.ratingBias > 1 ? '#10b981'
+                      : ratingBias.ratingBias > 0 ? '#22c55e'
+                      : 'var(--color-text-secondary)',
+                  }}
+                >
+                  {ratingBias.ratingBias > 0 ? '+' : ''}{ratingBias.ratingBias.toFixed(1)}
+                </span>
+                <span style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
+                  {ratingBias.biasLabel}
+                </span>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-4">
@@ -510,36 +434,14 @@ export function UserProfile() {
           )}
         </div>
 
-        {/* Badges */}
-        {profile.badges?.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              Badges
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {filterSupersededBadges(profile.badges).map((badge) => {
-                const rarityColor = getRarityColor(badge.rarity)
-                const isRarePlus = badge.rarity === 'rare' || badge.rarity === 'epic' || badge.rarity === 'legendary'
-                return (
-                  <div
-                    key={badge.key}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${isRarePlus ? 'animate-rarity-glow' : ''}`}
-                    style={{
-                      background: `${rarityColor}10`,
-                      border: `1.5px solid ${rarityColor}50`,
-                    }}
-                  >
-                    <span>{badge.icon}</span>
-                    <span className="font-medium" style={{ color: rarityColor }}>
-                      {badge.name}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Food Map */}
+      {totalVotes > 0 && (
+        <div className="px-4 pt-4">
+          <FoodMap stats={foodMapStats} title={`${profile.display_name}'s Food Map`} />
+        </div>
+      )}
 
       {/* Activity Section with Tabs */}
       <div className="px-4 py-4">

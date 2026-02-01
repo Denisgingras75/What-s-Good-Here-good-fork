@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { restaurantsApi } from '../api/restaurantsApi'
 import { followsApi } from '../api/followsApi'
-import { badgesApi } from '../api/badgesApi'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useFavorites } from '../hooks/useFavorites'
@@ -25,7 +24,6 @@ export function Restaurants() {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [friendsVotesByDish, setFriendsVotesByDish] = useState({})
-  const [expertVotesByDish, setExpertVotesByDish] = useState({})
 
   const { location, radius } = useLocationContext()
   const { dishes, loading: dishesLoading, error: dishesError, refetch } = useDishes(
@@ -91,20 +89,6 @@ export function Restaurants() {
 
     fetchFriendsVotes()
   }, [selectedRestaurant?.id, user])
-
-  // Fetch expert vote counts for restaurant dishes
-  useEffect(() => {
-    if (!selectedRestaurant?.id) {
-      setExpertVotesByDish({})
-      return
-    }
-
-    let cancelled = false
-    badgesApi.getExpertVotesForRestaurant(selectedRestaurant.id)
-      .then(data => { if (!cancelled) setExpertVotesByDish(data) })
-      .catch(() => { if (!cancelled) setExpertVotesByDish({}) })
-    return () => { cancelled = true }
-  }, [selectedRestaurant?.id])
 
   const handleVote = () => {
     refetch()
@@ -498,7 +482,6 @@ export function Restaurants() {
             user={user}
             searchQuery={dishSearchQuery}
             friendsVotesByDish={friendsVotesByDish}
-            expertVotesByDish={expertVotesByDish}
           />
         </>
       )}

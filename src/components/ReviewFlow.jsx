@@ -4,14 +4,10 @@ import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { useVote } from '../hooks/useVote'
 import { authApi } from '../api/authApi'
-import { badgesApi } from '../api/badgesApi'
-import { useBadges } from '../hooks/useBadges'
-import { useCelebration } from '../context/CelebrationContext'
 import { FoodRatingSlider } from './FoodRatingSlider'
 import { ThumbsUpIcon } from './ThumbsUpIcon'
 import { ThumbsDownIcon } from './ThumbsDownIcon'
 import { MAX_REVIEW_LENGTH } from '../constants/app'
-import { CATEGORY_INFO } from '../constants/categories'
 import {
   getPendingVoteFromStorage,
   setPendingVoteToStorage,
@@ -20,46 +16,9 @@ import {
 import { logger } from '../utils/logger'
 import { hapticLight, hapticSuccess } from '../utils/haptics'
 
-/**
- * Get a progress nudge string for the user's next category badge.
- * Returns null if no nudge should be shown (too early, or authority already earned).
- */
-function getCategoryBadgeNudge(category, badgesList) {
-  if (!category || !badgesList.length) return null
-
-  const catKey = category.replace(/\s+/g, '_')
-  const specialist = badgesList.find(b => b.key === `specialist_${catKey}`)
-  const authority = badgesList.find(b => b.key === `authority_${catKey}`)
-  const catInfo = CATEGORY_INFO[category]
-  if (!catInfo) return null
-
-  // Authority already earned — no nudge
-  if (authority?.unlocked) return null
-
-  // Specialist earned → show authority progress
-  if (specialist?.unlocked && authority) {
-    if (authority.progress < 5) return null
-    const remaining = authority.target - authority.progress
-    const line = `${catInfo.emoji} ${authority.progress}/${authority.target} toward ${catInfo.label} Authority`
-    return remaining === 1 ? `${line} — one more!` : line
-  }
-
-  // Show specialist progress
-  if (specialist && !specialist.unlocked) {
-    if (specialist.progress < 5) return null
-    const remaining = specialist.target - specialist.progress
-    const line = `${catInfo.emoji} ${specialist.progress}/${specialist.target} toward ${catInfo.label} Specialist`
-    return remaining === 1 ? `${line} — one more!` : line
-  }
-
-  return null
-}
-
 export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
   const { user } = useAuth()
   const { submitVote, submitting } = useVote()
-  const { badges } = useBadges(user?.id)
-  const { queueBadgeUnlock } = useCelebration()
   const [userVote, setUserVote] = useState(null)
   const [userRating, setUserRating] = useState(null)
   const [userReviewText, setUserReviewText] = useState(null)
@@ -267,21 +226,13 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     // Haptic success feedback
     hapticSuccess()
 
-    // Show success toast with optional badge progress nudge
-    const badgeNudge = getCategoryBadgeNudge(category, badges)
+    // Show success toast
     toast.success(
-      <div>
-        <div className="flex items-center gap-2">
-          <span>{pendingVote ? '👍' : '👎'}</span>
-          <span>Vote saved!</span>
-        </div>
-        {badgeNudge && (
-          <div className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-            {badgeNudge}
-          </div>
-        )}
+      <div className="flex items-center gap-2">
+        <span>{pendingVote ? '👍' : '👎'}</span>
+        <span>Vote saved!</span>
       </div>,
-      { duration: badgeNudge ? 3000 : 2000 }
+      { duration: 2000 }
     )
 
     // Announce for screen readers
@@ -293,20 +244,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
     // Submit to server in background (non-blocking)
     submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit)
-      .then(async (result) => {
-        if (result.success) {
-          // Evaluate badges in background
-          try {
-            const newlyUnlocked = await badgesApi.evaluateBadges(user.id)
-            if (newlyUnlocked.length > 0) {
-              // Queue badge celebration
-              queueBadgeUnlock(newlyUnlocked)
-            }
-          } catch (badgeError) {
-            logger.error('Error evaluating badges:', badgeError)
-          }
-        } else {
-          // Vote failed - log error (user already saw success, so just log)
+      .then((result) => {
+        if (!result.success) {
           logger.error('Vote submission failed:', result.error)
         }
       })

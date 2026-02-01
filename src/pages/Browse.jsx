@@ -20,8 +20,6 @@ import { DishCardSkeleton } from '../components/Skeleton'
 import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
 import { SortDropdown, CategoryGrid } from '../components/browse'
 import { CategoryImageCard } from '../components/CategoryImageCard'
-import { badgesApi } from '../api/badgesApi'
-import { useBadges } from '../hooks/useBadges'
 
 // Use centralized browse categories
 const CATEGORIES = BROWSE_CATEGORIES
@@ -65,12 +63,8 @@ export function Browse() {
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
 
-  const [categoryExperts, setCategoryExperts] = useState([])
-  const [nudgeDismissed, setNudgeDismissed] = useState(false)
-
   const { location, radius, town } = useLocationContext()
   const { stats: userStats } = useUserVotes(user?.id)
-  const { badges: badgesList } = useBadges(user?.id)
 
   // Search results from API using React Query hook
   // Handles cuisine/tag searches with proper caching and error handling
@@ -101,66 +95,6 @@ export function Browse() {
       navigate('/', { replace: true })
     }
   }, [searchParams, navigate])
-
-  // Fetch category experts when a category is selected
-  useEffect(() => {
-    if (!selectedCategory) {
-      setCategoryExperts([])
-      return
-    }
-
-    let cancelled = false
-    badgesApi.getCategoryExperts(selectedCategory, 10)
-      .then(experts => {
-        if (cancelled) return
-        // Deduplicate by user_id, keeping highest tier (authority > specialist)
-        const seen = new Map()
-        experts.forEach(e => {
-          const existing = seen.get(e.user_id)
-          if (!existing || e.badge_tier === 'authority') {
-            seen.set(e.user_id, e)
-          }
-        })
-        setCategoryExperts(Array.from(seen.values()).slice(0, 5))
-      })
-      .catch(() => { if (!cancelled) setCategoryExperts([]) })
-    return () => { cancelled = true }
-  }, [selectedCategory])
-
-  // Reset nudge dismissed state when category changes
-  useEffect(() => {
-    setNudgeDismissed(false)
-  }, [selectedCategory])
-
-  // Compute near-badge nudge for current category
-  const nearBadgeNudge = useMemo(() => {
-    if (!selectedCategory || !user || nudgeDismissed || !badgesList.length) return null
-
-    const catKey = selectedCategory.replace(/\s+/g, '_')
-    const specialist = badgesList.find(b => b.key === `specialist_${catKey}`)
-    const authority = badgesList.find(b => b.key === `authority_${catKey}`)
-    const catInfo = CATEGORY_INFO[selectedCategory]
-    if (!catInfo) return null
-
-    if (authority?.unlocked) return null
-
-    if (specialist?.unlocked && authority) {
-      const remaining = authority.target - authority.progress
-      if (remaining >= 1 && remaining <= 5) {
-        return { remaining, label: `${catInfo.label} Authority`, emoji: catInfo.emoji }
-      }
-      return null
-    }
-
-    if (specialist && !specialist.unlocked) {
-      const remaining = specialist.target - specialist.progress
-      if (remaining >= 1 && remaining <= 5) {
-        return { remaining, label: `${catInfo.label} Specialist`, emoji: catInfo.emoji }
-      }
-    }
-
-    return null
-  }, [selectedCategory, badgesList, user, nudgeDismissed])
 
   // Debounce search query by 300ms - only when already showing dishes
   // On categories page, search only triggers on Enter key
@@ -675,74 +609,6 @@ export function Browse() {
               />
             </div>
           </div>
-
-          {/* Category Experts */}
-          {categoryExperts.length > 0 && !debouncedSearchQuery.trim() && (
-            <div className="px-4 pt-3 pb-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                Ask an Expert
-              </p>
-              <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-                {categoryExperts.map((expert) => (
-                  <button
-                    key={expert.user_id}
-                    onClick={() => navigate(`/user/${expert.user_id}`)}
-                    className="flex flex-col items-center gap-1 flex-shrink-0 transition-transform active:scale-95"
-                  >
-                    <div className="relative">
-                      <div
-                        className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                        style={{
-                          background: expert.badge_tier === 'authority' ? '#9333EA' : '#3B82F6',
-                          boxShadow: `0 2px 8px -2px ${expert.badge_tier === 'authority' ? 'rgba(147, 51, 234, 0.4)' : 'rgba(59, 130, 246, 0.3)'}`,
-                        }}
-                      >
-                        {expert.display_name?.charAt(0).toUpperCase() || '?'}
-                      </div>
-                      <div
-                        className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold ring-2"
-                        style={{
-                          background: expert.badge_tier === 'authority' ? '#9333EA' : '#3B82F6',
-                          color: 'white',
-                          ringColor: 'var(--color-surface)',
-                        }}
-                      >
-                        {expert.badge_tier === 'authority' ? 'A' : 'S'}
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-medium truncate max-w-[60px]" style={{ color: 'var(--color-text-secondary)' }}>
-                      {expert.display_name?.split(' ')[0] || 'Expert'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Near-badge nudge */}
-          {nearBadgeNudge && !debouncedSearchQuery.trim() && (
-            <div className="px-4 pt-3">
-              <div
-                className="flex items-center gap-2 rounded-xl p-3"
-                style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}
-              >
-                <span className="text-sm flex-shrink-0">{nearBadgeNudge.emoji}</span>
-                <p className="text-sm flex-1" style={{ color: 'var(--color-text-secondary)' }}>
-                  You're <strong>{nearBadgeNudge.remaining}</strong> rating{nearBadgeNudge.remaining === 1 ? '' : 's'} away from <strong>{nearBadgeNudge.label}</strong>
-                </p>
-                <button
-                  onClick={() => setNudgeDismissed(true)}
-                  className="flex-shrink-0 p-1 rounded-full transition-colors"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                  aria-label="Dismiss"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Dish Grid */}
           <div className="px-4 py-4">

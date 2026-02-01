@@ -8,10 +8,5 @@ export { EditFavoritesSection } from './EditFavoritesSection'
 export { PhotosInfoSection } from './PhotosInfoSection'
 export { MissionSection } from './MissionSection'
 export { UnratedDishCard } from './UnratedDishCard'
-export { ImpactCard } from './ImpactCard'
-
-// Rating Identity components
-export { RatingIdentityCard } from './RatingIdentityCard'
-export { PendingVotesIndicator } from './PendingVotesIndicator'
-export { RevealNotification } from './RevealNotification'
-export { CategoryBiasBreakdown } from './CategoryBiasBreakdown'
+export { FoodMap } from './FoodMap'
+export { TasteProfile } from './TasteProfile'

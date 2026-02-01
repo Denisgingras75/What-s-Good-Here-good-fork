@@ -11,9 +11,6 @@ import { useProfile } from '../hooks/useProfile'
 import { useUserVotes } from '../hooks/useUserVotes'
 import { useFavorites } from '../hooks/useFavorites'
 import { useUnratedDishes } from '../hooks/useUnratedDishes'
-import { useBadges } from '../hooks/useBadges'
-import { useRatingIdentity } from '../hooks/useRatingIdentity'
-import { useRevealNotifications } from '../hooks/useRevealNotifications'
 import { isSoundMuted, toggleSoundMute } from '../lib/sounds'
 import { DishModal } from '../components/DishModal'
 import { LoginModal } from '../components/Auth/LoginModal'
@@ -25,7 +22,6 @@ import { ThumbsDownIcon } from '../components/ThumbsDownIcon'
 import { HearingIcon } from '../components/HearingIcon'
 import { CameraIcon } from '../components/CameraIcon'
 import { ReviewsIcon } from '../components/ReviewsIcon'
-import { FEATURES } from '../constants/features'
 import {
   VotedDishCard,
   ReviewCard,
@@ -35,10 +31,9 @@ import {
   EditFavoritesSection,
   PhotosInfoSection,
   MissionSection,
-  RatingIdentityCard,
-  RevealNotification,
-  ImpactCard,
 } from '../components/profile'
+import { FoodMap } from '../components/profile/FoodMap'
+import { TasteProfile } from '../components/profile/TasteProfile'
 import { SimilarTasteUsers } from '../components/SimilarTasteUsers'
 
 const TABS = [
@@ -67,11 +62,6 @@ export function Profile() {
   const { worthItDishes, avoidDishes, stats, loading: votesLoading, refetch: refetchVotes } = useUserVotes(user?.id)
   const { favorites, loading: favoritesLoading, removeFavorite } = useFavorites(user?.id)
   const { dishes: unratedDishes, count: unratedCount, loading: unratedLoading, refetch: refetchUnrated } = useUnratedDishes(user?.id)
-  const { badges } = useBadges(user?.id)
-
-  // Rating Identity hooks — always fetch for ImpactCard; RatingIdentityCard UI is behind feature flag
-  const ratingIdentity = useRatingIdentity(user?.id)
-  const revealNotifications = useRevealNotifications()
 
   const [selectedDish, setSelectedDish] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -287,9 +277,7 @@ export function Profile() {
             user={user}
             profile={profile}
             stats={stats}
-            badges={badges}
             followCounts={followCounts}
-            ratingIdentity={ratingIdentity}
             editingName={editingName}
             newName={newName}
             nameStatus={nameStatus}
@@ -300,28 +288,17 @@ export function Profile() {
             setFollowListModal={setFollowListModal}
           />
 
-          {/* Impact Card — adaptive influence metrics */}
-          {ratingIdentity && (
+          {/* Food Map — exploration progress */}
+          {stats.totalVotes > 0 && (
             <div className="px-4 pt-4">
-              <ImpactCard
-                ratingIdentity={ratingIdentity}
-                followCounts={followCounts}
-                stats={stats}
-              />
+              <FoodMap stats={stats} />
             </div>
           )}
 
-          {/* Rating Identity Card - behind feature flag */}
-          {FEATURES.RATING_IDENTITY_ENABLED && ratingIdentity && (
+          {/* Taste Profile — plain-English taste description */}
+          {stats.totalVotes >= 5 && (
             <div className="px-4 pt-4">
-              <RatingIdentityCard
-                ratingBias={ratingIdentity.ratingBias}
-                biasLabel={ratingIdentity.biasLabel}
-                votesWithConsensus={ratingIdentity.votesWithConsensus}
-                votesPending={ratingIdentity.votesPending}
-                dishesHelpedEstablish={ratingIdentity.dishesHelpedEstablish}
-                loading={ratingIdentity.loading}
-              />
+              <TasteProfile userId={user.id} />
             </div>
           )}
 
@@ -518,14 +495,6 @@ export function Profile() {
             />
           )}
 
-          {/* Reveal Notification - shows when a dish reaches consensus */}
-          {FEATURES.RATING_IDENTITY_ENABLED && revealNotifications?.currentReveal && (
-            <RevealNotification
-              reveal={revealNotifications.currentReveal}
-              onDismiss={() => revealNotifications.dismissReveal(revealNotifications.currentReveal.id)}
-            />
-          )}
-
           {/* Settings */}
           <div className="p-4 pt-2">
             {/* Section divider dot */}
@@ -594,17 +563,6 @@ export function Profile() {
                   </svg>
                 </Link>
               )}
-
-              {/* How Badges Work */}
-              <a
-                href="/badges"
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t" style={{ borderColor: 'var(--color-divider)' }}
-              >
-                <span className="font-medium text-[color:var(--color-text-primary)]">How Badges Work</span>
-                <svg className="w-5 h-5 text-[color:var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
 
               {/* How Photos Work */}
               <PhotosInfoSection />

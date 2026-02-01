@@ -3,8 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { AuthProvider } from './context/AuthContext'
 import { LocationProvider } from './context/LocationContext'
-import { CelebrationProvider } from './context/CelebrationContext'
-import { CelebrationOrchestrator } from './components/celebrations'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -42,11 +40,9 @@ const Admin = lazyWithRetry(() => import('./pages/Admin'), 'Admin')
 const Login = lazyWithRetry(() => import('./pages/Login'), 'Login')
 const Privacy = lazyWithRetry(() => import('./pages/Privacy'), 'Privacy')
 const Terms = lazyWithRetry(() => import('./pages/Terms'), 'Terms')
-const Badges = lazyWithRetry(() => import('./pages/Badges'), 'Badges')
 const UserProfile = lazyWithRetry(() => import('./pages/UserProfile'), 'UserProfile')
 const Discover = lazyWithRetry(() => import('./pages/Discover'), 'Discover')
 const ResetPassword = lazyWithRetry(() => import('./pages/ResetPassword'), 'ResetPassword')
-const RatingStyle = lazyWithRetry(() => import('./pages/RatingStyle'), 'RatingStyle')
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'), 'NotFound')
 
 // Prefetch functions for smoother navigation - call on hover/focus
@@ -98,7 +94,6 @@ function App() {
         }}
       />
       <AuthProvider>
-      <CelebrationProvider>
       <LocationProvider>
         <BrowserRouter>
           <RouteProgress />
@@ -118,15 +113,11 @@ function App() {
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
-              <Route path="/badges" element={<ProtectedRoute><Layout><Badges /></Layout></ProtectedRoute>} />
-              <Route path="/rating-style" element={<Layout><RatingStyle /></Layout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </BrowserRouter>
       </LocationProvider>
-      <CelebrationOrchestrator />
-      </CelebrationProvider>
       </AuthProvider>
     </ErrorBoundary>
   )
