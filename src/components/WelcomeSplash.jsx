@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logger } from '../utils/logger'
 
 // Module-level flag - persists across re-renders, resets on app reload
 let hasShownThisSession = false
@@ -76,7 +77,7 @@ export function WelcomeSplash({ onComplete }) {
           alt="What's Good Here"
           className="w-[336px] md:w-[432px] lg:w-[504px] h-auto"
           draggable={false}
-          onError={(e) => console.error('Splash image failed to load:', e)}
+          onError={(e) => logger.error('Splash image failed to load:', e)}
         />
       </div>
 

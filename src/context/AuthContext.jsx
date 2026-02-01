@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { capture, identify, reset } from '../lib/analytics'
-import { clearPendingVoteStorage } from '../lib/storage'
+import { clearPendingVoteStorage, clearCache } from '../lib/storage'
 import { logger } from '../utils/logger'
 
 const AuthContext = createContext(null)
@@ -71,6 +71,7 @@ export function AuthProvider({ children }) {
   const signOut = useCallback(async () => {
     // Clear all sensitive localStorage/sessionStorage data before signing out
     clearPendingVoteStorage()
+    clearCache()
     // SECURITY: Clear any cached PII (email was previously stored for convenience)
     try {
       sessionStorage.removeItem('whats-good-here-email')

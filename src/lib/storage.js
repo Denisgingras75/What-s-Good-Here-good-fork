@@ -53,6 +53,13 @@ export function removeStorageItem(key) {
 }
 
 /**
+ * Clear the entire in-memory cache (call on logout to prevent data leaking between users)
+ */
+export function clearCache() {
+  cache.clear()
+}
+
+/**
  * Clear specific keys from cache (useful for testing)
  * @param {string[]} keys - Keys to clear from cache
  */
