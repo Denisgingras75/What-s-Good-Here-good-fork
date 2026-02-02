@@ -325,7 +325,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {announcement}
         </div>
-        <div className="text-2xl">{lastSubmission.wouldOrderAgain ? '👍' : '👎'}</div>
+        <div>{lastSubmission.wouldOrderAgain ? <ThumbsUpIcon size={40} /> : <ThumbsDownIcon size={40} />}</div>
         <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
           Vote saved!
         </p>
