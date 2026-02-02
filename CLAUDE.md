@@ -41,6 +41,8 @@ supabase/
 - **Search is the universal access layer** - Any dish is searchable even without a Browse shortcut
 - **No direct Supabase calls** - All data access goes through `src/api/`
 - **`supabase/schema.sql` is the source of truth** - Update it first when making DB changes, then run in SQL Editor
+- **React Query is the data fetching layer** - Use `useQuery`/`useMutation` for all server state. Never add raw `useEffect` + `fetch` patterns.
+- **New API files follow the `dishesApi.js` pattern** - `selectFields` string, `.map()` transform, `createClassifiedError()` on all errors. Don't invent a different structure.
 
 ## Design Tokens
 Primary: `#F47A1F` (orange) | Rating: `#E6B84C` (gold)
