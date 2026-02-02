@@ -36,6 +36,28 @@ supabase/
 └── seed.sql       # Sample data
 ```
 
+## Key Hooks (check before building new ones)
+- `useVote` - Vote submission with rating, review, duplicate prevention
+- `useFavorites` - Optimistic favorite toggling with analytics
+- `useUserVotes` - User's vote history with stats (rating style, standout picks)
+- `useDishes` - Location-based ranked dishes via React Query
+- `useDishPhotos` - Photo upload with quality analysis, validation, progress
+- `useDishSearch` - Debounced dish search (2+ chars)
+- `useLeaderboard` - Friends leaderboard with weekly reset countdown
+- `useStreak` - Voting streak tracking
+
+## Key Supabase RPCs
+- `get_ranked_dishes` - Main Browse feed (ranked by votes)
+- `get_restaurant_dishes` - Dishes for a specific restaurant
+- `get_dish_variants` - Variants/sizes for a dish
+- `check_vote_rate_limit` - Server-side vote rate limiting
+- `check_photo_upload_rate_limit` - Photo upload rate limiting
+- `get_taste_compatibility` - Taste match % between two users
+- `get_similar_taste_users` - Users with similar taste you don't follow
+- `get_friends_leaderboard` - Friends ranked by votes
+- `get_user_rating_identity` - Rating style analysis (generous, tough, etc.)
+- `get_friends_votes_for_dish` / `get_friends_votes_for_restaurant` - Social context
+
 ## Architecture Principles
 - **Categories are shortcuts, NOT containers** - Browse shows 14 curated shortcuts, not all categories
 - **Search is the universal access layer** - Any dish is searchable even without a Browse shortcut
@@ -47,7 +69,7 @@ supabase/
 ## Design Tokens
 Primary: `#F47A1F` (orange) | Rating: `#E6B84C` (gold)
 Text: `#1F1F1F` / `#6B6B6B` / `#9A9A9A`
-Defined in `src/index.css`
+Defined in `src/index.css` — **supports dark mode** via `[data-theme="dark"]`. Never hardcode colors; always use `var(--color-*)`.
 
 ## localStorage Keys
 - `wgh_has_seen_splash` - Welcome splash shown
