@@ -15,6 +15,7 @@ import {
 } from '../lib/storage'
 import { logger } from '../utils/logger'
 import { hapticLight, hapticSuccess } from '../utils/haptics'
+import { shareOrCopy, buildPostVoteShareData } from '../utils/share'
 
 export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
   const { user } = useAuth()
@@ -44,6 +45,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [confirmationType, setConfirmationType] = useState(null)
   const [awaitingLogin, setAwaitingLogin] = useState(false)
   const [announcement, setAnnouncement] = useState('') // For screen reader announcements
+  const [showSharePrompt, setShowSharePrompt] = useState(false)
+  const [lastSubmission, setLastSubmission] = useState(null)
   const confirmationTimerRef = useRef(null)
 
   const noVotes = localTotalVotes - localYesVotes
@@ -216,6 +219,9 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       is_update: previousVote !== null,
     })
 
+    // Save submission data for share prompt before clearing state
+    setLastSubmission({ wouldOrderAgain: pendingVote, rating: sliderValue })
+
     // Clear UI state immediately - instant feedback
     clearPendingVoteStorage()
     setStep(1)
@@ -226,21 +232,12 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     // Haptic success feedback
     hapticSuccess()
 
-    // Show success toast
-    toast.success(
-      <div className="flex items-center gap-2">
-        <span>{pendingVote ? '👍' : '👎'}</span>
-        <span>Vote saved!</span>
-      </div>,
-      { duration: 2000 }
-    )
+    // Show share prompt instead of toast
+    setShowSharePrompt(true)
 
     // Announce for screen readers
     setAnnouncement('Vote submitted successfully')
     setTimeout(() => setAnnouncement(''), 1000)
-
-    // Fire onVote callback immediately - closes modal, shows success
-    onVote?.()
 
     // Submit to server in background (non-blocking)
     submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit)
@@ -252,6 +249,78 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       .catch((err) => {
         logger.error('Vote submission error:', err)
       })
+  }
+
+  const handleShareDish = async () => {
+    if (!lastSubmission) return
+    const shareData = buildPostVoteShareData(
+      { dish_id: dishId, dish_name: dishName, restaurant_name: restaurantName },
+      lastSubmission.wouldOrderAgain,
+      lastSubmission.rating
+    )
+    const result = await shareOrCopy(shareData)
+
+    capture('dish_shared', {
+      dish_id: dishId,
+      dish_name: dishName,
+      restaurant_name: restaurantName,
+      context: 'post_vote',
+      method: result.method,
+      success: result.success,
+    })
+
+    if (result.success && result.method !== 'native') {
+      toast.success('Link copied!', { duration: 2000 })
+    }
+
+    setShowSharePrompt(false)
+    setLastSubmission(null)
+    onVote?.()
+  }
+
+  const handleShareDismiss = () => {
+    capture('share_dismissed', { context: 'post_vote', dish_id: dishId })
+    setShowSharePrompt(false)
+    setLastSubmission(null)
+    onVote?.()
+  }
+
+  // Share prompt after voting
+  if (showSharePrompt && lastSubmission) {
+    return (
+      <div className="space-y-3 text-center animate-fadeIn">
+        {/* Screen reader announcement region */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {announcement}
+        </div>
+        <div className="text-2xl">{lastSubmission.wouldOrderAgain ? '👍' : '👎'}</div>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+          Vote saved!
+        </p>
+        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+          Let friends know what's good here
+        </p>
+        <button
+          onClick={handleShareDish}
+          className="w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-98"
+          style={{ background: 'var(--color-primary)', color: '#1A1A1A' }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+          </svg>
+          Share this dish
+        </button>
+        <button
+          onClick={handleShareDismiss}
+          className="w-full py-2 text-sm transition-colors"
+          style={{ color: 'var(--color-text-tertiary)' }}
+        >
+          Not now
+        </button>
+      </div>
+    )
   }
 
   // Already voted - show summary

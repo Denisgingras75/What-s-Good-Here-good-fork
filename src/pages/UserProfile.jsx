@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { getCompatColor } from '../utils/formatters'
+import { shareOrCopy } from '../utils/share'
+import { capture } from '../lib/analytics'
+import { toast } from 'sonner'
 import { followsApi } from '../api/followsApi'
 import { votesApi } from '../api/votesApi'
 import { FollowListModal } from '../components/FollowListModal'
@@ -265,19 +268,20 @@ export function UserProfile() {
 
   // Handle share profile
   const handleShare = async () => {
-    const url = window.location.href
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${profile.display_name} on What's Good Here`,
-          url,
-        })
-      } catch {
-        // User cancelled or error
-      }
-    } else {
-      await navigator.clipboard.writeText(url)
-      // Could show a toast here
+    const result = await shareOrCopy({
+      url: window.location.href,
+      title: `${profile.display_name} on What's Good Here`,
+    })
+
+    capture('profile_shared', {
+      user_id: userId,
+      context: 'user_profile',
+      method: result.method,
+      success: result.success,
+    })
+
+    if (result.success && result.method !== 'native') {
+      toast.success('Link copied!', { duration: 2000 })
     }
   }
 

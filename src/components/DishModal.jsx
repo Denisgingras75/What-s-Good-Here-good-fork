@@ -6,6 +6,9 @@ import { PhotoUploadButton } from './PhotoUploadButton'
 import { PhotoUploadConfirmation } from './PhotoUploadConfirmation'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { logger } from '../utils/logger'
+import { shareOrCopy, buildDishShareData } from '../utils/share'
+import { capture } from '../lib/analytics'
+import { toast } from 'sonner'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { getResponsiveImageProps } from '../utils/images'
 
@@ -95,27 +98,20 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
   // Share functionality - must be before early return to satisfy hooks rules
   const handleShare = useCallback(async () => {
     if (!dish) return
+    const shareData = buildDishShareData(dish)
+    const result = await shareOrCopy(shareData)
 
-    const shareUrl = `${window.location.origin}/dish/${dish.dish_id}`
-    const shareData = {
-      title: `${dish.dish_name} at ${dish.restaurant_name}`,
-      text: `Check out ${dish.dish_name} at ${dish.restaurant_name} on What's Good Here!`,
-      url: shareUrl,
-    }
+    capture('dish_shared', {
+      dish_id: dish.dish_id,
+      dish_name: dish.dish_name,
+      restaurant_name: dish.restaurant_name,
+      context: 'dish_modal',
+      method: result.method,
+      success: result.success,
+    })
 
-    try {
-      if (navigator.share && navigator.canShare?.(shareData)) {
-        await navigator.share(shareData)
-      } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(shareUrl)
-        // Could show a toast here, but keeping it simple
-      }
-    } catch (err) {
-      // User cancelled or error - silently ignore
-      if (err.name !== 'AbortError') {
-        logger.warn('Share failed:', err)
-      }
+    if (result.success && result.method !== 'native') {
+      toast.success('Link copied!', { duration: 2000 })
     }
   }, [dish])
 

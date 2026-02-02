@@ -4,6 +4,8 @@ import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { getCompatColor } from '../utils/formatters'
+import { shareOrCopy, buildDishShareData } from '../utils/share'
+import { toast } from 'sonner'
 import { dishesApi } from '../api/dishesApi'
 import { followsApi } from '../api/followsApi'
 import { dishPhotosApi } from '../api/dishPhotosApi'
@@ -314,6 +316,24 @@ export function Dish() {
     }
   }
 
+  const handleShare = async () => {
+    const shareData = buildDishShareData(dish)
+    const result = await shareOrCopy(shareData)
+
+    capture('dish_shared', {
+      dish_id: dish.dish_id,
+      dish_name: dish.dish_name,
+      restaurant_name: dish.restaurant_name,
+      context: 'dish_page',
+      method: result.method,
+      success: result.success,
+    })
+
+    if (result.success && result.method !== 'native') {
+      toast.success('Link copied!', { duration: 2000 })
+    }
+  }
+
   // Photos to display
   const displayPhotos = showAllPhotos ? allPhotos : communityPhotos.slice(0, 4)
   const hasMorePhotos = allPhotos.length > 4 && !showAllPhotos
@@ -381,24 +401,40 @@ export function Dish() {
           {dish.dish_name}
         </span>
 
-        {/* Heard it was good here button */}
-        <div className="ml-auto relative">
+        <div className="ml-auto flex items-center gap-1">
+          {/* Share button */}
           <button
-            onClick={(e) => {
-              if (showEarTooltip) dismissEarTooltip()
-              handleToggleSave(e)
-            }}
-            aria-label={isFavorite?.(dishId) ? 'Remove from heard list' : 'Mark as heard it was good'}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-95 ${
-              isFavorite?.(dishId)
-                ? 'ring-2 ring-[var(--color-primary)]/50'
-                : 'opacity-80 hover:opacity-100'
-            }`}
-            style={{ background: 'var(--color-bg)' }}
+            onClick={handleShare}
+            aria-label="Share dish"
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-95 opacity-80 hover:opacity-100"
+            style={{ color: 'var(--color-text-secondary)' }}
           >
-            <HearingIcon size={28} active={isFavorite?.(dishId)} />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
           </button>
-          <EarIconTooltip visible={showEarTooltip} onDismiss={dismissEarTooltip} />
+
+          {/* Heard it was good here button */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                if (showEarTooltip) dismissEarTooltip()
+                handleToggleSave(e)
+              }}
+              aria-label={isFavorite?.(dishId) ? 'Remove from heard list' : 'Mark as heard it was good'}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-95 ${
+                isFavorite?.(dishId)
+                  ? 'ring-2 ring-[var(--color-primary)]/50'
+                  : 'opacity-80 hover:opacity-100'
+              }`}
+              style={{ background: 'var(--color-bg)' }}
+            >
+              <HearingIcon size={28} active={isFavorite?.(dishId)} />
+            </button>
+            <EarIconTooltip visible={showEarTooltip} onDismiss={dismissEarTooltip} />
+          </div>
         </div>
       </header>
 
