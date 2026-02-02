@@ -277,7 +277,6 @@ GROUP BY category;
 
 -- restaurants
 CREATE INDEX IF NOT EXISTS idx_restaurants_location ON restaurants(lat, lng);
-CREATE INDEX IF NOT EXISTS idx_restaurants_lat_lng ON restaurants(lat, lng);
 CREATE INDEX IF NOT EXISTS idx_restaurants_open_lat_lng ON restaurants(is_open, lat, lng) WHERE is_open = true;
 CREATE INDEX IF NOT EXISTS idx_restaurants_cuisine ON restaurants(cuisine);
 
@@ -332,10 +331,17 @@ CREATE INDEX IF NOT EXISTS idx_user_badges_unlocked ON user_badges(unlocked_at D
 
 -- specials
 CREATE INDEX IF NOT EXISTS idx_specials_active ON specials(is_active, restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_specials_created_by ON specials(created_by);
 
 -- restaurant_managers
 CREATE INDEX IF NOT EXISTS idx_restaurant_managers_user ON restaurant_managers(user_id);
 CREATE INDEX IF NOT EXISTS idx_restaurant_managers_restaurant ON restaurant_managers(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_restaurant_managers_created_by ON restaurant_managers(created_by);
+
+-- restaurant_invites
+CREATE INDEX IF NOT EXISTS idx_restaurant_invites_restaurant ON restaurant_invites(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_restaurant_invites_created_by ON restaurant_invites(created_by);
+CREATE INDEX IF NOT EXISTS idx_restaurant_invites_used_by ON restaurant_invites(used_by);
 
 -- rate_limits
 CREATE INDEX IF NOT EXISTS idx_rate_limits_user_action ON rate_limits(user_id, action, created_at DESC);
@@ -386,7 +392,7 @@ CREATE POLICY "Users can update own votes" ON votes FOR UPDATE USING ((select au
 CREATE POLICY "Users can delete own votes" ON votes FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- profiles: public read (if display_name set), users manage own
-CREATE POLICY "profiles_select_public_or_own" ON profiles FOR SELECT USING (auth.uid() = id OR display_name IS NOT NULL);
+CREATE POLICY "profiles_select_public_or_own" ON profiles FOR SELECT USING ((select auth.uid()) = id OR display_name IS NOT NULL);
 CREATE POLICY "profiles_insert_own" ON profiles FOR INSERT WITH CHECK ((select auth.uid()) = id);
 CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
 CREATE POLICY "profiles_delete_own" ON profiles FOR DELETE USING ((select auth.uid()) = id);
@@ -467,7 +473,7 @@ BEGIN
     SELECT 1 FROM admins WHERE user_id = (select auth.uid())
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
 
 -- Check if current user is an accepted manager for a restaurant
 CREATE OR REPLACE FUNCTION is_restaurant_manager(p_restaurant_id UUID)
@@ -480,7 +486,7 @@ BEGIN
       AND accepted_at IS NOT NULL
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
 
 -- Get bias label from MAD (always-positive scale)
 CREATE OR REPLACE FUNCTION get_bias_label(bias NUMERIC)
@@ -494,7 +500,7 @@ BEGIN
     ELSE 'Wild Card'
   END;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql IMMUTABLE SET search_path = public;
 
 
 -- =============================================
@@ -629,7 +635,7 @@ BEGIN
            d.value_score, d.value_percentile
   ORDER BY avg_rating DESC NULLS LAST, total_votes DESC;
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE SET search_path = public;
 
 -- Get dishes for a specific restaurant with variant aggregation
 CREATE OR REPLACE FUNCTION get_restaurant_dishes(
@@ -730,7 +736,7 @@ BEGIN
     END DESC,
     COALESCE(vs.total_child_votes, dvs.direct_votes, 0) DESC;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public;
 
 -- Get variants for a parent dish
 CREATE OR REPLACE FUNCTION get_dish_variants(
@@ -765,7 +771,7 @@ BEGIN
   GROUP BY d.id, d.name, d.price, d.photo_url, d.display_order
   ORDER BY d.display_order, d.name;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public;
 
 -- Get best review snippet for a dish
 CREATE OR REPLACE FUNCTION get_smart_snippet(p_dish_id UUID)
@@ -789,7 +795,7 @@ BEGIN
     v.review_created_at DESC NULLS LAST
   LIMIT 1;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public;
 
 
 -- =============================================
@@ -798,19 +804,19 @@ $$ LANGUAGE plpgsql;
 
 -- Get follower count for a user
 CREATE OR REPLACE FUNCTION get_follower_count(user_id UUID)
-RETURNS INTEGER LANGUAGE SQL STABLE AS $$
+RETURNS INTEGER LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT COUNT(*)::INTEGER FROM follows WHERE followed_id = user_id;
 $$;
 
 -- Get following count for a user
 CREATE OR REPLACE FUNCTION get_following_count(user_id UUID)
-RETURNS INTEGER LANGUAGE SQL STABLE AS $$
+RETURNS INTEGER LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT COUNT(*)::INTEGER FROM follows WHERE follower_id = user_id;
 $$;
 
 -- Check if user A follows user B
 CREATE OR REPLACE FUNCTION is_following(follower UUID, followed UUID)
-RETURNS BOOLEAN LANGUAGE SQL STABLE AS $$
+RETURNS BOOLEAN LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = follower AND followed_id = followed);
 $$;
 
@@ -827,7 +833,7 @@ RETURNS TABLE (
   voted_at TIMESTAMPTZ,
   category_expertise TEXT
 )
-LANGUAGE SQL STABLE AS $$
+LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT
     p.id AS user_id, p.display_name, v.rating_10, v.would_order_again,
     v.created_at AS voted_at,
@@ -859,7 +865,7 @@ RETURNS TABLE (
   voted_at TIMESTAMPTZ,
   category_expertise TEXT
 )
-LANGUAGE SQL STABLE AS $$
+LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT
     p.id AS user_id, p.display_name, d.id AS dish_id, d.name AS dish_name,
     v.rating_10, v.would_order_again, v.created_at AS voted_at,
@@ -886,7 +892,7 @@ RETURNS TABLE (
   avg_difference DECIMAL(3, 1),
   compatibility_pct INT
 )
-LANGUAGE SQL STABLE AS $$
+LANGUAGE SQL STABLE SET search_path = public AS $$
   WITH shared AS (
     SELECT a.rating_10 AS rating_a, b.rating_10 AS rating_b
     FROM votes a
@@ -915,7 +921,7 @@ RETURNS TABLE (
   shared_dishes INT,
   compatibility_pct INT
 )
-LANGUAGE SQL STABLE AS $$
+LANGUAGE SQL STABLE SET search_path = public AS $$
   WITH candidates AS (
     SELECT b.user_id AS other_id, COUNT(*)::INT AS shared,
       ROUND(100 - (AVG(ABS(a.rating_10 - b.rating_10)) / 9.0 * 100))::INT AS compat
@@ -995,7 +1001,7 @@ BEGIN
     COALESCE(calculated_dishes_helped, 0),
     COALESCE(calculated_category_biases, '{}'::JSONB);
 END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
 
 -- Get unseen reveal notifications
 CREATE OR REPLACE FUNCTION get_unseen_reveals(target_user_id UUID)
@@ -1016,7 +1022,7 @@ BEGIN
   WHERE be.user_id = target_user_id AND be.seen = FALSE
   ORDER BY be.created_at DESC LIMIT 10;
 END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
 
 -- Mark reveals as seen
 CREATE OR REPLACE FUNCTION mark_reveals_seen(event_ids UUID[])
@@ -1025,7 +1031,7 @@ BEGIN
   UPDATE bias_events SET seen = TRUE
   WHERE id = ANY(event_ids) AND user_id = (select auth.uid());
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 
 -- =============================================
@@ -1110,7 +1116,7 @@ BEGIN
     'topDishVotes', v_top_dish_votes, 'firstVoterCount', v_first_voter_count
   );
 END;
-$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public;
 
 -- Evaluate and award badges (cleanup version: category 10/20, no volume badges)
 CREATE OR REPLACE FUNCTION evaluate_user_badges(p_user_id UUID)
@@ -1244,7 +1250,7 @@ BEGIN
     END CASE;
   END LOOP;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public;
 
 -- Get user's unlocked badges
 CREATE OR REPLACE FUNCTION get_user_badges(p_user_id UUID, p_public_only BOOLEAN DEFAULT false)
@@ -1261,7 +1267,7 @@ BEGIN
   WHERE ub.user_id = p_user_id AND (NOT p_public_only OR b.is_public_eligible = true)
   ORDER BY b.sort_order ASC, ub.unlocked_at DESC;
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE SET search_path = public;
 
 -- Get public badges for display (max 6)
 CREATE OR REPLACE FUNCTION get_public_badges(p_user_id UUID)
@@ -1277,7 +1283,7 @@ BEGIN
   WHERE ub.user_id = p_user_id AND b.is_public_eligible = true
   ORDER BY b.sort_order ASC, ub.unlocked_at DESC LIMIT 6;
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE SET search_path = public;
 
 -- Get category experts (deduped: one row per user, highest tier)
 CREATE OR REPLACE FUNCTION get_category_experts(
@@ -1290,7 +1296,7 @@ RETURNS TABLE (
   badge_tier TEXT,
   follower_count BIGINT
 )
-LANGUAGE SQL STABLE SECURITY DEFINER AS $$
+LANGUAGE SQL STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT DISTINCT ON (ub.user_id)
     ub.user_id, p.display_name,
     CASE WHEN b.key LIKE 'authority_%' THEN 'authority' ELSE 'specialist' END AS badge_tier,
@@ -1309,7 +1315,7 @@ $$;
 -- Get expert vote counts per dish at a restaurant
 CREATE OR REPLACE FUNCTION get_expert_votes_for_restaurant(p_restaurant_id UUID)
 RETURNS TABLE (dish_id UUID, specialist_count INT, authority_count INT)
-LANGUAGE SQL STABLE AS $$
+LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT v.dish_id,
     COUNT(*) FILTER (WHERE ub.badge_key LIKE 'specialist_%')::INT AS specialist_count,
     COUNT(*) FILTER (WHERE ub.badge_key LIKE 'authority_%')::INT AS authority_count
@@ -1331,7 +1337,7 @@ RETURNS TABLE (
   current_streak INTEGER, longest_streak INTEGER, votes_this_week INTEGER,
   last_vote_date DATE, streak_status TEXT
 )
-LANGUAGE plpgsql STABLE SECURITY DEFINER AS $$
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   v_today DATE; v_yesterday DATE; v_record RECORD;
 BEGIN
@@ -1362,7 +1368,7 @@ RETURNS TABLE (
   user_id UUID, display_name TEXT, votes_this_week INTEGER,
   current_streak INTEGER, is_current_user BOOLEAN, rank INTEGER
 )
-LANGUAGE plpgsql STABLE SECURITY DEFINER AS $$
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   RETURN QUERY
   WITH mutual_friends AS (
@@ -1393,7 +1399,7 @@ $$;
 
 -- Get time until weekly reset (seconds)
 CREATE OR REPLACE FUNCTION get_weekly_reset_countdown()
-RETURNS INTEGER LANGUAGE SQL STABLE AS $$
+RETURNS INTEGER LANGUAGE SQL STABLE SET search_path = public AS $$
   SELECT EXTRACT(EPOCH FROM (date_trunc('week', CURRENT_DATE + INTERVAL '1 week') - NOW()))::INTEGER;
 $$;
 
@@ -1404,7 +1410,7 @@ $$;
 
 -- Get unread notification count
 CREATE OR REPLACE FUNCTION get_unread_notification_count(p_user_id UUID)
-RETURNS INTEGER LANGUAGE SQL STABLE SECURITY DEFINER AS $$
+RETURNS INTEGER LANGUAGE SQL STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT CASE
     WHEN auth.role() = 'service_role' OR (select auth.uid()) = p_user_id THEN
       (SELECT COUNT(*)::INTEGER FROM notifications WHERE user_id = p_user_id AND read = FALSE)
@@ -1414,7 +1420,7 @@ $$;
 
 -- Mark all notifications as read
 CREATE OR REPLACE FUNCTION mark_all_notifications_read(p_user_id UUID)
-RETURNS VOID LANGUAGE SQL SECURITY DEFINER AS $$
+RETURNS VOID LANGUAGE SQL SECURITY DEFINER SET search_path = public AS $$
   UPDATE notifications SET read = TRUE
   WHERE user_id = p_user_id AND read = FALSE
     AND (auth.role() = 'service_role' OR (select auth.uid()) = p_user_id);
@@ -1429,7 +1435,7 @@ $$;
 CREATE OR REPLACE FUNCTION check_and_record_rate_limit(
   p_action TEXT, p_max_attempts INT DEFAULT 10, p_window_seconds INT DEFAULT 60
 )
-RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   v_user_id UUID; v_count INT; v_oldest TIMESTAMPTZ; v_cutoff TIMESTAMPTZ; v_retry_after INT;
 BEGIN
@@ -1462,13 +1468,13 @@ $$;
 
 -- Convenience: vote rate limiting (10 per minute)
 CREATE OR REPLACE FUNCTION check_vote_rate_limit()
-RETURNS JSONB LANGUAGE sql SECURITY DEFINER AS $$
+RETURNS JSONB LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
   SELECT check_and_record_rate_limit('vote', 10, 60);
 $$;
 
 -- Convenience: photo upload rate limiting (5 per minute)
 CREATE OR REPLACE FUNCTION check_photo_upload_rate_limit()
-RETURNS JSONB LANGUAGE sql SECURITY DEFINER AS $$
+RETURNS JSONB LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
   SELECT check_and_record_rate_limit('photo_upload', 5, 60);
 $$;
 
@@ -1494,7 +1500,7 @@ BEGIN
   RETURN json_build_object('valid', true, 'restaurant_name', v_invite.restaurant_name,
     'restaurant_id', v_invite.restaurant_id, 'expires_at', v_invite.expires_at);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Accept a restaurant invite (atomic)
 CREATE OR REPLACE FUNCTION accept_restaurant_invite(p_token TEXT)
@@ -1522,7 +1528,7 @@ BEGIN
   RETURN json_build_object('success', true, 'restaurant_id', v_invite.restaurant_id,
     'restaurant_name', v_invite.restaurant_name);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 
 -- =============================================
@@ -1531,7 +1537,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 13a. Update follow counts on follow/unfollow
 CREATE OR REPLACE FUNCTION update_follow_counts()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     UPDATE profiles SET following_count = following_count + 1 WHERE id = NEW.follower_id;
@@ -1552,7 +1558,7 @@ CREATE TRIGGER trigger_update_follow_counts
 
 -- 13b. Create notification on new follow
 CREATE OR REPLACE FUNCTION notify_on_follow()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   follower_name TEXT;
 BEGIN
@@ -1587,7 +1593,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS vote_insert_trigger ON votes;
 CREATE TRIGGER vote_insert_trigger BEFORE INSERT ON votes FOR EACH ROW EXECUTE FUNCTION on_vote_insert();
@@ -1665,7 +1671,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS consensus_check_trigger ON votes;
 CREATE TRIGGER consensus_check_trigger AFTER INSERT ON votes FOR EACH ROW EXECUTE FUNCTION check_consensus_after_vote();
@@ -1682,7 +1688,7 @@ BEGIN
   WHERE dishes.id = COALESCE(NEW.dish_id, OLD.dish_id);
   RETURN COALESCE(NEW, OLD);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS update_dish_rating_on_vote ON votes;
 CREATE TRIGGER update_dish_rating_on_vote
@@ -1690,7 +1696,7 @@ CREATE TRIGGER update_dish_rating_on_vote
 
 -- 13f. Update streak on vote
 CREATE OR REPLACE FUNCTION update_user_streak_on_vote()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   v_today DATE; v_yesterday DATE; v_current_week_start DATE;
   v_existing RECORD; v_new_streak INTEGER; v_votes_this_week INTEGER;
@@ -1762,7 +1768,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public;
 
 DROP TRIGGER IF EXISTS trigger_compute_value_score ON dishes;
 CREATE TRIGGER trigger_compute_value_score
@@ -1810,7 +1816,7 @@ BEGIN
       SELECT category FROM dishes WHERE value_score IS NOT NULL GROUP BY category HAVING COUNT(*) >= 8
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- pg_cron: recalculate value percentiles every 2 hours
 -- Run manually in Supabase SQL Editor:
@@ -1916,3 +1922,42 @@ ON CONFLICT (key) DO UPDATE SET
   icon = EXCLUDED.icon, is_public_eligible = EXCLUDED.is_public_eligible,
   sort_order = EXCLUDED.sort_order, rarity = EXCLUDED.rarity, family = EXCLUDED.family,
   category = EXCLUDED.category;
+
+
+-- =============================================
+-- 17. CLEANUP: DROP DUPLICATE PRODUCTION-ONLY POLICIES
+-- =============================================
+-- These are old dashboard-created policies that duplicate the SQL-defined ones above.
+-- They exist in production but NOT in this schema file.
+--
+-- IMPORTANT: Verify exact policy names in your Supabase dashboard
+-- (Authentication > Policies) before running. The storage.objects names
+-- especially may differ from these guesses.
+--
+-- Run this block SEPARATELY in Supabase SQL Editor after verifying:
+--
+-- -- follows (3 duplicates of follows_select_public, follows_insert_own, follows_delete_own)
+-- DROP POLICY IF EXISTS "Users can view follows" ON follows;
+-- DROP POLICY IF EXISTS "Users can insert own follows" ON follows;
+-- DROP POLICY IF EXISTS "Users can delete own follows" ON follows;
+--
+-- -- profiles (4 duplicates of profiles_select_public_or_own, profiles_insert_own, profiles_update_own)
+-- DROP POLICY IF EXISTS "Profiles are viewable by everyone" ON profiles;
+-- DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+-- DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+-- DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+--
+-- -- dishes (2 duplicates of "Admin or manager insert/update dishes")
+-- DROP POLICY IF EXISTS "Admins can insert dishes" ON dishes;
+-- DROP POLICY IF EXISTS "Admins can update dishes" ON dishes;
+--
+-- -- specials (3 duplicates of "Read specials", "Admin or manager update/delete specials")
+-- DROP POLICY IF EXISTS "Anyone can view active specials" ON specials;
+-- DROP POLICY IF EXISTS "Creator can update own specials" ON specials;
+-- DROP POLICY IF EXISTS "Creator can delete own specials" ON specials;
+--
+-- -- storage.objects (4 duplicates of dish_photos_* policies)
+-- DROP POLICY IF EXISTS "Public read access for dish photos" ON storage.objects;
+-- DROP POLICY IF EXISTS "Authenticated users can upload dish photos" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can update own dish photos" ON storage.objects;
+-- DROP POLICY IF EXISTS "Users can delete own dish photos" ON storage.objects;
