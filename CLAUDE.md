@@ -97,6 +97,7 @@ Defined in `src/index.css` — **supports dark mode** via `[data-theme="dark"]`.
 - **Optimistic updates must have rollback** - Any UI that updates before the server confirms must revert to previous state on error, never leave stale optimistic data in place
 - **`.rpc()` function names must exactly match `schema.sql`** - Don't rename based on Postgres hint messages. Verify the actual function name in the schema before changing code.
 - **`ROUND()` needs `::NUMERIC` cast on float expressions** - `ROUND(double precision, int)` doesn't exist in Postgres. Use `ROUND(expression::NUMERIC, 2)` with `LOG()`, `PERCENT_RANK()`, and similar.
+- **New RPC functions must be run in Supabase SQL Editor** - Adding a function to `schema.sql` does NOT deploy it. After adding to `schema.sql`, you MUST run the CREATE FUNCTION statement in the SQL Editor. Verify with a test call before marking done.
 
 ### Auth-Gated Actions
 - **Voting, favorites, and photo uploads require login** - Check `user` first, show `<LoginModal>` if null. See `Browse.jsx:234` for the pattern.
@@ -138,7 +139,7 @@ src/components/
 ### Verification (before calling anything done)
 - **`npm run build` must pass** - Don't say "done" if it doesn't compile
 - **`npm run test` must pass** - Run tests, don't assume they still pass
-- **If you touched Supabase schema/RPC:** verify the function returns the new columns with a sample query
+- **If you touched Supabase schema/RPC:** verify the function was actually run in the SQL Editor and returns the expected result with a sample query
 - **If you touched a sort or filter:** confirm edge cases (null values, 0 votes, missing price) don't crash or sort wrong
 - **If you added a new component:** verify it's exported from the barrel index and actually imported where needed
 
