@@ -481,7 +481,7 @@ export function Profile() {
               borderBottom: '1px solid var(--color-divider)',
             }}
           >
-            <div className="flex gap-1.5 overflow-x-auto px-4 pb-0.5 scrollbar-hide">
+            <div className="flex gap-1.5 overflow-x-auto overflow-y-hidden px-4 pb-0.5 scrollbar-hide" style={{ touchAction: 'pan-x', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch' }}>
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
