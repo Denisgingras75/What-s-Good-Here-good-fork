@@ -1,33 +1,24 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { profileApi } from '../api/profileApi'
 import { logger } from '../utils/logger'
 
 export function useProfile(userId) {
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    if (!userId) {
-      setProfile(null)
-      setLoading(false)
-      return
-    }
+  const { data: profile, isLoading: loading } = useQuery({
+    queryKey: ['profile', userId],
+    queryFn: async () => {
+      // API uses auth.getUser() internally for security
+      return profileApi.getOrCreateProfile()
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  })
 
-    async function fetchProfile() {
-      setLoading(true)
-      try {
-        // API uses auth.getUser() internally for security
-        const data = await profileApi.getOrCreateProfile()
-        setProfile(data)
-      } catch (error) {
-        logger.error('Error fetching profile:', error)
-        setProfile(null)
-      }
-      setLoading(false)
-    }
-
-    fetchProfile()
-  }, [userId])
+  if (!userId) {
+    // Match original behavior: return null profile when not logged in
+  }
 
   const updateProfile = useCallback(async (updates) => {
     if (!userId) return { error: 'Not logged in' }
@@ -35,16 +26,18 @@ export function useProfile(userId) {
     try {
       // API uses auth.getUser() internally for security
       const data = await profileApi.updateProfile(updates)
-      setProfile(data)
+      // Update cache immediately so UI reflects the change
+      queryClient.setQueryData(['profile', userId], data)
       return { data, error: null }
     } catch (error) {
+      logger.error('Error updating profile:', error)
       return { data: null, error }
     }
-  }, [userId])
+  }, [userId, queryClient])
 
   return {
-    profile,
-    loading,
+    profile: profile ?? null,
+    loading: userId ? loading : false,
     updateProfile,
   }
 }

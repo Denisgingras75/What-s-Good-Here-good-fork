@@ -1,6 +1,14 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { leaderboardApi } from '../api/leaderboardApi'
 import { logger } from '../utils/logger'
+
+const DEFAULT_STREAK = {
+  currentStreak: 0,
+  longestStreak: 0,
+  votesThisWeek: 0,
+  lastVoteDate: null,
+  status: 'none',
+}
 
 /**
  * Hook for managing user streak data
@@ -8,47 +16,24 @@ import { logger } from '../utils/logger'
  * @returns {Object} Streak state and actions
  */
 export function useStreak(userId = null) {
-  const [streak, setStreak] = useState({
-    currentStreak: 0,
-    longestStreak: 0,
-    votesThisWeek: 0,
-    lastVoteDate: null,
-    status: 'none', // 'active' | 'at_risk' | 'broken' | 'none'
+  const { data: streak, isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['streak', userId || 'me'],
+    queryFn: async () => {
+      return userId
+        ? leaderboardApi.getUserStreak(userId)
+        : leaderboardApi.getMyStreak()
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes
   })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
-  // Fetch streak data
-  const fetchStreak = useCallback(async () => {
-    try {
-      setError(null)
-      const data = userId
-        ? await leaderboardApi.getUserStreak(userId)
-        : await leaderboardApi.getMyStreak()
-      setStreak(data)
-    } catch (err) {
-      logger.error('Error fetching streak:', err)
-      setError(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [userId])
-
-  // Initial fetch
-  useEffect(() => {
-    fetchStreak()
-  }, [fetchStreak])
-
-  // Refresh function for after voting
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    await fetchStreak()
-  }, [fetchStreak])
+  if (error) {
+    logger.error('Error fetching streak:', error)
+  }
 
   return {
-    ...streak,
+    ...(streak || DEFAULT_STREAK),
     loading,
     error,
-    refresh,
+    refresh: refetch,
   }
 }

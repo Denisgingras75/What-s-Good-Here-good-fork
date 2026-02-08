@@ -1,51 +1,85 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { capture } from '../lib/analytics'
 import { favoritesApi } from '../api/favoritesApi'
 import { logger } from '../utils/logger'
 
 export function useFavorites(userId) {
-  const [favoriteIds, setFavoriteIds] = useState([])
-  const [favorites, setFavorites] = useState([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  // Fetch favorite dish IDs
-  useEffect(() => {
-    if (!userId) {
-      setFavoriteIds([])
-      setFavorites([])
-      setLoading(false)
-      return
-    }
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['favorites', userId],
+    queryFn: () => favoritesApi.getFavorites(),
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  })
 
-    async function fetchFavorites() {
-      setLoading(true)
-      try {
-        const { favoriteIds: ids, favorites: dishes } = await favoritesApi.getFavorites()
-        setFavoriteIds(ids)
-        setFavorites(dishes)
-      } catch (err) {
-        logger.error('Error fetching favorites:', err)
-      } finally {
-        setLoading(false)
+  const favoriteIds = data?.favoriteIds || []
+  const favorites = data?.favorites || []
+
+  const isFavorite = useCallback(
+    (dishId) => favoriteIds.includes(dishId),
+    [favoriteIds]
+  )
+
+  const addMutation = useMutation({
+    mutationFn: (dishId) => favoritesApi.addFavorite(dishId),
+    onMutate: async (dishId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['favorites', userId] })
+      // Snapshot previous value for rollback
+      const previous = queryClient.getQueryData(['favorites', userId])
+      // Optimistic update
+      queryClient.setQueryData(['favorites', userId], (old) => {
+        if (!old) return old
+        return {
+          favoriteIds: [...old.favoriteIds, dishId],
+          favorites: old.favorites,
+        }
+      })
+      return { previous }
+    },
+    onError: (_err, _dishId, context) => {
+      // Rollback on failure
+      if (context?.previous) {
+        queryClient.setQueryData(['favorites', userId], context.previous)
       }
-    }
+    },
+    onSettled: () => {
+      // Refetch to get full dish data
+      queryClient.invalidateQueries({ queryKey: ['favorites', userId] })
+    },
+  })
 
-    fetchFavorites()
-  }, [userId])
-
-  const isFavorite = useCallback((dishId) => favoriteIds.includes(dishId), [favoriteIds])
+  const removeMutation = useMutation({
+    mutationFn: (dishId) => favoritesApi.removeFavorite(dishId),
+    onMutate: async (dishId) => {
+      await queryClient.cancelQueries({ queryKey: ['favorites', userId] })
+      const previous = queryClient.getQueryData(['favorites', userId])
+      queryClient.setQueryData(['favorites', userId], (old) => {
+        if (!old) return old
+        return {
+          favoriteIds: old.favoriteIds.filter((id) => id !== dishId),
+          favorites: old.favorites.filter((d) => d.dish_id !== dishId),
+        }
+      })
+      return { previous }
+    },
+    onError: (_err, _dishId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['favorites', userId], context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorites', userId] })
+    },
+  })
 
   const addFavorite = async (dishId, dishData = null) => {
     if (!userId) return { error: 'Not logged in' }
 
-    // Optimistic update FIRST - instant UI feedback
-    setFavoriteIds(prev => [...prev, dishId])
-
-    // Show success toast
     toast.success('Moved to Heard it was Good Here', { duration: 2000 })
-
-    // Track immediately for snappy feel
     capture('dish_saved', {
       dish_id: dishId,
       dish_name: dishData?.dish_name,
@@ -54,15 +88,9 @@ export function useFavorites(userId) {
     })
 
     try {
-      await favoritesApi.addFavorite(dishId)
-      // Background refetch for full dish data (non-blocking)
-      favoritesApi.getFavorites().then(({ favorites: dishes }) => {
-        setFavorites(dishes)
-      }).catch(() => {}) // Silent fail - we already have the ID
+      await addMutation.mutateAsync(dishId)
       return { error: null }
     } catch (err) {
-      // Revert on failure
-      setFavoriteIds(prev => prev.filter(id => id !== dishId))
       return { error: err.message }
     }
   }
@@ -70,19 +98,8 @@ export function useFavorites(userId) {
   const removeFavorite = async (dishId) => {
     if (!userId) return { error: 'Not logged in' }
 
-    // Get dish info before removing (for analytics and potential revert)
-    const dishToRemove = favorites.find(d => d.dish_id === dishId)
-    const previousIds = favoriteIds
-    const previousFavorites = favorites
-
-    // Optimistic update FIRST - instant UI feedback
-    setFavoriteIds(prev => prev.filter(id => id !== dishId))
-    setFavorites(prev => prev.filter(d => d.dish_id !== dishId))
-
-    // Show removal toast
+    const dishToRemove = favorites.find((d) => d.dish_id === dishId)
     toast('Removed from Heard it was Good Here', { duration: 2000 })
-
-    // Track immediately
     capture('dish_unsaved', {
       dish_id: dishId,
       dish_name: dishToRemove?.dish_name,
@@ -91,12 +108,9 @@ export function useFavorites(userId) {
     })
 
     try {
-      await favoritesApi.removeFavorite(dishId)
+      await removeMutation.mutateAsync(dishId)
       return { error: null }
     } catch (err) {
-      // Revert on failure
-      setFavoriteIds(previousIds)
-      setFavorites(previousFavorites)
       return { error: err.message }
     }
   }
@@ -111,11 +125,8 @@ export function useFavorites(userId) {
 
   const refetch = async () => {
     if (!userId) return
-
     try {
-      const { favoriteIds: ids, favorites: dishes } = await favoritesApi.getFavorites()
-      setFavoriteIds(ids)
-      setFavorites(dishes)
+      await queryClient.invalidateQueries({ queryKey: ['favorites', userId] })
     } catch (err) {
       logger.error('Error refetching favorites:', err)
     }
@@ -124,7 +135,7 @@ export function useFavorites(userId) {
   return {
     favoriteIds,
     favorites,
-    loading,
+    loading: userId ? loading : false,
     isFavorite,
     addFavorite,
     removeFavorite,

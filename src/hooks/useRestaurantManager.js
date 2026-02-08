@@ -1,48 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { restaurantManagerApi } from '../api/restaurantManagerApi'
 import { logger } from '../utils/logger'
 
 export function useRestaurantManager() {
   const { user } = useAuth()
-  const [isManager, setIsManager] = useState(false)
-  const [restaurant, setRestaurant] = useState(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!user) {
-      setIsManager(false)
-      setRestaurant(null)
-      setLoading(false)
-      return
-    }
+  const { data: result, isLoading: loading } = useQuery({
+    queryKey: ['restaurantManager', user?.id],
+    queryFn: () => restaurantManagerApi.getMyRestaurant(),
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes — manager status rarely changes
+  })
 
-    let cancelled = false
+  if (!user) {
+    return { isManager: false, restaurant: null, loading: false }
+  }
 
-    async function checkManager() {
-      try {
-        const result = await restaurantManagerApi.getMyRestaurant()
-        if (cancelled) return
-        if (result) {
-          setIsManager(true)
-          setRestaurant(result.restaurant)
-        } else {
-          setIsManager(false)
-          setRestaurant(null)
-        }
-      } catch (error) {
-        if (cancelled) return
-        logger.error('Error checking manager status:', error)
-        setIsManager(false)
-        setRestaurant(null)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
+  const isManager = !!result?.restaurant
+  const restaurant = result?.restaurant ?? null
 
-    checkManager()
-    return () => { cancelled = true }
-  }, [user])
+  if (result === undefined && !loading) {
+    logger.error('Unexpected null result from getMyRestaurant')
+  }
 
   return { isManager, restaurant, loading }
 }

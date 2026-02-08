@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { logger } from '../utils/logger'
 
@@ -6,49 +6,24 @@ import { logger } from '../utils/logger'
  * Hook for fetching dishes that a user has photographed but not rated
  */
 export function useUnratedDishes(userId) {
-  const [dishes, setDishes] = useState([])
-  const [count, setCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { data, isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['unratedDishes', userId],
+    queryFn: () => dishPhotosApi.getUnratedDishesWithPhotos(userId),
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  })
 
-  const fetchUnratedDishes = useCallback(async () => {
-    if (!userId) {
-      setDishes([])
-      setCount(0)
-      setLoading(false)
-      return
-    }
+  if (error) {
+    logger.error('Error fetching unrated dishes:', error)
+  }
 
-    setLoading(true)
-    setError(null)
-
-    try {
-      const data = await dishPhotosApi.getUnratedDishesWithPhotos(userId)
-      setDishes(data)
-      setCount(data.length)
-    } catch (err) {
-      logger.error('Error fetching unrated dishes:', err)
-      setError(err.message || 'Failed to fetch unrated dishes')
-      setDishes([])
-      setCount(0)
-    } finally {
-      setLoading(false)
-    }
-  }, [userId])
-
-  useEffect(() => {
-    fetchUnratedDishes()
-  }, [fetchUnratedDishes])
-
-  const refetch = useCallback(async () => {
-    await fetchUnratedDishes()
-  }, [fetchUnratedDishes])
+  const dishes = data || []
 
   return {
     dishes,
-    count,
-    loading,
-    error,
+    count: dishes.length,
+    loading: userId ? loading : false,
+    error: error ? (error.message || 'Failed to fetch unrated dishes') : null,
     refetch,
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { capture } from '../lib/analytics'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { analyzeImage } from '../utils/imageAnalysis'
@@ -8,7 +9,7 @@ import { logger } from '../utils/logger'
  * Hook for managing photo uploads for dishes
  */
 export function useDishPhotos() {
-  const [uploading, setUploading] = useState(false)
+  const queryClient = useQueryClient()
   const [analyzing, setAnalyzing] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState(null)
@@ -23,9 +24,24 @@ export function useDishPhotos() {
     }
   }, [])
 
+  const uploadMutation = useMutation({
+    mutationFn: ({ dishId, file, analysisResults }) =>
+      dishPhotosApi.uploadPhoto({ dishId, file, analysisResults }),
+    onSuccess: () => {
+      // Invalidate unrated dishes so the count updates
+      queryClient.invalidateQueries({ queryKey: ['unratedDishes'] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (photoId) => dishPhotosApi.deletePhoto(photoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unratedDishes'] })
+    },
+  })
+
   const uploadPhoto = useCallback(async (dishId, file) => {
     setAnalyzing(true)
-    setUploading(false)
     setUploadProgress(0)
     setError(null)
 
@@ -42,7 +58,6 @@ export function useDishPhotos() {
 
       // If rejected by quality checks, don't upload
       if (analysis.status === 'rejected') {
-        // Track rejection with metrics for tuning
         capture('photo_upload_rejected', {
           dish_id: dishId,
           reason: analysis.rejectReason,
@@ -60,10 +75,9 @@ export function useDishPhotos() {
 
       // Step 2: Upload the photo with analysis results
       setAnalyzing(false)
-      setUploading(true)
       setUploadProgress(30)
 
-      const result = await dishPhotosApi.uploadPhoto({
+      const result = await uploadMutation.mutateAsync({
         dishId,
         file,
         analysisResults: analysis,
@@ -89,11 +103,10 @@ export function useDishPhotos() {
       throw err
     } finally {
       setAnalyzing(false)
-      setUploading(false)
       // Reset progress after a short delay
       progressResetTimerRef.current = setTimeout(() => setUploadProgress(0), 500)
     }
-  }, [])
+  }, [uploadMutation])
 
   const getUserPhotoForDish = useCallback(async (dishId) => {
     try {
@@ -106,13 +119,13 @@ export function useDishPhotos() {
 
   const deletePhoto = useCallback(async (photoId) => {
     try {
-      await dishPhotosApi.deletePhoto(photoId)
+      await deleteMutation.mutateAsync(photoId)
       return { success: true }
     } catch (err) {
       setError(err.message || 'Failed to delete photo')
       throw err
     }
-  }, [])
+  }, [deleteMutation])
 
   const clearError = useCallback(() => {
     setError(null)
@@ -122,7 +135,7 @@ export function useDishPhotos() {
     uploadPhoto,
     getUserPhotoForDish,
     deletePhoto,
-    uploading,
+    uploading: uploadMutation.isPending,
     analyzing,
     uploadProgress,
     error,
