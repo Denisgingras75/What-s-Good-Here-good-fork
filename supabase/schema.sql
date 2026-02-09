@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
   is_open BOOLEAN DEFAULT true,
   cuisine TEXT,
   town TEXT,
+  menu_section_order TEXT[] DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -40,6 +41,7 @@ CREATE TABLE IF NOT EXISTS dishes (
   restaurant_id UUID REFERENCES restaurants(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   category TEXT NOT NULL,
+  menu_section TEXT,
   price DECIMAL(6, 2),
   photo_url TEXT,
   parent_dish_id UUID REFERENCES dishes(id) ON DELETE SET NULL,
@@ -647,6 +649,7 @@ RETURNS TABLE (
   restaurant_id UUID,
   restaurant_name TEXT,
   category TEXT,
+  menu_section TEXT,
   price DECIMAL,
   photo_url TEXT,
   total_votes BIGINT,
@@ -703,7 +706,7 @@ BEGIN
   )
   SELECT
     d.id AS dish_id, d.name AS dish_name, r.id AS restaurant_id, r.name AS restaurant_name,
-    d.category, d.price, d.photo_url,
+    d.category, d.menu_section, d.price, d.photo_url,
     COALESCE(vs.total_child_votes, dvs.direct_votes, 0)::BIGINT AS total_votes,
     COALESCE(vs.total_child_yes, dvs.direct_yes, 0)::BIGINT AS yes_votes,
     CASE
@@ -723,7 +726,7 @@ BEGIN
   WHERE d.restaurant_id = p_restaurant_id
     AND r.is_open = true
     AND d.parent_dish_id IS NULL
-  GROUP BY d.id, d.name, r.id, r.name, d.category, d.price, d.photo_url,
+  GROUP BY d.id, d.name, r.id, r.name, d.category, d.menu_section, d.price, d.photo_url,
            vs.total_child_votes, vs.total_child_yes, vs.combined_avg_rating, vs.child_count,
            dvs.direct_votes, dvs.direct_yes, dvs.direct_avg,
            bv.best_id, bv.best_name, bv.best_rating

@@ -80,17 +80,19 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
         style={{ borderRadius: '0.75rem' }}
       >
         {/* Rank Badge */}
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1"
-          style={{
-            background: rank <= 3 && isRanked ? 'var(--color-primary)' : 'var(--color-surface)',
-            color: rank <= 3 && isRanked ? 'white' : 'var(--color-text-tertiary)',
-            fontSize: '13px',
-            ...(rank <= 3 && isRanked ? { boxShadow: '0 2px 8px -2px rgba(200, 90, 84, 0.4)' } : { border: '1px solid rgba(217, 167, 101, 0.12)' }),
-          }}
-        >
-          {rank}
-        </div>
+        {rank != null && (
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center font-bold flex-shrink-0 mt-1"
+            style={{
+              background: rank <= 3 && isRanked ? 'var(--color-primary)' : 'var(--color-surface)',
+              color: rank <= 3 && isRanked ? 'white' : 'var(--color-text-tertiary)',
+              fontSize: '13px',
+              ...(rank <= 3 && isRanked ? { boxShadow: '0 2px 8px -2px rgba(200, 90, 84, 0.4)' } : { border: '1px solid rgba(217, 167, 101, 0.12)' }),
+            }}
+          >
+            {rank}
+          </div>
+        )}
 
         {/* Photo */}
         <div

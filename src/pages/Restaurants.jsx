@@ -9,7 +9,7 @@ import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useFavorites } from '../hooks/useFavorites'
 import { LoginModal } from '../components/Auth/LoginModal'
-import { RestaurantDishes } from '../components/restaurants'
+import { RestaurantDishes, RestaurantMenu } from '../components/restaurants'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 
 export function Restaurants() {
@@ -23,6 +23,7 @@ export function Restaurants() {
   const [dishSearchQuery, setDishSearchQuery] = useState('')
   const [selectedRestaurant, setSelectedRestaurant] = useState(null)
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('top')
   const [friendsVotesByDish, setFriendsVotesByDish] = useState({})
 
   const { location, radius } = useLocationContext()
@@ -57,7 +58,10 @@ export function Restaurants() {
     if (restaurantId && restaurants.length > 0 && !selectedRestaurant) {
       const restaurant = restaurants.find(r => r.id === restaurantId)
       if (restaurant) {
-        setSelectedRestaurant(restaurant)
+        // Fetch full data (includes menu_section_order)
+        restaurantsApi.getById(restaurant.id)
+          .then(full => setSelectedRestaurant({ ...restaurant, ...full }))
+          .catch(() => setSelectedRestaurant(restaurant))
       }
     }
   }, [restaurantId, restaurants, selectedRestaurant])
@@ -106,7 +110,7 @@ export function Restaurants() {
     await toggleFavorite(dishId)
   }
 
-  const handleRestaurantSelect = (restaurant) => {
+  const handleRestaurantSelect = async (restaurant) => {
     const stats = restaurantStats[restaurant.id] || {}
     capture('restaurant_viewed', {
       restaurant_id: restaurant.id,
@@ -115,7 +119,15 @@ export function Restaurants() {
       total_dish_votes: stats.totalVotes || 0,
       dish_count: restaurant.dishCount,
     })
-    setSelectedRestaurant(restaurant)
+    // Fetch full restaurant data (includes menu_section_order)
+    try {
+      const full = await restaurantsApi.getById(restaurant.id)
+      setSelectedRestaurant({ ...restaurant, ...full })
+    } catch (err) {
+      logger.error('Error fetching restaurant details:', err)
+      setSelectedRestaurant(restaurant)
+    }
+    setActiveTab('top')
   }
 
   // Compute top dish and total votes per restaurant
@@ -432,19 +444,80 @@ export function Restaurants() {
 
           </div>
 
-          {/* What Should I Order? - Confidence View */}
-          <RestaurantDishes
-            dishes={dishes}
-            loading={dishesLoading}
-            error={dishesError}
-            onVote={handleVote}
-            onLoginRequired={handleLoginRequired}
-            isFavorite={isFavorite}
-            onToggleFavorite={handleToggleFavorite}
-            user={user}
-            searchQuery={dishSearchQuery}
-            friendsVotesByDish={friendsVotesByDish}
-          />
+          {/* Tab Switcher */}
+          <div className="px-4 pt-4">
+            <div
+              className="flex rounded-xl p-1"
+              style={{
+                background: 'var(--color-surface-elevated)',
+                border: '1px solid var(--color-divider)',
+              }}
+              role="tablist"
+              aria-label="Restaurant view"
+            >
+              <button
+                role="tab"
+                aria-selected={activeTab === 'top'}
+                onClick={() => setActiveTab('top')}
+                className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all"
+                style={{
+                  background: activeTab === 'top' ? 'var(--color-primary)' : 'transparent',
+                  color: activeTab === 'top' ? 'white' : 'var(--color-text-secondary)',
+                  boxShadow: activeTab === 'top' ? '0 2px 8px -2px rgba(200, 90, 84, 0.4)' : 'none',
+                }}
+              >
+                Top Rated
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === 'menu'}
+                onClick={() => setActiveTab('menu')}
+                className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all"
+                style={{
+                  background: activeTab === 'menu' ? 'var(--color-primary)' : 'transparent',
+                  color: activeTab === 'menu' ? 'white' : 'var(--color-text-secondary)',
+                  boxShadow: activeTab === 'menu' ? '0 2px 8px -2px rgba(200, 90, 84, 0.4)' : 'none',
+                }}
+              >
+                Menu
+              </button>
+            </div>
+            {/* Gold divider */}
+            <div
+              className="mt-3 h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, var(--color-accent-gold), transparent)' }}
+            />
+          </div>
+
+          {/* Dish Content */}
+          {activeTab === 'top' ? (
+            <RestaurantDishes
+              dishes={dishes}
+              loading={dishesLoading}
+              error={dishesError}
+              onVote={handleVote}
+              onLoginRequired={handleLoginRequired}
+              isFavorite={isFavorite}
+              onToggleFavorite={handleToggleFavorite}
+              user={user}
+              searchQuery={dishSearchQuery}
+              friendsVotesByDish={friendsVotesByDish}
+            />
+          ) : (
+            <RestaurantMenu
+              dishes={dishes}
+              loading={dishesLoading}
+              error={dishesError}
+              onVote={handleVote}
+              onLoginRequired={handleLoginRequired}
+              isFavorite={isFavorite}
+              onToggleFavorite={handleToggleFavorite}
+              user={user}
+              searchQuery={dishSearchQuery}
+              friendsVotesByDish={friendsVotesByDish}
+              menuSectionOrder={selectedRestaurant?.menu_section_order || []}
+            />
+          )}
         </>
       )}
 

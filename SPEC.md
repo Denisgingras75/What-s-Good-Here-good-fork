@@ -22,8 +22,8 @@ Evidence: `supabase/schema.sql:24-259`
 
 | Table | PK | Key Columns | Relationships | Constraints | Status |
 |---|---|---|---|---|---|
-| **restaurants** | `id` UUID | name, address, lat/lng, is_open, cuisine, town | — | — | **VERIFIED** |
-| **dishes** | `id` UUID | name, category, price, avg_rating, total_votes, yes_votes, consensus_*, value_score, parent_dish_id, tags[] | FK → restaurants; self-ref parent_dish_id (variants) | — | **VERIFIED** |
+| **restaurants** | `id` UUID | name, address, lat/lng, is_open, cuisine, town, menu_section_order[] | — | — | **VERIFIED** |
+| **dishes** | `id` UUID | name, category, menu_section, price, avg_rating, total_votes, yes_votes, consensus_*, value_score, parent_dish_id, tags[] | FK → restaurants; self-ref parent_dish_id (variants) | — | **VERIFIED** |
 | **votes** | `id` UUID | dish_id, user_id, would_order_again (bool), rating_10 (decimal), review_text, vote_position, category_snapshot | FK → dishes, auth.users; UNIQUE(dish_id, user_id) | review_text max 200 chars | **VERIFIED** |
 | **profiles** | `id` UUID = auth.users(id) | display_name, has_onboarded, preferred_categories[], follower_count, following_count | PK references auth.users | unique lowercase display_name | **VERIFIED** |
 | **favorites** | `id` UUID | user_id, dish_id | FK → auth.users, dishes; UNIQUE(user_id, dish_id) | — | **VERIFIED** |
@@ -247,8 +247,15 @@ Evidence: `schema.sql:1534-1776`
 **Hooks:** `useDishes` (with restaurantId param)
 **API calls:** `dishesApi.getDishesForRestaurant()`, `restaurantsApi.getRestaurants()`
 **Data reads:** `get_restaurant_dishes` RPC, restaurants table
+**Components:** `RestaurantDishes` (top-rated view), `RestaurantMenu` (menu-grouped view), `TopDishCard`
 
-**VERIFIED** — `src/pages/Restaurants.jsx`, `src/api/restaurantsApi.js`
+**Views:** Two tab-switched views below the restaurant details card:
+- **Top Rated** (default) — dishes ranked by confidence (avg_rating, percent_worth_it, votes). Top 5 shown with expand toggle for the rest.
+- **Menu** — dishes grouped by `menu_section` field to mirror the restaurant's actual physical menu. Section order controlled by `restaurants.menu_section_order` TEXT[] column. Dishes ranked within each section. No rank badges shown. Dishes without a `menu_section` appear in an "Other" group.
+
+Menu sections are manually curated per restaurant (photo of real menu → SQL update). Switching restaurants resets to "Top Rated" tab. Search filters work in both views.
+
+**VERIFIED** — `src/pages/Restaurants.jsx`, `src/api/restaurantsApi.js`, `src/components/restaurants/`
 
 ### Feature 7: User Profile (own)
 
