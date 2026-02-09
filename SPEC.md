@@ -455,19 +455,15 @@ All API files follow:
 
 ## Known Inconsistencies
 
-1. **CLAUDE.md design tokens are stale** — Says `#F47A1F` (orange) / `#E6B84C` (gold), but actual CSS uses `#C85A54` (Deep Rust) / `#D9A765` (Warm Gold).
-   **VERIFIED** — `CLAUDE.md:71` vs `src/index.css:37,45`
+1. ~~**CLAUDE.md design tokens are stale**~~ — **FIXED** (T03). CLAUDE.md now matches `src/index.css`.
 
-2. **`useFavorites` uses raw `useEffect` + state, not React Query** — Violates the stated principle "React Query is the data fetching layer... Never add raw `useEffect` + `fetch` patterns."
-   **VERIFIED** — `src/hooks/useFavorites.js:13-35` vs `CLAUDE.md:67`
+2. ~~**`useFavorites` uses raw `useEffect` + state, not React Query**~~ — **FIXED** (T05). Migrated to `useQuery`/`useMutation`.
 
 3. **`profiles_delete_own` policy exists in schema but should not** — Users should not be able to delete their own profile row.
-   **VERIFIED** — `schema.sql:398`, confirmed by owner
+   **VERIFIED** — `schema.sql:398`, confirmed by owner. Requires Supabase SQL Editor (T01).
 
-4. **`LocationContext` uses direct `localStorage` calls** — Should use `src/lib/storage.js` per CLAUDE.md rules.
-   **VERIFIED** — `src/context/LocationContext.jsx:22-32,58-65,79,95-101,115-118` vs `CLAUDE.md:152`
+4. ~~**`LocationContext` uses direct `localStorage` calls**~~ — **FIXED** (T06). Now uses `storage.js` helpers.
 
-5. **Pending vote storage key mismatch** — CLAUDE.md says `wgh_pending_vote` but actual key is `whats_good_here_pending_vote`.
-   **VERIFIED** — `CLAUDE.md:78` vs `src/lib/storage.js:76`
+5. ~~**Pending vote storage key mismatch**~~ — **FIXED** (T04). CLAUDE.md now lists the correct key.
 
-6. **Production RLS may have duplicate policies** — `schema.sql:1927-1964` documents known duplicates. Whether they've been cleaned up is **UNKNOWN**.
+6. **Production RLS may have duplicate policies** — `schema.sql:1927-1964` documents known duplicates. Whether they've been cleaned up is **UNKNOWN**. Requires Supabase SQL Editor (T02).
