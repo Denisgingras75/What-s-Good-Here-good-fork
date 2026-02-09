@@ -110,7 +110,7 @@
 
 ---
 
-## T09: `dishesApi.getDishById` computes `avg_rating` client-side — use pre-computed column instead
+## ~~T09: `dishesApi.getDishById` computes `avg_rating` client-side — use pre-computed column instead~~ DONE
 
 **Why:** `getDishById` fetches all votes for a dish and computes `avg_rating` in JS, but the `dishes` table already has a pre-computed `avg_rating` column maintained by the `update_dish_avg_rating` trigger. The client-side calculation could disagree with the pre-computed value and wastes bandwidth fetching all vote rows.
 

@@ -477,23 +477,19 @@ describe('dishesApi', () => {
           cuisine: 'Seafood',
         },
       }
-      const mockVotes = [
-        { rating_10: 9, would_order_again: true },
-        { rating_10: 8, would_order_again: true },
-        { rating_10: 7, would_order_again: false },
-      ]
-
-      // First call: get dish
+      // First call: get dish (avg_rating and total_votes are pre-computed columns)
       supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: mockDish, error: null }),
+          single: vi.fn().mockResolvedValue({ data: { ...mockDish, avg_rating: 8, total_votes: 3 }, error: null }),
         }),
       })
-      // Second call: get votes
+      // Second call: count yes_votes (head: true count query)
       supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: mockVotes, error: null }),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ count: 2, error: null }),
+          }),
         }),
       })
       // Third call: check variants
@@ -507,12 +503,12 @@ describe('dishesApi', () => {
 
       expect(result.total_votes).toBe(3)
       expect(result.yes_votes).toBe(2)
-      expect(result.avg_rating).toBe(8) // (9+8+7)/3 = 8
+      expect(result.avg_rating).toBe(8)
       expect(result.has_variants).toBe(false)
     })
 
     it('should handle dish with no votes', async () => {
-      const mockDish = { id: 'dish-1', name: 'New Dish', restaurants: {} }
+      const mockDish = { id: 'dish-1', name: 'New Dish', avg_rating: null, total_votes: 0, restaurants: {} }
 
       supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
@@ -522,7 +518,9 @@ describe('dishesApi', () => {
       })
       supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
+          }),
         }),
       })
       supabase.from.mockReturnValueOnce({
@@ -549,8 +547,8 @@ describe('dishesApi', () => {
       await expect(dishesApi.getDishById('invalid-id')).rejects.toThrow()
     })
 
-    it('should continue with dish data if votes query fails (graceful degradation)', async () => {
-      const mockDish = { id: 'dish-1', name: 'Lobster Roll', restaurants: {} }
+    it('should continue with dish data if yes_votes count fails (graceful degradation)', async () => {
+      const mockDish = { id: 'dish-1', name: 'Lobster Roll', avg_rating: 8, total_votes: 3, restaurants: {} }
 
       supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
@@ -558,16 +556,28 @@ describe('dishesApi', () => {
           single: vi.fn().mockResolvedValue({ data: mockDish, error: null }),
         }),
       })
+      // yes_votes count query fails
       supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'Votes error' } }),
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ count: null, error: { message: 'Votes error' } }),
+          }),
+        }),
+      })
+      // check variants
+      supabase.from.mockReturnValueOnce({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
         }),
       })
 
       const result = await dishesApi.getDishById('dish-1')
 
-      // Should return dish even if votes failed
+      // Should return dish with yes_votes defaulting to 0
       expect(result.id).toBe('dish-1')
+      expect(result.avg_rating).toBe(8)
+      expect(result.total_votes).toBe(3)
+      expect(result.yes_votes).toBe(0)
     })
   })
 })

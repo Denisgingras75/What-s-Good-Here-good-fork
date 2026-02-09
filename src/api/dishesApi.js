@@ -344,9 +344,11 @@ export const dishesApi = {
   },
 
   /**
-   * Get a single dish by ID with calculated vote stats
+   * Get a single dish by ID with vote stats
+   * Uses pre-computed avg_rating and total_votes from dishes table (maintained by trigger).
+   * Only queries votes table for yes_votes count (not yet maintained by trigger — see T14).
    * @param {string} dishId - Dish ID
-   * @returns {Promise<Object>} Dish object with calculated avg_rating from votes
+   * @returns {Promise<Object>} Dish object with vote stats
    * @throws {Error} With classified error type
    */
   async getDishById(dishId) {
@@ -374,35 +376,26 @@ export const dishesApi = {
         throw createClassifiedError(dishError)
       }
 
-      // Fetch votes and check variants in parallel for better performance
-      const [votesResult, hasVariantsResult] = await Promise.all([
+      // Count yes_votes and check variants in parallel
+      // Note: avg_rating and total_votes come from pre-computed dish columns.
+      // yes_votes still needs a count query because the trigger doesn't maintain it (T14).
+      const [yesVotesResult, hasVariantsResult] = await Promise.all([
         supabase
           .from('votes')
-          .select('rating_10, would_order_again')
-          .eq('dish_id', dishId),
+          .select('*', { count: 'exact', head: true })
+          .eq('dish_id', dishId)
+          .eq('would_order_again', true),
         this.hasVariants(dishId),
       ])
 
-      const { data: votes, error: votesError } = votesResult
-
-      if (votesError) {
-        logger.error('Error fetching votes for dish:', votesError)
-        // Continue with dish data even if votes fail
-        return { ...dish, has_variants: hasVariantsResult }
+      const yesVotes = yesVotesResult.error ? 0 : (yesVotesResult.count || 0)
+      if (yesVotesResult.error) {
+        logger.error('Error counting yes votes for dish:', yesVotesResult.error)
       }
-
-      // Calculate stats from votes
-      const totalVotes = votes?.length || 0
-      const yesVotes = votes?.filter(v => v.would_order_again).length || 0
-      const avgRating = totalVotes > 0
-        ? Math.round((votes.reduce((sum, v) => sum + (v.rating_10 || 0), 0) / totalVotes) * 10) / 10
-        : null
 
       return {
         ...dish,
-        total_votes: totalVotes,
         yes_votes: yesVotes,
-        avg_rating: avgRating,
         has_variants: hasVariantsResult,
       }
     } catch (error) {
