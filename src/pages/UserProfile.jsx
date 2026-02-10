@@ -655,13 +655,10 @@ export function UserProfile() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl font-medium transition-all whitespace-nowrap active:scale-[0.97] ${
-                activeTab === tab.id
-                  ? 'text-white'
-                  : 'text-[color:var(--color-text-secondary)]'
-              }`}
+              className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl font-medium transition-all whitespace-nowrap active:scale-[0.97]"
               style={{
                 fontSize: '13px',
+                color: activeTab === tab.id ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
                 ...(activeTab === tab.id
                   ? {
                       background: 'var(--color-primary)',
@@ -673,10 +670,8 @@ export function UserProfile() {
               {tab.icon === 'thumbsUp' ? <ThumbsUpIcon size={28} active={activeTab === tab.id} /> : tab.icon === 'thumbsDown' ? <ThumbsDownIcon size={28} active={activeTab === tab.id} /> : <ReviewsIcon size={40} active={activeTab === tab.id} />}
               <span>{tab.label}</span>
               <span
-                className={`ml-0.5 px-1.5 py-0.5 rounded-full font-semibold ${
-                  activeTab === tab.id ? 'bg-white/20' : 'bg-black/20'
-                }`}
-                style={{ fontSize: '11px' }}
+                className="ml-0.5 px-1.5 py-0.5 rounded-full font-semibold"
+                style={{ background: activeTab === tab.id ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)', fontSize: '11px' }}
               >
                 {tab.count}
               </span>

@@ -8,6 +8,9 @@ Mobile-first food discovery app for Martha's Vineyard. Ranks dishes by crowd-sou
 - **Hosting:** Vercel (whats-good-here.vercel.app)
 - **Analytics:** PostHog, Sentry
 
+## Session Startup
+Always read `SPEC.md` and `TASKS.md` before beginning any work.
+
 ## Quick Commands
 ```bash
 npm run dev      # localhost:5173

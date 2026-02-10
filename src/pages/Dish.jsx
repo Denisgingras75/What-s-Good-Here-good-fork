@@ -760,13 +760,15 @@ export function Dish() {
       {/* Photo Lightbox */}
       {lightboxPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0, 0, 0, 0.9)' }}
           onClick={() => setLightboxPhoto(null)}
           role="dialog"
           aria-label="Photo lightbox"
         >
           <button
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-2xl"
+            style={{ background: 'rgba(255, 255, 255, 0.2)', color: 'var(--color-text-primary)' }}
             onClick={() => setLightboxPhoto(null)}
             aria-label="Close lightbox"
           >

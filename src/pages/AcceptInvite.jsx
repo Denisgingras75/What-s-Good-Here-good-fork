@@ -90,8 +90,8 @@ export function AcceptInvite() {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 rounded-xl font-semibold text-white"
-            style={{ background: 'var(--color-primary)' }}
+            className="px-6 py-3 rounded-xl font-semibold"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-primary)' }}
           >
             Go Home
           </button>
@@ -120,16 +120,16 @@ export function AcceptInvite() {
           <button
             onClick={handleAccept}
             disabled={accepting}
-            className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: 'var(--color-primary)' }}
+            className="w-full px-6 py-3 rounded-xl font-semibold transition-all disabled:opacity-50"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-primary)' }}
           >
             {accepting ? 'Accepting...' : 'Accept Invitation'}
           </button>
         ) : (
           <button
             onClick={handleSignIn}
-            className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all"
-            style={{ background: 'var(--color-primary)' }}
+            className="w-full px-6 py-3 rounded-xl font-semibold transition-all"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-primary)' }}
           >
             Sign In to Accept
           </button>

@@ -400,7 +400,7 @@ export const dishesApi = {
       }
     } catch (error) {
       logger.error('Error fetching dish:', error)
-      throw error
+      throw error.type ? error : createClassifiedError(error)
     }
   },
 }

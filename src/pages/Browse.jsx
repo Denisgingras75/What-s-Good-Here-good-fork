@@ -626,13 +626,14 @@ export function Browse() {
               </div>
             ) : error ? (
               <div className="py-16 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--color-danger, var(--color-primary)) 15%, var(--color-bg))' }}>
                   <span className="text-2xl">⚠️</span>
                 </div>
-                <p role="alert" className="text-sm text-red-600 mb-4">{error?.message || 'Something went wrong'}</p>
+                <p role="alert" className="text-sm mb-4" style={{ color: 'var(--color-danger, var(--color-primary))' }}>{error?.message || 'Something went wrong'}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium"
+                  className="px-4 py-2 rounded-lg text-sm font-medium"
+                  style={{ background: 'var(--color-danger, var(--color-primary))', color: 'var(--color-text-primary)' }}
                 >
                   Retry
                 </button>
