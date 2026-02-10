@@ -73,12 +73,12 @@ Evidence: `schema.sql:351-461`
 | restaurants | public | admin only | admin only | admin only |
 | dishes | public | admin or manager | admin or manager | admin only |
 | votes | public | own (auth.uid) | own | own |
-| profiles | public if display_name set, else own | own | own (with check) | own (**FLAGGED: should be removed — see TASKS.md**) |
+| profiles | public if display_name set, else own | own | own (with check) | — (removed: prevents orphaning FKs) |
 | favorites | own only | own | — | own |
 | admins | admins only | — | — | — |
 | dish_photos | public | own | own | own |
 | follows | public | own (follower_id) | — | own (follower_id) |
-| notifications | own only | service_role only | own | — |
+| notifications | own only | service_role only | own | own |
 | user_rating_stats | public | — | — | — |
 | bias_events | own | — | own (mark seen) | — |
 | user_streaks | public | own | own | — |
@@ -466,11 +466,10 @@ All API files follow:
 
 2. ~~**`useFavorites` uses raw `useEffect` + state, not React Query**~~ — **FIXED** (T05). Migrated to `useQuery`/`useMutation`.
 
-3. **`profiles_delete_own` policy exists in schema but should not** — Users should not be able to delete their own profile row.
-   **VERIFIED** — `schema.sql:398`, confirmed by owner. Requires Supabase SQL Editor (T01).
+3. ~~**`profiles_delete_own` policy exists in schema but should not**~~ — **FIXED** (T01). Policy removed from schema.sql, migration created to drop in production.
 
 4. ~~**`LocationContext` uses direct `localStorage` calls**~~ — **FIXED** (T06). Now uses `storage.js` helpers.
 
 5. ~~**Pending vote storage key mismatch**~~ — **FIXED** (T04). CLAUDE.md now lists the correct key.
 
-6. **Production RLS may have duplicate policies** — `schema.sql:1927-1964` documents known duplicates. Whether they've been cleaned up is **UNKNOWN**. Requires Supabase SQL Editor (T02).
+6. ~~**Production RLS may have duplicate policies**~~ — **FIXED** (T02). Migration created to drop 16 duplicate policies. See `supabase/migrations/cleanup_rls_policies.sql`.

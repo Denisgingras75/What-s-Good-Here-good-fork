@@ -5,7 +5,7 @@
 
 ---
 
-## T01: Remove `profiles_delete_own` RLS policy from schema.sql
+## ~~T01: Remove `profiles_delete_own` RLS policy from schema.sql~~ DONE
 
 **Why:** Users should not be able to delete their own profile row. Doing so would orphan votes, follows, and other FK-referencing data. Owner confirmed this is wrong.
 
@@ -18,7 +18,7 @@
 
 ---
 
-## T02: Verify production RLS matches schema.sql — clean up duplicate policies
+## ~~T02: Verify production RLS matches schema.sql — clean up duplicate policies~~ DONE
 
 **Why:** `schema.sql:1927-1964` documents known duplicate policies in production (follows, profiles, dishes, specials, storage.objects). If not cleaned up, redundant policies increase evaluation cost on every row access and could create unexpected permission grants.
 
@@ -123,7 +123,7 @@
 
 ---
 
-## T10: Apply or delete `supabase/fix-profiles-rls.sql`
+## ~~T10: Apply or delete `supabase/fix-profiles-rls.sql`~~ DONE
 
 **Why:** This uncommitted file drops old RLS policies but doesn't create replacements (they already exist in `schema.sql`). It's been sitting as an untracked file. Either apply it in production and delete, or just delete if the old policies were already cleaned up.
 

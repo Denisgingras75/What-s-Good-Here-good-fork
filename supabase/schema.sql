@@ -397,7 +397,7 @@ CREATE POLICY "Users can delete own votes" ON votes FOR DELETE USING ((select au
 CREATE POLICY "profiles_select_public_or_own" ON profiles FOR SELECT USING ((select auth.uid()) = id OR display_name IS NOT NULL);
 CREATE POLICY "profiles_insert_own" ON profiles FOR INSERT WITH CHECK ((select auth.uid()) = id);
 CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
-CREATE POLICY "profiles_delete_own" ON profiles FOR DELETE USING ((select auth.uid()) = id);
+-- No DELETE policy on profiles — users must not delete their own profile row (orphans FKs)
 
 -- favorites: users manage own only
 CREATE POLICY "Users can read own favorites" ON favorites FOR SELECT USING ((select auth.uid()) = user_id);
@@ -418,10 +418,11 @@ CREATE POLICY "follows_select_public" ON follows FOR SELECT USING (true);
 CREATE POLICY "follows_insert_own" ON follows FOR INSERT WITH CHECK ((select auth.uid()) = follower_id);
 CREATE POLICY "follows_delete_own" ON follows FOR DELETE USING ((select auth.uid()) = follower_id);
 
--- notifications: users see own, system inserts
+-- notifications: users see own, system inserts, users delete own
 CREATE POLICY "notifications_select_own" ON notifications FOR SELECT USING ((select auth.uid()) = user_id);
 CREATE POLICY "notifications_update_own" ON notifications FOR UPDATE USING ((select auth.uid()) = user_id);
 CREATE POLICY "notifications_insert_system" ON notifications FOR INSERT WITH CHECK (auth.role() = 'service_role');
+CREATE POLICY "notifications_delete_own" ON notifications FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- user_rating_stats: public read
 CREATE POLICY "Public can read stats" ON user_rating_stats FOR SELECT USING (TRUE);
@@ -1972,40 +1973,5 @@ ON CONFLICT (key) DO UPDATE SET
   category = EXCLUDED.category;
 
 
--- =============================================
--- 17. CLEANUP: DROP DUPLICATE PRODUCTION-ONLY POLICIES
--- =============================================
--- These are old dashboard-created policies that duplicate the SQL-defined ones above.
--- They exist in production but NOT in this schema file.
---
--- IMPORTANT: Verify exact policy names in your Supabase dashboard
--- (Authentication > Policies) before running. The storage.objects names
--- especially may differ from these guesses.
---
--- Run this block SEPARATELY in Supabase SQL Editor after verifying:
---
--- -- follows (3 duplicates of follows_select_public, follows_insert_own, follows_delete_own)
--- DROP POLICY IF EXISTS "Users can view follows" ON follows;
--- DROP POLICY IF EXISTS "Users can insert own follows" ON follows;
--- DROP POLICY IF EXISTS "Users can delete own follows" ON follows;
---
--- -- profiles (4 duplicates of profiles_select_public_or_own, profiles_insert_own, profiles_update_own)
--- DROP POLICY IF EXISTS "Profiles are viewable by everyone" ON profiles;
--- DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
--- DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
--- DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
---
--- -- dishes (2 duplicates of "Admin or manager insert/update dishes")
--- DROP POLICY IF EXISTS "Admins can insert dishes" ON dishes;
--- DROP POLICY IF EXISTS "Admins can update dishes" ON dishes;
---
--- -- specials (3 duplicates of "Read specials", "Admin or manager update/delete specials")
--- DROP POLICY IF EXISTS "Anyone can view active specials" ON specials;
--- DROP POLICY IF EXISTS "Creator can update own specials" ON specials;
--- DROP POLICY IF EXISTS "Creator can delete own specials" ON specials;
---
--- -- storage.objects (4 duplicates of dish_photos_* policies)
--- DROP POLICY IF EXISTS "Public read access for dish photos" ON storage.objects;
--- DROP POLICY IF EXISTS "Authenticated users can upload dish photos" ON storage.objects;
--- DROP POLICY IF EXISTS "Users can update own dish photos" ON storage.objects;
--- DROP POLICY IF EXISTS "Users can delete own dish photos" ON storage.objects;
+-- 17. CLEANUP: Duplicate production-only policies have been dropped.
+-- See supabase/migrations/cleanup_rls_policies.sql for the migration that was run.
