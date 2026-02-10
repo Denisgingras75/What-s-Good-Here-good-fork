@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { notificationsApi } from '../api/notificationsApi'
 import { logger } from '../utils/logger'
@@ -10,33 +11,20 @@ import { logger } from '../utils/logger'
 export function NotificationBell() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [unreadCount, setUnreadCount] = useState(0)
+  const queryClient = useQueryClient()
   const [notifications, setNotifications] = useState([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [loading, setLoading] = useState(false)
   const dropdownRef = useRef(null)
 
-  // Fetch unread count on mount and periodically
-  useEffect(() => {
-    if (!user) {
-      setUnreadCount(0)
-      return
-    }
-
-    const fetchCount = async () => {
-      try {
-        const count = await notificationsApi.getUnreadCount()
-        setUnreadCount(count)
-      } catch (err) {
-        logger.error('Failed to fetch unread count:', err)
-      }
-    }
-
-    fetchCount()
-    // Poll every 30 seconds for new notifications
-    const interval = setInterval(fetchCount, 30000)
-    return () => clearInterval(interval)
-  }, [user])
+  // Fetch unread count via React Query with polling
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications', 'unreadCount', user?.id],
+    queryFn: () => notificationsApi.getUnreadCount(),
+    enabled: !!user,
+    refetchInterval: 60000,
+    staleTime: 30000,
+  })
 
   // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
@@ -76,7 +64,7 @@ export function NotificationBell() {
         setNotifications(data)
         // Mark that we've viewed these notifications - they'll be deleted when dropdown closes
         if (data.length > 0) {
-          setUnreadCount(0)
+          queryClient.setQueryData(['notifications', 'unreadCount', user?.id], 0)
         }
       } catch (err) {
         logger.error('Failed to fetch notifications:', err)
@@ -93,6 +81,7 @@ export function NotificationBell() {
       const deleteNotifications = async () => {
         try {
           await notificationsApi.deleteAll()
+          queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] })
         } catch (err) {
           logger.error('Failed to delete notifications:', err)
         }
