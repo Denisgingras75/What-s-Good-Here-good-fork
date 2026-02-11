@@ -262,3 +262,77 @@
 - Mention that seed files are run manually in SQL Editor
 
 **Files:** `CLAUDE.md:36-37`
+
+---
+
+## ~~T21: Add Open/Closed tabs to Restaurants page~~ DONE
+
+**Why:** People search "what's open on MV" — the restaurant list needs Open/Closed filtering.
+
+**Acceptance criteria:**
+- Open/Closed tab switcher on restaurant list (defaults to Open)
+- Closed restaurants show at 0.6 opacity with "Closed for Season" badge
+- Tab-aware empty states
+- `npm run build` passes
+
+**Files:** `src/pages/Restaurants.jsx`
+
+---
+
+## ~~T22: Populate menu_section data on all dishes~~ DONE
+
+**Why:** Menu tab showed "Menu not set up yet" because dishes lacked `menu_section` data.
+
+**Acceptance criteria:**
+- All dishes have `menu_section` populated based on category mapping
+- Each restaurant has `menu_section_order` array in canonical display order
+- Migration run in Supabase SQL Editor successfully
+- Menu tab shows grouped sections
+
+**Files:** `supabase/migrations/populate-menu-sections.sql`
+
+---
+
+## ~~T23: Redesign Menu tab as split-pane layout~~ DONE
+
+**Why:** Vertical scrolling through all menu sections was too long. Split-pane (section nav left, dishes right) is more intuitive and mirrors real menu navigation.
+
+**Acceptance criteria:**
+- Left panel: section names as nav (33% width), gold accent on active
+- Right panel: dishes sorted by rating, typographic layout with name/price/rating
+- Tapping dish navigates to detail page
+- Search filters work across sections
+- `npm run build` passes
+
+**Files:** `src/components/restaurants/RestaurantMenu.jsx`, `src/components/restaurants/MenuDishCard.jsx`, `src/components/restaurants/index.js`
+
+---
+
+## T24: Add dessert dishes to restaurants
+
+**Why:** Desserts category exists in the app but no restaurants have dessert dishes seeded yet.
+
+**Acceptance criteria:**
+- Dessert dishes added to relevant restaurants with correct prices
+- `category = 'dessert'`, `menu_section = 'Desserts'`
+- `menu_section_order` updated to include 'Desserts' for each restaurant
+- Template ready at `supabase/seed/menus/add-desserts.sql`
+
+**Status:** Waiting on specific restaurant + dessert list from owner
+
+**Files:** `supabase/seed/menus/add-desserts.sql`
+
+---
+
+## T25: Convert specific restaurants to breakfast menu sections
+
+**Why:** Breakfast places should have their own menu structure (Breakfast Plates, Sandwiches & Burritos, Waffles & Pancakes, Eggs, Pastries) instead of a single "Breakfast" section.
+
+**Acceptance criteria:**
+- Owner specifies which restaurants are breakfast places
+- Breakfast dishes re-tagged with granular `menu_section` values via name-based matching
+- `menu_section_order` updated for those restaurants
+
+**Status:** Waiting on restaurant list from owner
+
+**Files:** `supabase/migrations/populate-menu-sections.sql` (or new migration)

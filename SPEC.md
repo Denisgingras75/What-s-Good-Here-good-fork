@@ -242,18 +242,26 @@ Evidence: `schema.sql:1534-1776`
 
 ### Feature 6: Restaurants
 
-**User flow:** Browse restaurants list → tap restaurant → see its dishes ranked
+**User flow:** Browse restaurants list (Open/Closed tabs) → tap restaurant → see its dishes ranked
 **Screens:** `Restaurants.jsx`
 **Hooks:** `useDishes` (with restaurantId param)
-**API calls:** `dishesApi.getDishesForRestaurant()`, `restaurantsApi.getRestaurants()`
+**API calls:** `dishesApi.getDishesForRestaurant()`, `restaurantsApi.getAll()`
 **Data reads:** `get_restaurant_dishes` RPC, restaurants table
-**Components:** `RestaurantDishes` (top-rated view), `RestaurantMenu` (menu-grouped view), `TopDishCard`
+**Components:** `RestaurantDishes` (top-rated view), `RestaurantMenu` (split-pane menu view), `TopDishCard`, `MenuDishCard`
+
+**Restaurant List:** Open/Closed tab switcher filters restaurants by `is_open`. Closed restaurants display at 0.6 opacity with a "Closed for Season" badge. Address links to Google Maps.
 
 **Views:** Two tab-switched views below the restaurant details card:
 - **Top Rated** (default) — dishes ranked by confidence (avg_rating, percent_worth_it, votes). Top 5 shown with expand toggle for the rest.
-- **Menu** — dishes grouped by `menu_section` field to mirror the restaurant's actual physical menu. Section order controlled by `restaurants.menu_section_order` TEXT[] column. Dishes ranked within each section. No rank badges shown. Dishes without a `menu_section` appear in an "Other" group.
+- **Menu** — split-pane layout: section navigation on the left (33% width, gold accent on active section), dish list on the right sorted by rating (highest first). Each dish row shows name, dotted leader, price, rating, and reorder %. Tapping a dish navigates to its detail page. Sections ordered by `restaurants.menu_section_order` TEXT[]. Dishes without a `menu_section` appear in an "Other" group.
 
-Menu sections are manually curated per restaurant (photo of real menu → SQL update). Switching restaurants resets to "Top Rated" tab. Search filters work in both views.
+**Menu section mapping** (populated via `supabase/migrations/populate-menu-sections.sql`):
+- Soups & Apps (chowder, soup, apps, wings, tendys, fried chicken)
+- Salads, Sandwiches (burger, lobster roll, taco, quesadilla), Pizza, Sushi
+- Entrees (entree, pasta, seafood, fish, steak, chicken, asian, pokebowl)
+- Sides (fries), Desserts (dessert, donuts), Breakfast (breakfast, breakfast sandwich)
+
+Switching restaurants resets to "Top Rated" tab. Search filters work in both views.
 
 **VERIFIED** — `src/pages/Restaurants.jsx`, `src/api/restaurantsApi.js`, `src/components/restaurants/`
 
