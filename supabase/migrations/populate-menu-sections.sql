@@ -2,42 +2,71 @@
 -- Run this in Supabase SQL Editor
 -- Safe to re-run: only updates rows where menu_section IS NULL
 
--- Step A: Map category -> menu_section
-UPDATE dishes SET menu_section = 'Soups & Chowder' WHERE menu_section IS NULL AND category IN ('chowder', 'soup');
-UPDATE dishes SET menu_section = 'Starters'        WHERE menu_section IS NULL AND category IN ('apps');
-UPDATE dishes SET menu_section = 'Wings'            WHERE menu_section IS NULL AND category = 'wings';
-UPDATE dishes SET menu_section = 'Burgers'          WHERE menu_section IS NULL AND category = 'burger';
-UPDATE dishes SET menu_section = 'Sandwiches'       WHERE menu_section IS NULL AND category IN ('sandwich', 'breakfast sandwich');
-UPDATE dishes SET menu_section = 'Tacos'            WHERE menu_section IS NULL AND category IN ('taco', 'quesadilla');
-UPDATE dishes SET menu_section = 'Pizza'            WHERE menu_section IS NULL AND category = 'pizza';
-UPDATE dishes SET menu_section = 'Pasta'            WHERE menu_section IS NULL AND category = 'pasta';
-UPDATE dishes SET menu_section = 'Seafood'          WHERE menu_section IS NULL AND category IN ('seafood', 'fish');
-UPDATE dishes SET menu_section = 'Lobster'          WHERE menu_section IS NULL AND category IN ('lobster', 'lobster roll');
-UPDATE dishes SET menu_section = 'Entrees'          WHERE menu_section IS NULL AND category = 'entree';
-UPDATE dishes SET menu_section = 'Steak'            WHERE menu_section IS NULL AND category = 'steak';
-UPDATE dishes SET menu_section = 'Sushi'            WHERE menu_section IS NULL AND category = 'sushi';
-UPDATE dishes SET menu_section = 'Tenders'          WHERE menu_section IS NULL AND category IN ('tendys', 'fried chicken');
-UPDATE dishes SET menu_section = 'Breakfast'        WHERE menu_section IS NULL AND category = 'breakfast';
-UPDATE dishes SET menu_section = 'Salads'           WHERE menu_section IS NULL AND category = 'salad';
-UPDATE dishes SET menu_section = 'Sides'            WHERE menu_section IS NULL AND category = 'fries';
-UPDATE dishes SET menu_section = 'Desserts'         WHERE menu_section IS NULL AND category IN ('dessert', 'donuts');
-UPDATE dishes SET menu_section = 'Bowls'            WHERE menu_section IS NULL AND category = 'pokebowl';
-UPDATE dishes SET menu_section = 'Chicken'          WHERE menu_section IS NULL AND category = 'chicken';
-UPDATE dishes SET menu_section = 'Asian'            WHERE menu_section IS NULL AND category = 'asian';
+-- =============================================================
+-- Step A: Lunch/Dinner categories → menu_section
+-- =============================================================
+UPDATE dishes SET menu_section = 'Soups & Apps'  WHERE menu_section IS NULL AND category IN ('chowder', 'soup', 'apps', 'wings', 'tendys', 'fried chicken');
+UPDATE dishes SET menu_section = 'Salads'        WHERE menu_section IS NULL AND category = 'salad';
+UPDATE dishes SET menu_section = 'Sandwiches'    WHERE menu_section IS NULL AND category IN ('sandwich', 'burger', 'lobster roll', 'lobster', 'taco', 'quesadilla');
+UPDATE dishes SET menu_section = 'Pizza'         WHERE menu_section IS NULL AND category = 'pizza';
+UPDATE dishes SET menu_section = 'Sushi'         WHERE menu_section IS NULL AND category = 'sushi';
+UPDATE dishes SET menu_section = 'Entrees'       WHERE menu_section IS NULL AND category IN ('entree', 'pasta', 'seafood', 'fish', 'steak', 'chicken', 'asian', 'pokebowl');
+UPDATE dishes SET menu_section = 'Sides'         WHERE menu_section IS NULL AND category = 'fries';
+UPDATE dishes SET menu_section = 'Desserts'      WHERE menu_section IS NULL AND category IN ('dessert', 'donuts');
 
+-- =============================================================
+-- Step B: Breakfast categories → menu_section (name-based matching)
+-- Order matters: specific matches first, fallback last
+-- =============================================================
+
+-- Breakfast sandwiches & burritos
+UPDATE dishes SET menu_section = 'Sandwiches & Burritos'
+WHERE menu_section IS NULL
+  AND category IN ('breakfast', 'breakfast sandwich')
+  AND (
+    category = 'breakfast sandwich'
+    OR name ~* '(sandwich|burrito|wrap|bagel|croissant sandwich)'
+  );
+
+-- Waffles & Pancakes
+UPDATE dishes SET menu_section = 'Waffles & Pancakes'
+WHERE menu_section IS NULL
+  AND category = 'breakfast'
+  AND name ~* '(waffle|pancake|french toast|crepe)';
+
+-- Eggs
+UPDATE dishes SET menu_section = 'Eggs'
+WHERE menu_section IS NULL
+  AND category = 'breakfast'
+  AND name ~* '(egg|omelet|omelette|scramble|frittata|benedict)';
+
+-- Pastries
+UPDATE dishes SET menu_section = 'Pastries'
+WHERE menu_section IS NULL
+  AND category = 'breakfast'
+  AND name ~* '(muffin|croissant|scone|pastry|danish|donut|doughnut)';
+
+-- Fallback: everything else in breakfast → Breakfast Plates
+UPDATE dishes SET menu_section = 'Breakfast Plates'
+WHERE menu_section IS NULL
+  AND category = 'breakfast';
+
+-- =============================================================
 -- Verify: check for any dishes still missing menu_section
+-- =============================================================
 -- SELECT category, COUNT(*) FROM dishes WHERE menu_section IS NULL AND parent_dish_id IS NULL GROUP BY category;
 
--- Step B: Auto-generate menu_section_order per restaurant
--- Canonical display order for menu sections
+-- =============================================================
+-- Step C: Auto-generate menu_section_order per restaurant
+-- Breakfast sections at top if present, then lunch/dinner order
+-- =============================================================
 DO $$
 DECLARE
   r RECORD;
   section_order TEXT[] := ARRAY[
-    'Starters', 'Soups & Chowder', 'Wings', 'Salads', 'Sushi',
-    'Bowls', 'Breakfast', 'Sandwiches', 'Burgers', 'Tacos',
-    'Pizza', 'Tenders', 'Chicken', 'Pasta', 'Seafood', 'Lobster',
-    'Steak', 'Entrees', 'Asian', 'Sides', 'Desserts'
+    'Breakfast Plates', 'Sandwiches & Burritos', 'Waffles & Pancakes', 'Eggs', 'Pastries',
+    'Soups & Apps', 'Salads', 'Sandwiches', 'Pizza', 'Sushi',
+    'Entrees', 'Sides', 'Desserts'
   ];
   restaurant_sections TEXT[];
   ordered_sections TEXT[];
