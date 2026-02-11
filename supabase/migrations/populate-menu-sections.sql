@@ -36,26 +36,32 @@ BEGIN
   FOR r IN SELECT DISTINCT restaurant_id FROM dishes WHERE menu_section IS NOT NULL AND parent_dish_id IS NULL
   LOOP
     -- Get distinct sections for this restaurant
+    restaurant_sections := NULL;
     SELECT ARRAY_AGG(DISTINCT menu_section) INTO restaurant_sections
     FROM dishes
     WHERE restaurant_id = r.restaurant_id
       AND menu_section IS NOT NULL
       AND parent_dish_id IS NULL;
 
+    -- Skip if no sections found
+    IF restaurant_sections IS NULL OR array_length(restaurant_sections, 1) IS NULL THEN
+      CONTINUE;
+    END IF;
+
     -- Order them by the canonical order
     ordered_sections := '{}';
-    FOREACH s IN ARRAY section_order
+    FOR i IN 1..array_length(section_order, 1)
     LOOP
-      IF s = ANY(restaurant_sections) THEN
-        ordered_sections := ordered_sections || s;
+      IF section_order[i] = ANY(restaurant_sections) THEN
+        ordered_sections := ordered_sections || section_order[i];
       END IF;
     END LOOP;
 
-    -- Add any sections not in canonical order (alphabetically)
-    FOREACH s IN ARRAY restaurant_sections
+    -- Add any sections not in canonical order
+    FOR i IN 1..array_length(restaurant_sections, 1)
     LOOP
-      IF NOT (s = ANY(ordered_sections)) THEN
-        ordered_sections := ordered_sections || s;
+      IF NOT (restaurant_sections[i] = ANY(ordered_sections)) THEN
+        ordered_sections := ordered_sections || restaurant_sections[i];
       END IF;
     END LOOP;
 
