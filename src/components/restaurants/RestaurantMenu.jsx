@@ -192,7 +192,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveSection(section.name)}
-              className="w-full text-left px-3 py-2.5 transition-all relative"
+              className="w-full text-left px-3.5 py-3 transition-all relative"
               style={{
                 background: isActive
                   ? 'linear-gradient(90deg, rgba(217, 167, 101, 0.12) 0%, transparent 100%)'
@@ -213,9 +213,9 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
               <span
                 className="block font-semibold leading-tight"
                 style={{
-                  fontSize: '12px',
+                  fontSize: '14px',
                   color: isActive ? 'var(--color-accent-gold)' : 'var(--color-text-tertiary)',
-                  letterSpacing: '0.01em',
+                  letterSpacing: '-0.01em',
                 }}
               >
                 {section.name}
@@ -223,7 +223,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
               <span
                 className="block mt-0.5 font-medium"
                 style={{
-                  fontSize: '10px',
+                  fontSize: '11px',
                   color: isActive ? 'rgba(217, 167, 101, 0.6)' : 'rgba(125, 113, 104, 0.5)',
                 }}
               >
