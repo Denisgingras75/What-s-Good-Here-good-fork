@@ -3,7 +3,7 @@
 -- Safe to re-run: only updates rows where menu_section IS NULL
 
 -- =============================================================
--- Step A: Lunch/Dinner categories → menu_section
+-- Map category → menu_section
 -- =============================================================
 UPDATE dishes SET menu_section = 'Soups & Apps'  WHERE menu_section IS NULL AND category IN ('chowder', 'soup', 'apps', 'wings', 'tendys', 'fried chicken');
 UPDATE dishes SET menu_section = 'Salads'        WHERE menu_section IS NULL AND category = 'salad';
@@ -13,58 +13,19 @@ UPDATE dishes SET menu_section = 'Sushi'         WHERE menu_section IS NULL AND 
 UPDATE dishes SET menu_section = 'Entrees'       WHERE menu_section IS NULL AND category IN ('entree', 'pasta', 'seafood', 'fish', 'steak', 'chicken', 'asian', 'pokebowl');
 UPDATE dishes SET menu_section = 'Sides'         WHERE menu_section IS NULL AND category = 'fries';
 UPDATE dishes SET menu_section = 'Desserts'      WHERE menu_section IS NULL AND category IN ('dessert', 'donuts');
+UPDATE dishes SET menu_section = 'Breakfast'     WHERE menu_section IS NULL AND category IN ('breakfast', 'breakfast sandwich');
 
--- =============================================================
--- Step B: Breakfast categories → menu_section (name-based matching)
--- Order matters: specific matches first, fallback last
--- =============================================================
-
--- Breakfast sandwiches & burritos
-UPDATE dishes SET menu_section = 'Sandwiches & Burritos'
-WHERE menu_section IS NULL
-  AND category IN ('breakfast', 'breakfast sandwich')
-  AND (
-    category = 'breakfast sandwich'
-    OR name ~* '(sandwich|burrito|wrap|bagel|croissant sandwich)'
-  );
-
--- Waffles & Pancakes
-UPDATE dishes SET menu_section = 'Waffles & Pancakes'
-WHERE menu_section IS NULL
-  AND category = 'breakfast'
-  AND name ~* '(waffle|pancake|french toast|crepe)';
-
--- Eggs
-UPDATE dishes SET menu_section = 'Eggs'
-WHERE menu_section IS NULL
-  AND category = 'breakfast'
-  AND name ~* '(egg|omelet|omelette|scramble|frittata|benedict)';
-
--- Pastries
-UPDATE dishes SET menu_section = 'Pastries'
-WHERE menu_section IS NULL
-  AND category = 'breakfast'
-  AND name ~* '(muffin|croissant|scone|pastry|danish|donut|doughnut)';
-
--- Fallback: everything else in breakfast → Breakfast Plates
-UPDATE dishes SET menu_section = 'Breakfast Plates'
-WHERE menu_section IS NULL
-  AND category = 'breakfast';
-
--- =============================================================
 -- Verify: check for any dishes still missing menu_section
--- =============================================================
 -- SELECT category, COUNT(*) FROM dishes WHERE menu_section IS NULL AND parent_dish_id IS NULL GROUP BY category;
 
 -- =============================================================
--- Step C: Auto-generate menu_section_order per restaurant
--- Breakfast sections at top if present, then lunch/dinner order
+-- Auto-generate menu_section_order per restaurant
 -- =============================================================
 DO $$
 DECLARE
   r RECORD;
   section_order TEXT[] := ARRAY[
-    'Breakfast Plates', 'Sandwiches & Burritos', 'Waffles & Pancakes', 'Eggs', 'Pastries',
+    'Breakfast',
     'Soups & Apps', 'Salads', 'Sandwiches', 'Pizza', 'Sushi',
     'Entrees', 'Sides', 'Desserts'
   ];
