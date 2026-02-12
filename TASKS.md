@@ -215,7 +215,7 @@
 
 ---
 
-## T17: `get_ranked_dishes` missing `SECURITY DEFINER` — leaks restaurant/dish data via RLS bypass
+## ~~T17: `get_ranked_dishes` missing `SECURITY DEFINER` — leaks restaurant/dish data via RLS bypass~~ DONE
 
 **Why:** `get_ranked_dishes` is `STABLE` but not `SECURITY DEFINER`. Since restaurants and dishes have public SELECT policies this is fine today, but if SELECT policies were ever tightened (e.g., hiding closed restaurants), the function would respect the caller's RLS and might return inconsistent results depending on auth state. Most other RPCs that need cross-table access use `SECURITY DEFINER`.
 

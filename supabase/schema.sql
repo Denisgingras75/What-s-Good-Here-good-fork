@@ -511,6 +511,7 @@ $$ LANGUAGE plpgsql IMMUTABLE SET search_path = public;
 -- =============================================
 
 -- Get ranked dishes with bounding box optimization, town filter, variant aggregation
+-- Intentionally NOT SECURITY DEFINER: all referenced tables (restaurants, dishes, votes) have public SELECT
 CREATE OR REPLACE FUNCTION get_ranked_dishes(
   user_lat DECIMAL,
   user_lng DECIMAL,
