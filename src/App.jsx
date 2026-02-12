@@ -12,17 +12,32 @@ import { preloadSounds } from './lib/sounds'
 import { preloadCategoryImages } from './constants/categories'
 
 // Helper to handle chunk load failures after new deploys
-// If a lazy-loaded chunk fails to load (e.g., after deploy), reload the page
+// If a lazy-loaded chunk fails to load (e.g., after deploy), reload the page once
+function isChunkLoadError(error) {
+  const msg = error?.message || ''
+  return (
+    msg.includes('Failed to fetch dynamically imported module') || // Chrome
+    msg.includes('error loading dynamically imported module') ||   // Safari
+    msg.includes('Importing a module script failed') ||            // Firefox
+    msg.includes('Loading chunk') ||                               // Generic bundler
+    msg.includes('Failed to fetch')                                // Network-level
+  )
+}
+
+const RELOAD_KEY = 'wgh_chunk_reload'
+
 function lazyWithRetry(importFn, namedExport) {
   return lazy(() =>
     importFn()
-      .then(m => ({ default: namedExport ? m[namedExport] : m.default }))
+      .then(m => {
+        // Successful load — clear any reload flag
+        sessionStorage.removeItem(RELOAD_KEY)
+        return { default: namedExport ? m[namedExport] : m.default }
+      })
       .catch((error) => {
-        // Check if this is a chunk load failure
-        if (error.message?.includes('Failed to fetch dynamically imported module')) {
-          // Reload the page to get fresh chunks
+        if (isChunkLoadError(error) && !sessionStorage.getItem(RELOAD_KEY)) {
+          sessionStorage.setItem(RELOAD_KEY, '1')
           window.location.reload()
-          // Return empty component while reloading
           return { default: () => null }
         }
         throw error

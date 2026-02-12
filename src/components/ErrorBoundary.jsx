@@ -55,6 +55,21 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    // Auto-reload on chunk load errors (fallback if lazyWithRetry misses it)
+    const msg = error?.message || ''
+    const isChunkError = (
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('error loading dynamically imported module') ||
+      msg.includes('Importing a module script failed') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('Failed to fetch')
+    )
+    if (isChunkError && !sessionStorage.getItem('wgh_chunk_reload')) {
+      sessionStorage.setItem('wgh_chunk_reload', '1')
+      window.location.reload()
+      return
+    }
+
     // Lazy-load Sentry and report the error
     if (import.meta.env.PROD) {
       import('@sentry/react').then(Sentry => {
