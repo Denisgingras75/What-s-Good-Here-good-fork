@@ -140,9 +140,10 @@ src/
 supabase/
 ├── schema.sql     # Single source of truth — complete database schema
 ├── migrations/    # Standalone migration scripts (run manually in SQL Editor)
-├── seed/          # Seed data files (17+ SQL files, run manually)
-├── tests/         # RLS validation tests
-└── _archive/      # Old incremental migrations (historical reference only)
+├── seed/
+│   ├── data/      # Real restaurant/dish seed data + menus/
+│   └── test/      # Test votes, demo data, cleanup scripts
+└── tests/         # RLS validation tests
 ```
 
 ### 4.2 API Layer Pattern
