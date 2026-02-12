@@ -1818,7 +1818,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS trigger_compute_value_score ON dishes;
 CREATE TRIGGER trigger_compute_value_score

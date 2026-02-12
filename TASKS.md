@@ -241,7 +241,7 @@
 
 ---
 
-## T19: `compute_value_score` trigger lacks `SECURITY DEFINER`
+## ~~T19: `compute_value_score` trigger lacks `SECURITY DEFINER`~~ DONE
 
 **Why:** Other trigger functions (`on_vote_insert`, `check_consensus_after_vote`, `update_dish_avg_rating`, `update_user_streak_on_vote`) all have `SECURITY DEFINER`. `compute_value_score` (schema.sql:1740) does not, which means it runs with the invoking user's permissions. Since it reads `category_median_prices` view (which has `SECURITY INVOKER`), the chain works today because dishes have public SELECT. But inconsistency with other triggers is a maintenance risk.
 
