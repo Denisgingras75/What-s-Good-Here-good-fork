@@ -16,7 +16,7 @@ Tech: React 19, Vite, Tailwind CSS, React Router v7, Supabase (Postgres + Auth +
 
 ## Core Data Model
 
-### Tables (18)
+### Tables (17)
 
 Evidence: `supabase/schema.sql:24-259`
 
@@ -38,7 +38,7 @@ Evidence: `supabase/schema.sql:24-259`
 | **specials** | `id` UUID | restaurant_id, deal_name, description, price, is_active, expires_at, created_by | FK → restaurants, auth.users | — | **VERIFIED** |
 | **restaurant_managers** | `id` UUID | user_id, restaurant_id, role, invited_at, accepted_at, created_by | FK → auth.users, restaurants; UNIQUE(user_id, restaurant_id) | — | **VERIFIED** |
 | **restaurant_invites** | `id` UUID | token (unique hex), restaurant_id, created_by, expires_at, used_by, used_at | FK → restaurants, auth.users | expires after 7 days | **VERIFIED** |
-| **rate_limits** | `id` UUID | user_id, action, created_at | FK → auth.users | probabilistic cleanup (1%) | **VERIFIED** |
+| **rate_limits** | `id` UUID | user_id, action, created_at | FK → auth.users | pg_cron hourly cleanup | **VERIFIED** |
 
 ### Views (1)
 
@@ -88,7 +88,7 @@ Evidence: `schema.sql:351-461`
 
 **VERIFIED** — all policies read directly from schema.sql
 
-### RPCs (19 functions)
+### RPCs (29 functions)
 
 Evidence: `schema.sql:506-1531`
 
@@ -347,7 +347,7 @@ Switching restaurants resets to "Top Rated" tab. Search filters work in both vie
 
 **User flow:** Dishes with 8+ votes and a price → value_score computed (rating vs price-to-median ratio) → value_percentile assigned per category
 **Trigger:** `compute_value_score` fires on dish insert/update
-**Batch job:** `recalculate_value_percentiles()` intended for pg_cron every 2h
+**Batch job:** `recalculate_value_percentiles()` runs via pg_cron every 2h
 **Displayed in:** Browse feed, dish detail
 
 **VERIFIED** — `schema.sql:1739-1823`, `supabase/migrations/value_score.sql`

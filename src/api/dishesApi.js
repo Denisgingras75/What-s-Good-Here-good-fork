@@ -123,7 +123,6 @@ export const dishesApi = {
       value_score,
       value_percentile,
       total_votes,
-      yes_votes,
       avg_rating,
       restaurants!inner (
         id,

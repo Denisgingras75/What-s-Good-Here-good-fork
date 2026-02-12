@@ -18,7 +18,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
 -- =============================================
--- 1. TABLES (18 tables in dependency order)
+-- 1. TABLES (17 tables in dependency order)
 -- =============================================
 
 -- 1a. restaurants
