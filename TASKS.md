@@ -189,7 +189,7 @@
 
 ---
 
-## T15: No automated CI for `npm run build` or `npm run test`
+## ~~T15: No automated CI for `npm run build` or `npm run test`~~ DONE
 
 **Why:** CLAUDE.md mandates "npm run build must pass" and "npm run test must pass" before calling anything done, but there's no CI config (GitHub Actions, Vercel build checks beyond deploy). Regressions can ship silently.
 
