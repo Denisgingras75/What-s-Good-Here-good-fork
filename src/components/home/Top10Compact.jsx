@@ -17,7 +17,6 @@ export function Top10Compact({
   town,
   categoryLabel,
   onSeeAll,
-  onClearCategory,
 }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('mv')
@@ -79,30 +78,19 @@ export function Top10Compact({
           </button>
         </div>
       ) : (
-        <div className="flex items-center justify-between mb-4">
-          <h3
-            className="font-bold"
-            style={{
-              color: 'var(--color-text-primary)',
-              fontSize: '15px',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {categoryLabel
-              ? `Top ${categoryLabel} ${town ? `in ${town}` : 'on the Island'}`
-              : `Top 10 ${town ? `in ${town}` : 'on the Island'}`
-            }
-          </h3>
-          {onClearCategory && categoryLabel && (
-            <button
-              onClick={onClearCategory}
-              className="text-xs font-medium transition-opacity hover:opacity-70"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              Show Top 10
-            </button>
-          )}
-        </div>
+        <h3
+          className="font-bold mb-4"
+          style={{
+            color: 'var(--color-text-primary)',
+            fontSize: '15px',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {categoryLabel
+            ? `Top ${categoryLabel} ${town ? `in ${town}` : 'on the Island'}`
+            : `Top 10 ${town ? `in ${town}` : 'on the Island'}`
+          }
+        </h3>
       )}
 
       {/* Dishes list */}

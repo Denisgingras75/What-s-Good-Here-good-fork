@@ -116,7 +116,6 @@ export function Home() {
               town={town}
               categoryLabel={selectedCategoryLabel}
               onSeeAll={selectedCategory ? () => navigate(`/browse?category=${encodeURIComponent(selectedCategory)}`) : undefined}
-              onClearCategory={selectedCategory ? () => setSelectedCategory(null) : undefined}
             />
           </div>
         ) : (
