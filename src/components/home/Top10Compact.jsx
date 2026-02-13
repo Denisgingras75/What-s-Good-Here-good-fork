@@ -160,9 +160,9 @@ export function Top10Compact({
 }
 
 const PODIUM_STYLE = {
-  1: { color: 'var(--color-medal-gold)', glow: '#D9A765', rankSize: '32px', nameSize: '20px', ratingSize: '20px' },
-  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '28px', nameSize: '18px', ratingSize: '18px' },
-  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '24px', nameSize: '17px', ratingSize: '17px' },
+  1: { color: 'var(--color-medal-gold)', glow: '#D9A765', rankSize: '28px', nameSize: '18px', ratingSize: '18px' },
+  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
+  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '22px', nameSize: '15px', ratingSize: '15px' },
 }
 
 // Top 10 row — podium layout for 1-3, compact for 4+
@@ -184,7 +184,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
         <button
           onClick={onClick}
           aria-label={accessibleLabel}
-          className="w-full flex items-center gap-4 py-4 px-3 rounded-lg transition-colors text-left"
+          className="w-full flex items-center gap-3 py-3.5 px-3 rounded-lg transition-colors text-left"
           style={{
             background: 'var(--color-surface-elevated)',
             borderLeft: `2px solid ${podium.glow}`,
@@ -197,9 +197,9 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
               color: podium.color,
               fontSize: podium.rankSize,
               lineHeight: 1,
-              minWidth: '32px',
+              minWidth: '28px',
               textAlign: 'center',
-              textShadow: `0 0 12px ${podium.glow}40, 0 0 24px ${podium.glow}20`,
+              textShadow: `0 0 10px ${podium.glow}35, 0 0 20px ${podium.glow}18`,
             }}
           >
             {rank}
