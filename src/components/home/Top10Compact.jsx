@@ -159,17 +159,17 @@ export function Top10Compact({
   )
 }
 
-const MEDAL_COLORS = {
-  1: 'var(--color-medal-gold)',
-  2: 'var(--color-medal-silver)',
-  3: 'var(--color-medal-bronze)',
+const RANK_STYLE = {
+  1: { color: 'var(--color-medal-gold)', fontSize: '16px', opacity: 1 },
+  2: { color: 'var(--color-medal-silver)', fontSize: '15px', opacity: 0.9 },
+  3: { color: 'var(--color-medal-bronze)', fontSize: '14px', opacity: 0.8 },
 }
 
 // Compact row for Top 10 list
 const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealIndex, onClick }) {
   const { dish_name, restaurant_name, avg_rating, total_votes } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
-  const isPodium = rank <= 3
+  const podium = RANK_STYLE[rank]
 
   const accessibleLabel = isRanked
     ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes`
@@ -179,7 +179,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
     <div
       className={isNewlyRevealed ? 'animate-expand-in' : ''}
       style={{
-        opacity: isNewlyRevealed ? 0 : (isPodium ? 1 : 0.6),
+        opacity: isNewlyRevealed ? 0 : (podium ? podium.opacity : 0.6),
         ...(isNewlyRevealed ? { animationDelay: `${(revealIndex || 0) * 50}ms`, animationFillMode: 'forwards' } : {}),
       }}
     >
@@ -192,8 +192,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
         <span
           className="w-6 text-center font-bold flex-shrink-0"
           style={{
-            color: MEDAL_COLORS[rank] || 'var(--color-text-tertiary)',
-            fontSize: isPodium ? '15px' : '13px',
+            color: podium ? podium.color : 'var(--color-text-tertiary)',
+            fontSize: podium ? podium.fontSize : '13px',
           }}
         >
           {rank}
@@ -205,7 +205,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
             className="font-medium truncate"
             style={{
               color: 'var(--color-text-primary)',
-              fontSize: isPodium ? '15px' : '14px',
+              fontSize: podium ? podium.fontSize : '14px',
             }}
           >
             {dish_name}
@@ -222,7 +222,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
               className="font-bold"
               style={{
                 color: getRatingColor(avg_rating),
-                fontSize: isPodium ? '15px' : '13px',
+                fontSize: podium ? podium.fontSize : '13px',
               }}
             >
               {avg_rating}
