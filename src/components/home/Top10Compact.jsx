@@ -152,6 +152,12 @@ export function Top10Compact({
   )
 }
 
+const MEDAL_COLORS = {
+  1: 'var(--color-medal-gold)',
+  2: 'var(--color-medal-silver)',
+  3: 'var(--color-medal-bronze)',
+}
+
 // Compact row for Top 10 list
 const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealIndex, onClick }) {
   const { dish_name, restaurant_name, avg_rating, total_votes } = dish
@@ -171,11 +177,11 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
         aria-label={accessibleLabel}
         className="w-full flex items-center gap-3 py-2.5 px-2 rounded-lg transition-colors text-left hover:bg-[var(--color-surface-elevated)]"
       >
-        {/* Rank number — typography only */}
+        {/* Rank number */}
         <span
           className="w-6 text-center text-sm font-bold flex-shrink-0"
           style={{
-            color: rank <= 3 ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
+            color: MEDAL_COLORS[rank] || 'var(--color-text-tertiary)',
           }}
         >
           {rank}

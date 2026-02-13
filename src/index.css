@@ -64,6 +64,11 @@
   --color-card: #1A3A42;
   --color-card-hover: #243A43;
 
+  /* Medal ranks — top 3 in lists */
+  --color-medal-gold: #D9A765;          /* Same as accent-gold */
+  --color-medal-silver: #A8B5BF;        /* Cool slate silver */
+  --color-medal-bronze: #C4855C;        /* Warm copper-bronze */
+
   /* Feedback states */
   --color-danger: #C85A54;            /* Same as primary */
   --color-success: #6BB384;           /* Muted natural green */
