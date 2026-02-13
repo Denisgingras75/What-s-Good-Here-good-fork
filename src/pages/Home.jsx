@@ -19,9 +19,7 @@ export function Home() {
   // Inline category filtering
   const [selectedCategory, setSelectedCategory] = useState(null)
 
-  // Reset category when town changes
   const handleTownChange = (newTown) => {
-    setSelectedCategory(null)
     setTown(newTown)
   }
 
@@ -114,7 +112,7 @@ export function Home() {
               dishes={selectedCategory ? categoryDishes : top10Dishes}
               personalDishes={personalTop10Dishes}
               showToggle={showPersonalToggle}
-              initialCount={3}
+              initialCount={10}
               town={town}
               categoryLabel={selectedCategoryLabel}
               onSeeAll={selectedCategory ? () => navigate(`/browse?category=${encodeURIComponent(selectedCategory)}`) : undefined}
