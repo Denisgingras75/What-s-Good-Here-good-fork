@@ -58,7 +58,7 @@
   --color-bg: #0D1B22;                /* Deep charcoal-navy */
   --color-surface: #0F1F2B;           /* Slightly lighter */
   --color-surface-elevated: #162B35;
-  --color-divider: rgba(217, 167, 101, 0.12);  /* Warm gold tint */
+  --color-divider: rgba(200, 90, 84, 0.10);  /* Rust tint dividers */
 
   /* Cards - rich navy-teal, tropical water depth */
   --color-card: #1A3A42;

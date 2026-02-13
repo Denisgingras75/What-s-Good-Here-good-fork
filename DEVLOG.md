@@ -5,6 +5,28 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ---
 
+## 2026-02-13 - Daniel + Claude
+
+### Homepage Simplification
+- Removed emoji medals (🥇🥈🥉🏆) from Top 10 — replaced with typography-only rank numbers (red for top 3)
+- Removed bordered card wrapper around Top 10 list (border, box-shadow, inner glow)
+- Removed decorative radial gradients from SearchHero
+- Removed uppercase tracked "BROWSE BY CATEGORY" section header
+- Simplified expand/collapse to plain text (no chevron icon, no border-top)
+- Moved category scroll from separate section to inside SearchHero, under town picker
+- Category pills: removed borders, use subtle elevated background with category photos
+
+### Color Palette
+- Explored color ring palette redesign (branch `experiment/color-ring-palette-v2`)
+- Vivid Red + Bright Yellow palette tested and reverted — too primary-colored, read as cheap
+- Reverted to original Island Depths palette (Deep Rust + Warm Gold)
+- Fixed `--color-divider` from gold tint to rust tint — gold at low opacity on dark navy produced a green appearance
+
+### New Categories
+- Added fish, clams, chicken, pork to `BROWSE_CATEGORIES` (now 18 shortcuts)
+
+---
+
 ## 2026-01-22 - Daniel + Claude
 
 ### Social Features - Major Overhaul

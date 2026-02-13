@@ -220,7 +220,7 @@ Defined in `src/index.css`. Always use `var(--color-*)` — never hardcode.
 - **`MIN_VOTES_FOR_RANKING` = 5** — `src/constants/app.js` — dishes below this show as "Early"
 - **`MAX_REVIEW_LENGTH` = 200** — `src/constants/app.js` — enforced client + DB constraint
 - **`MIN_VOTES_FOR_VALUE` = 8** — `src/constants/app.js` — value score eligibility
-- **Category definitions** — `src/constants/categories.js` — `BROWSE_CATEGORIES` (15 shortcuts), `MAIN_CATEGORIES`, `ALL_CATEGORIES`
+- **Category definitions** — `src/constants/categories.js` — `BROWSE_CATEGORIES` (19 shortcuts), `MAIN_CATEGORIES`, `ALL_CATEGORIES`
 - **Categories are shortcuts, NOT containers** — Browse shows 15 curated shortcuts. Search covers all dishes regardless of category.
 
 ### 4.7 localStorage Keys
