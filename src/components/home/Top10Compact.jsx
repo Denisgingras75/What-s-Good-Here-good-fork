@@ -91,12 +91,12 @@ export function Top10Compact({
       ) : null}
 
       {/* Dishes list */}
-      <div className="space-y-0.5">
+      <div>
         {displayedDishes.length > 0 ? (
           displayedDishes.map((dish, index) => {
             const rank = index + 1
             return (
-              <div key={dish.dish_id}>
+              <div key={dish.dish_id} style={{ marginBottom: rank <= 3 ? '6px' : '0' }}>
                 <Top10Row
                   dish={dish}
                   rank={rank}
@@ -106,7 +106,7 @@ export function Top10Compact({
                 />
                 {rank === 3 && displayedDishes.length > 3 && (
                   <div
-                    className="my-2 mx-2"
+                    className="mt-3 mb-2 mx-2"
                     style={{ borderBottom: '1px solid var(--color-divider)' }}
                   />
                 )}
@@ -160,9 +160,9 @@ export function Top10Compact({
 }
 
 const PODIUM_STYLE = {
-  1: { color: 'var(--color-medal-gold)', rankSize: '32px', nameSize: '20px', ratingSize: '20px' },
-  2: { color: 'var(--color-medal-silver)', rankSize: '28px', nameSize: '18px', ratingSize: '18px' },
-  3: { color: 'var(--color-medal-bronze)', rankSize: '24px', nameSize: '17px', ratingSize: '17px' },
+  1: { color: 'var(--color-medal-gold)', glow: '#D9A765', rankSize: '32px', nameSize: '20px', ratingSize: '20px' },
+  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '28px', nameSize: '18px', ratingSize: '18px' },
+  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '24px', nameSize: '17px', ratingSize: '17px' },
 }
 
 // Top 10 row — podium layout for 1-3, compact for 4+
@@ -184,9 +184,13 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
         <button
           onClick={onClick}
           aria-label={accessibleLabel}
-          className="w-full flex items-center gap-4 py-4 px-2 rounded-lg transition-colors text-left hover:bg-[var(--color-surface-elevated)]"
+          className="w-full flex items-center gap-4 py-4 px-3 rounded-lg transition-colors text-left"
+          style={{
+            background: 'var(--color-surface-elevated)',
+            borderLeft: `2px solid ${podium.glow}`,
+          }}
         >
-          {/* Large rank number */}
+          {/* Large rank number with glow */}
           <span
             className="font-bold flex-shrink-0"
             style={{
@@ -195,6 +199,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
               lineHeight: 1,
               minWidth: '32px',
               textAlign: 'center',
+              textShadow: `0 0 12px ${podium.glow}40, 0 0 24px ${podium.glow}20`,
             }}
           >
             {rank}
