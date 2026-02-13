@@ -96,16 +96,26 @@ export function Top10Compact({
       {/* Dishes list */}
       <div className="space-y-0.5">
         {displayedDishes.length > 0 ? (
-          displayedDishes.map((dish, index) => (
-            <Top10Row
-              key={dish.dish_id}
-              dish={dish}
-              rank={index + 1}
-              isNewlyRevealed={justExpanded && index >= initialCount}
-              revealIndex={index - initialCount}
-              onClick={() => navigate(`/dish/${dish.dish_id}`)}
-            />
-          ))
+          displayedDishes.map((dish, index) => {
+            const rank = index + 1
+            return (
+              <div key={dish.dish_id}>
+                <Top10Row
+                  dish={dish}
+                  rank={rank}
+                  isNewlyRevealed={justExpanded && index >= initialCount}
+                  revealIndex={index - initialCount}
+                  onClick={() => navigate(`/dish/${dish.dish_id}`)}
+                />
+                {rank === 3 && displayedDishes.length > 3 && (
+                  <div
+                    className="my-2 mx-2"
+                    style={{ borderBottom: '1px solid var(--color-divider)' }}
+                  />
+                )}
+              </div>
+            )
+          })
         ) : (
           <div className="text-center py-6">
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
@@ -162,6 +172,7 @@ const MEDAL_COLORS = {
 const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealIndex, onClick }) {
   const { dish_name, restaurant_name, avg_rating, total_votes } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
+  const isPodium = rank <= 3
 
   const accessibleLabel = isRanked
     ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes`
@@ -170,7 +181,10 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
   return (
     <div
       className={isNewlyRevealed ? 'animate-expand-in' : ''}
-      style={isNewlyRevealed ? { animationDelay: `${(revealIndex || 0) * 50}ms`, opacity: 0, animationFillMode: 'forwards' } : undefined}
+      style={{
+        opacity: isNewlyRevealed ? 0 : (isPodium ? 1 : 0.6),
+        ...(isNewlyRevealed ? { animationDelay: `${(revealIndex || 0) * 50}ms`, animationFillMode: 'forwards' } : {}),
+      }}
     >
       <button
         onClick={onClick}
@@ -179,9 +193,10 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
       >
         {/* Rank number */}
         <span
-          className="w-6 text-center text-sm font-bold flex-shrink-0"
+          className="w-6 text-center font-bold flex-shrink-0"
           style={{
             color: MEDAL_COLORS[rank] || 'var(--color-text-tertiary)',
+            fontSize: isPodium ? '15px' : '13px',
           }}
         >
           {rank}
@@ -189,7 +204,13 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+          <p
+            className="font-medium truncate"
+            style={{
+              color: 'var(--color-text-primary)',
+              fontSize: isPodium ? '15px' : '14px',
+            }}
+          >
             {dish_name}
           </p>
           <p className="text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>
@@ -200,7 +221,13 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
         {/* Rating */}
         <div className="flex-shrink-0 text-right">
           {isRanked ? (
-            <span className="text-sm font-bold" style={{ color: getRatingColor(avg_rating) }}>
+            <span
+              className="font-bold"
+              style={{
+                color: getRatingColor(avg_rating),
+                fontSize: isPodium ? '15px' : '13px',
+              }}
+            >
               {avg_rating}
             </span>
           ) : (
