@@ -72,9 +72,6 @@ export function Home() {
   // Whether to show the toggle (user is logged in and has preferences)
   const showPersonalToggle = !selectedCategory && user && profile?.preferred_categories?.length > 0
 
-  // Town picker inline expansion state
-  const [townPickerOpen, setTownPickerOpen] = useState(false)
-
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
       <h1 className="sr-only">What's Good Here - Top Ranked Dishes Near You</h1>
@@ -82,52 +79,14 @@ export function Home() {
       {/* Section 1: Hero with search, town filter, categories */}
       <SearchHero
         town={town}
-        onTownChange={handleTownChange}
         loading={loading}
         categoryScroll={
-          townPickerOpen ? (
-            <div
-              className="flex items-center gap-2.5 overflow-x-auto px-4 pb-1"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              <TownPicker
-                town={town}
-                onTownChange={handleTownChange}
-                isOpen={townPickerOpen}
-                onToggle={setTownPickerOpen}
-              />
-            </div>
-          ) : (
-            <div className="flex items-center gap-2.5 px-4 pb-1">
-              <TownPicker
-                town={town}
-                onTownChange={handleTownChange}
-                isOpen={townPickerOpen}
-                onToggle={setTownPickerOpen}
-              />
-              <div
-                className="flex items-center gap-2.5 overflow-x-auto"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                  WebkitOverflowScrolling: 'touch',
-                }}
-              >
-                {BROWSE_CATEGORIES.map((category) => (
-                  <CategoryPill
-                    key={category.id}
-                    category={category}
-                    isActive={selectedCategory === category.id}
-                    onClick={() => setSelectedCategory(prev => prev === category.id ? null : category.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )
+          <CategoryScroll
+            town={town}
+            onTownChange={handleTownChange}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
         }
       />
 
@@ -151,6 +110,7 @@ export function Home() {
         ) : top10Dishes.length > 0 ? (
           <div className="max-w-lg mx-auto">
             <Top10Compact
+              key={selectedCategory || 'top10'}
               dishes={selectedCategory ? categoryDishes : top10Dishes}
               personalDishes={personalTop10Dishes}
               showToggle={showPersonalToggle}
@@ -164,6 +124,50 @@ export function Home() {
           <EmptyState onBrowse={() => navigate('/browse')} />
         )}
       </section>
+    </div>
+  )
+}
+
+const scrollStyle = {
+  scrollbarWidth: 'none',
+  msOverflowStyle: 'none',
+  WebkitOverflowScrolling: 'touch',
+}
+
+function CategoryScroll({ town, onTownChange, selectedCategory, onCategoryChange }) {
+  const [townPickerOpen, setTownPickerOpen] = useState(false)
+
+  if (townPickerOpen) {
+    return (
+      <div className="flex items-center gap-2.5 overflow-x-auto px-4 pb-1" style={scrollStyle}>
+        <TownPicker
+          town={town}
+          onTownChange={onTownChange}
+          isOpen
+          onToggle={setTownPickerOpen}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 px-4 pb-1">
+      <TownPicker
+        town={town}
+        onTownChange={onTownChange}
+        isOpen={false}
+        onToggle={setTownPickerOpen}
+      />
+      <div className="flex items-center gap-2.5 overflow-x-auto" style={scrollStyle}>
+        {BROWSE_CATEGORIES.map((category) => (
+          <CategoryPill
+            key={category.id}
+            category={category}
+            isActive={selectedCategory === category.id}
+            onClick={() => onCategoryChange(prev => prev === category.id ? null : category.id)}
+          />
+        ))}
+      </div>
     </div>
   )
 }
