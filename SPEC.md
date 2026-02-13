@@ -173,9 +173,9 @@ Evidence: `schema.sql:1534-1776`
 
 ### Feature 1: Home / Landing
 
-**User flow:** Open app → see search bar + "Top 10" ranked dishes + category grid
+**User flow:** Open app → see search bar + town filter + category scroll + "Top 10" ranked dishes
 **Screens:** `Home.jsx`
-**Components:** `SearchHero`, `Top10Compact`, `CategoryImageCard`, `WelcomeSplash`
+**Components:** `SearchHero`, `Top10Compact`, `WelcomeSplash`
 **Hooks:** `useDishes`, `useProfile`, `useLocationContext`
 **API calls:** `dishesApi.getRankedDishes()` via `useDishes`
 **Data reads:** `get_ranked_dishes` RPC

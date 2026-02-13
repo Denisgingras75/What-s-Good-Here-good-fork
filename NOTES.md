@@ -149,6 +149,10 @@ Why each item belongs in its week. Reference for next project.
 | Date | What Changed | Category |
 |------|--------------|----------|
 | Jan 17 | Category architecture: shortcuts not containers | Architecture |
+| Feb 13 | Homepage simplification: removed emoji medals, card wrapper, gradients, uppercase labels | Design |
+| Feb 13 | Categories moved to horizontal scroll under town picker | UX |
+| Feb 13 | Added fish, clams, chicken, pork to browse shortcuts (19 total) | Data |
+| Feb 13 | Divider color fix: gold→rust tint to prevent green on dark navy | Design |
 | Jan 17 | Browse reduced to 14 curated shortcuts | UX |
 | Jan 17 | Search now returns results sorted by rating | Feature |
 | Jan 16 | Added quesadilla category, fixed steak items | Data |
@@ -241,7 +245,7 @@ If it's good, it rises.
 
 **Categories are shortcuts, NOT containers.**
 
-- Browse shows ~14 curated, high-frequency categories only
+- Browse shows ~19 curated, high-frequency categories only
 - These are shortcuts to common decisions ("best X near me")
 - Browse is NOT meant to be exhaustive
 
@@ -263,9 +267,9 @@ If it's good, it rises.
 
 ---
 
-## Browse Shortcuts (14 curated)
+## Browse Shortcuts (19 curated)
 
-These appear on the Browse page as quick access:
+These appear on the Browse page and Home page category scroll:
 
 | Shortcut | Why Included |
 |----------|--------------|
@@ -282,7 +286,12 @@ These appear on the Browse page as quick access:
 | Steak | Common decision |
 | Sandwiches | Common decision |
 | Salads | Common decision |
-| Tendys | Common decision |
+| Tenders | Common decision |
+| Desserts | Common decision |
+| Fish | MV signature |
+| Clams | MV signature |
+| Chicken | Common decision |
+| Pork | Common decision |
 
 ---
 

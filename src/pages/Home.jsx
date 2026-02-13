@@ -5,9 +5,8 @@ import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
 import { useProfile } from '../hooks/useProfile'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
-import { BROWSE_CATEGORIES } from '../constants/categories'
+import { BROWSE_CATEGORIES, getCategoryNeonImage } from '../constants/categories'
 import { SearchHero, Top10Compact } from '../components/home'
-import { CategoryImageCard } from '../components/CategoryImageCard'
 
 export function Home() {
   const navigate = useNavigate()
@@ -54,23 +53,36 @@ export function Home() {
   // Whether to show the toggle (user is logged in and has preferences)
   const showPersonalToggle = user && profile?.preferred_categories?.length > 0
 
-  const [categoriesExpanded, setCategoriesExpanded] = useState(false)
-  const visibleCategories = categoriesExpanded
-    ? BROWSE_CATEGORIES
-    : BROWSE_CATEGORIES.slice(0, 6)
-
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
       <h1 className="sr-only">What's Good Here - Top Ranked Dishes Near You</h1>
 
-      {/* Section 1: Hero with search */}
+      {/* Section 1: Hero with search, town filter, categories */}
       <SearchHero
         town={town}
         onTownChange={setTown}
         loading={loading}
+        categoryScroll={
+          <div
+            className="flex gap-2.5 overflow-x-auto px-4 pb-1"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {BROWSE_CATEGORIES.map((category) => (
+              <CategoryPill
+                key={category.id}
+                category={category}
+                onClick={() => navigate(`/browse?category=${encodeURIComponent(category.id)}`)}
+              />
+            ))}
+          </div>
+        }
       />
 
-      {/* Section 2: Top 10 Compact */}
+      {/* Section 2: Top 10 */}
       <section className="px-4 py-6">
         {loading ? (
           <Top10Skeleton />
@@ -101,67 +113,42 @@ export function Home() {
           <EmptyState onBrowse={() => navigate('/browse')} />
         )}
       </section>
-
-      {/* Section 3: Category Grid */}
-      <section
-        className="px-4 py-6"
-        style={{
-          background: 'linear-gradient(180deg, var(--color-card) 0%, var(--color-surface) 50%, var(--color-bg) 100%)',
-        }}
-      >
-        {/* Section header */}
-        <div className="mb-8 text-center">
-          {/* Decorative gold dot */}
-          <div
-            className="w-1 h-1 rounded-full mx-auto mb-3"
-            style={{ background: 'var(--color-accent-gold)' }}
-          />
-          <h2
-            className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"
-            style={{ color: 'var(--color-text-tertiary)' }}
-          >
-            The Best By Category
-          </h2>
-          <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.35)' }}>
-            Got another craving? Search it above.
-          </p>
-        </div>
-
-        {/* Category grid - 3 columns on mobile, 4 on desktop */}
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-8 justify-items-center max-w-2xl mx-auto">
-          {visibleCategories.map((category, index) => (
-            <div key={category.id} className="stagger-item" style={{ animationDelay: `${index * 50}ms` }}>
-              <CategoryImageCard
-                category={category}
-                onClick={() => navigate(`/browse?category=${encodeURIComponent(category.id)}`)}
-                size={72}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Expand / collapse toggle */}
-        <div className="flex justify-center mt-6">
-          <button
-            onClick={() => setCategoriesExpanded(!categoriesExpanded)}
-            className="flex items-center gap-1.5 text-xs font-semibold tracking-wide transition-opacity hover:opacity-80"
-            style={{ color: 'var(--color-accent-gold)' }}
-          >
-            {categoriesExpanded ? 'Show fewer' : 'See all categories'}
-            <svg
-              className="w-3.5 h-3.5 transition-transform"
-              style={{ transform: categoriesExpanded ? 'rotate(180deg)' : 'none' }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
-      </section>
     </div>
+  )
+}
+
+function CategoryPill({ category, onClick }) {
+  const imageSrc = getCategoryNeonImage(category.id)
+  const [loaded, setLoaded] = useState(false)
+  const [imgError, setImgError] = useState(false)
+
+  return (
+    <button
+      onClick={onClick}
+      className="flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
+      style={{
+        background: 'var(--color-surface-elevated)',
+        color: 'var(--color-text-secondary)',
+      }}
+    >
+      {imageSrc && !imgError ? (
+        <img
+          src={imageSrc}
+          alt=""
+          className="w-6 h-6 rounded-full object-cover"
+          style={{ opacity: loaded ? 1 : 0 }}
+          onLoad={() => setLoaded(true)}
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+          style={{ background: 'var(--color-surface)' }}
+        >
+          {category.emoji}
+        </span>
+      )}
+      {category.label}
+    </button>
   )
 }
 

@@ -17,11 +17,10 @@ export function Top10Compact({
   town,
 }) {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('mv') // 'mv' or 'personal'
+  const [activeTab, setActiveTab] = useState('mv')
   const [expanded, setExpanded] = useState(false)
   const [prevExpanded, setPrevExpanded] = useState(false)
 
-  // Which dishes to show based on active tab
   const activeDishes = activeTab === 'personal' && showToggle
     ? personalDishes
     : dishes
@@ -31,34 +30,20 @@ export function Top10Compact({
     : activeDishes.slice(0, initialCount)
 
   const hasMore = activeDishes.length > initialCount
-
-  // Track whether we just expanded (for stagger animation)
   const justExpanded = expanded && !prevExpanded
 
   if (!dishes?.length) return null
 
   return (
-    <section
-      className="rounded-2xl p-5"
-      style={{
-        background: 'var(--color-bg)',
-        border: '1px solid var(--color-divider)',
-        boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(217, 167, 101, 0.06)',
-      }}
-    >
-      {/* Header with optional toggle */}
+    <section>
+      {/* Header */}
       {showToggle ? (
         <div role="tablist" aria-label="Top 10 list filter" className="flex gap-2 mb-4">
           <button
             role="tab"
             aria-selected={activeTab === 'mv'}
-            onClick={() => {
-              setActiveTab('mv')
-              setExpanded(false)
-            }}
-            className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'mv' ? 'shadow-md' : ''
-            }`}
+            onClick={() => { setActiveTab('mv'); setExpanded(false) }}
+            className="flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: activeTab === 'mv' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
               color: activeTab === 'mv' ? 'white' : 'var(--color-text-secondary)',
@@ -69,13 +54,8 @@ export function Top10Compact({
           <button
             role="tab"
             aria-selected={activeTab === 'personal'}
-            onClick={() => {
-              setActiveTab('personal')
-              setExpanded(false)
-            }}
-            className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === 'personal' ? 'shadow-md' : ''
-            }`}
+            onClick={() => { setActiveTab('personal'); setExpanded(false) }}
+            className="flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: activeTab === 'personal' ? 'var(--color-accent-gold)' : 'var(--color-surface-elevated)',
               color: activeTab === 'personal' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
@@ -86,15 +66,13 @@ export function Top10Compact({
         </div>
       ) : (
         <h3
-          className="font-bold mb-4 pb-2.5 flex items-center gap-2"
+          className="font-bold mb-4"
           style={{
             color: 'var(--color-text-primary)',
-            borderBottom: '2px solid var(--color-accent-gold)',
             fontSize: '15px',
             letterSpacing: '-0.01em',
           }}
         >
-          <span aria-hidden="true">🏆</span>
           Top 10 {town ? `in ${town}` : 'on the Island'}
         </h3>
       )}
@@ -128,35 +106,14 @@ export function Top10Compact({
         )}
       </div>
 
-      {/* Expand/collapse button */}
+      {/* Expand/collapse */}
       {hasMore && displayedDishes.length > 0 && (
         <button
-          onClick={() => {
-            setPrevExpanded(expanded)
-            setExpanded(!expanded)
-          }}
-          className="w-full mt-3 pt-3 border-t font-semibold flex items-center justify-center gap-1 transition-opacity hover:opacity-80"
-          style={{
-            borderColor: 'var(--color-divider)',
-            color: 'var(--color-primary)',
-            fontSize: '13px',
-          }}
+          onClick={() => { setPrevExpanded(expanded); setExpanded(!expanded) }}
+          className="w-full mt-3 pt-3 text-sm font-medium transition-opacity hover:opacity-70"
+          style={{ color: 'var(--color-text-tertiary)' }}
         >
-          {expanded ? (
-            <>
-              Show less
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
-            </>
-          ) : (
-            <>
-              Show all {activeDishes.length}
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </>
-          )}
+          {expanded ? 'Show less' : `Show all ${activeDishes.length}`}
         </button>
       )}
     </section>
@@ -168,7 +125,6 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
   const { dish_name, restaurant_name, avg_rating, total_votes } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
 
-  // Build accessible label
   const accessibleLabel = isRanked
     ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes`
     : `Rank ${rank}: ${dish_name} at ${restaurant_name}, ${total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'new dish'}`
@@ -181,28 +137,17 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
       <button
         onClick={onClick}
         aria-label={accessibleLabel}
-        className="w-full flex items-center gap-2.5 py-2.5 px-2 rounded-lg transition-colors text-left hover:bg-[var(--color-surface-elevated)]"
+        className="w-full flex items-center gap-3 py-2.5 px-2 rounded-lg transition-colors text-left hover:bg-[var(--color-surface-elevated)]"
       >
-        {/* Rank - medals for top 3 */}
-        {rank <= 3 ? (
-          <span aria-hidden="true" className="text-base flex-shrink-0 w-6 text-center">
-            {rank === 1 && '🥇'}
-            {rank === 2 && '🥈'}
-            {rank === 3 && '🥉'}
-          </span>
-        ) : (
-          <span
-            aria-hidden="true"
-            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-text-tertiary)',
-              border: '1px solid rgba(217, 167, 101, 0.15)',
-            }}
-          >
-            {rank}
-          </span>
-        )}
+        {/* Rank number — typography only */}
+        <span
+          className="w-6 text-center text-sm font-bold flex-shrink-0"
+          style={{
+            color: rank <= 3 ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
+          }}
+        >
+          {rank}
+        </span>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
@@ -214,19 +159,14 @@ const Top10Row = memo(function Top10Row({ dish, rank, isNewlyRevealed, revealInd
           </p>
         </div>
 
-        {/* Rating or vote count */}
+        {/* Rating */}
         <div className="flex-shrink-0 text-right">
           {isRanked ? (
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-bold leading-tight" style={{ color: getRatingColor(avg_rating) }}>
-                {avg_rating}
-              </span>
-              <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
-                {total_votes} votes
-              </span>
-            </div>
+            <span className="text-sm font-bold" style={{ color: getRatingColor(avg_rating) }}>
+              {avg_rating}
+            </span>
           ) : (
-            <span className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>
+            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
               {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
             </span>
           )}

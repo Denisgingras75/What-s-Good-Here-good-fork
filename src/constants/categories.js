@@ -19,6 +19,10 @@ export const BROWSE_CATEGORIES = [
   { id: 'taco', label: 'Tacos', emoji: '🌮' },
   { id: 'tendys', label: 'Tenders', emoji: '🍗' },
   { id: 'dessert', label: 'Desserts', emoji: '🍰' },
+  { id: 'fish', label: 'Fish', emoji: '🐟' },
+  { id: 'clams', label: 'Clams', emoji: '🐚' },
+  { id: 'chicken', label: 'Chicken', emoji: '🐔' },
+  { id: 'pork', label: 'Pork', emoji: '🐷' },
 ]
 
 // Main categories shown in category picker (singular labels)
@@ -38,6 +42,8 @@ export const MAIN_CATEGORIES = [
   { id: 'seafood', label: 'Seafood', emoji: '🦐' },
   { id: 'tendys', label: 'Tenders', emoji: '🍗' },
   { id: 'dessert', label: 'Dessert', emoji: '🍰' },
+  { id: 'fish', label: 'Fish', emoji: '🐟' },
+  { id: 'clams', label: 'Clams', emoji: '🐚' },
   { id: 'chicken', label: 'Chicken', emoji: '🐔' },
   { id: 'pork', label: 'Pork', emoji: '🐷' },
 ]
@@ -177,6 +183,8 @@ export const CATEGORY_INFO = {
   'duck': { emoji: '🦆', label: 'Duck' },
   'lamb': { emoji: '🍖', label: 'Lamb' },
   'pork': { emoji: '🐷', label: 'Pork' },
+  'fish': { emoji: '🐟', label: 'Fish' },
+  'chicken': { emoji: '🐔', label: 'Chicken' },
   'clams': { emoji: '🐚', label: 'Clams' },
 }
 
