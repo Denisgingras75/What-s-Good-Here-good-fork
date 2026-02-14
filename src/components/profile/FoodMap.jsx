@@ -24,7 +24,7 @@ export function FoodMap({ stats, title }) {
       style={{
         background: 'var(--color-card)',
         borderColor: 'var(--color-divider)',
-        boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+        boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)',
       }}
     >
       <div className="px-4 py-3.5 border-b" style={{ borderColor: 'var(--color-divider)' }}>

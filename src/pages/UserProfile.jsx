@@ -353,7 +353,7 @@ export function UserProfile() {
         <button
           onClick={() => navigate(-1)}
           className="px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ background: 'var(--color-primary)', color: 'white' }}
+          style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
         >
           Go Back
         </button>
@@ -371,8 +371,8 @@ export function UserProfile() {
         className="relative px-4 pt-8 pb-6 overflow-hidden"
         style={{
           background: `
-            radial-gradient(ellipse 90% 50% at 20% 0%, rgba(200, 90, 84, 0.03) 0%, transparent 70%),
-            radial-gradient(ellipse 70% 60% at 80% 100%, rgba(217, 167, 101, 0.04) 0%, transparent 70%),
+            radial-gradient(ellipse 90% 50% at 20% 0%, rgba(232, 102, 60, 0.03) 0%, transparent 70%),
+            radial-gradient(ellipse 70% 60% at 80% 100%, rgba(232, 102, 60, 0.02) 0%, transparent 70%),
             var(--color-bg)
           `,
         }}
@@ -391,10 +391,11 @@ export function UserProfile() {
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+              className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
               style={{
                 background: 'var(--color-primary)',
-                boxShadow: '0 4px 20px -4px rgba(200, 90, 84, 0.4), 0 0 0 3px rgba(200, 90, 84, 0.2)',
+                color: 'var(--color-text-on-primary)',
+                boxShadow: '0 4px 20px -4px rgba(232, 102, 60, 0.3), 0 0 0 3px rgba(232, 102, 60, 0.15)',
               }}
             >
               {profile.display_name?.charAt(0).toUpperCase() || '?'}
@@ -487,7 +488,7 @@ export function UserProfile() {
                 style={{
                   background: 'var(--color-card)',
                   borderColor: 'var(--color-divider)',
-                  boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+                  boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.03)',
                 }}
               >
                 <p
@@ -513,7 +514,7 @@ export function UserProfile() {
                 style={{
                   background: 'var(--color-card)',
                   borderColor: 'var(--color-divider)',
-                  boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+                  boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.03)',
                 }}
               >
                 <p className="text-sm font-bold" style={{
@@ -565,7 +566,7 @@ export function UserProfile() {
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
               style={{
                 background: isFollowing ? 'var(--color-surface-elevated)' : 'var(--color-primary)',
-                color: isFollowing ? 'var(--color-text-primary)' : 'white',
+                color: isFollowing ? 'var(--color-text-primary)' : 'var(--color-text-on-primary)',
               }}
             >
               {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
@@ -642,7 +643,7 @@ export function UserProfile() {
         className="sticky top-0 z-10 py-2.5"
         style={{
           background: 'var(--color-surface)',
-          boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.2)',
+          boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.08)',
           borderBottom: '1px solid var(--color-divider)',
         }}
       >
@@ -662,7 +663,7 @@ export function UserProfile() {
                 ...(activeTab === tab.id
                   ? {
                       background: 'var(--color-primary)',
-                      boxShadow: '0 2px 8px -2px rgba(200, 90, 84, 0.4)',
+                      boxShadow: '0 2px 8px -2px rgba(232, 102, 60, 0.3)',
                     }
                   : { background: 'var(--color-surface-elevated)' }),
               }}

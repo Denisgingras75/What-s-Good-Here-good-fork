@@ -28,7 +28,7 @@ export function CategoryImageCard({
       style={{ gap: '18px' }}
     >
       {/* Plate with food icon */}
-      <div className="transition-all duration-200" style={{ filter: 'drop-shadow(0 0 0px transparent)' }} onMouseEnter={(e) => e.currentTarget.style.filter = 'drop-shadow(0 2px 8px rgba(217, 167, 101, 0.15))'} onMouseLeave={(e) => e.currentTarget.style.filter = 'drop-shadow(0 0 0px transparent)'}>
+      <div className="transition-all duration-200" style={{ filter: 'drop-shadow(0 0 0px transparent)' }} onMouseEnter={(e) => e.currentTarget.style.filter = 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08))'} onMouseLeave={(e) => e.currentTarget.style.filter = 'drop-shadow(0 0 0px transparent)'}>
         <PlateIcon size={size}>
           {imageSrc ? (
             <div
@@ -36,8 +36,8 @@ export function CategoryImageCard({
               style={{
                 // Food glow - warm gold glow for appetite appeal
                 boxShadow: isActive
-                  ? '0 0 14px rgba(217, 167, 101, 0.5), 0 0 6px rgba(217, 167, 101, 0.3)'
-                  : '0 0 8px rgba(217, 167, 101, 0.15)',
+                  ? '0 0 14px rgba(232, 102, 60, 0.15), 0 0 6px rgba(232, 102, 60, 0.1)'
+                  : '0 0 8px rgba(0, 0, 0, 0.06)',
               }}
             >
             <img

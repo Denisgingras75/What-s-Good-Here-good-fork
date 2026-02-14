@@ -28,7 +28,7 @@ export function NotFound() {
           <Link
             to="/"
             className="block w-full py-3 px-6 rounded-xl font-semibold text-center transition-all hover:opacity-90"
-            style={{ background: 'var(--color-primary)', color: 'white' }}
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             Go to Home
           </Link>

@@ -66,7 +66,7 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
       style={{
         background: 'var(--color-bg)',
         border: '1px solid var(--color-divider)',
-        boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+        boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)',
       }}
     >
       <div
@@ -85,7 +85,7 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
               background: rank <= 3 && isRanked ? 'var(--color-primary)' : 'var(--color-surface)',
               color: rank <= 3 && isRanked ? 'white' : 'var(--color-text-tertiary)',
               fontSize: '13px',
-              ...(rank <= 3 && isRanked ? { boxShadow: '0 2px 8px -2px rgba(200, 90, 84, 0.4)' } : { border: '1px solid rgba(217, 167, 101, 0.12)' }),
+              ...(rank <= 3 && isRanked ? { boxShadow: '0 2px 8px -2px rgba(232, 102, 60, 0.4)' } : { border: '1px solid rgba(0, 0, 0, 0.06)' }),
             }}
           >
             {rank}
@@ -95,7 +95,7 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
         {/* Photo */}
         <div
           className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
-          style={{ background: 'var(--color-surface)', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.2)' }}
+          style={{ background: 'var(--color-surface)', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.08)' }}
         >
           {photo_url ? (
             <img
@@ -202,8 +202,8 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
                   {friendVotes.slice(0, 3).map((fv) => (
                     <div
                       key={fv.user_id}
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold ring-1"
-                      style={{ background: 'var(--color-primary)', ringColor: 'var(--color-bg)' }}
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ring-1"
+                      style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)', ringColor: 'var(--color-bg)' }}
                     >
                       {fv.display_name?.charAt(0).toUpperCase() || '?'}
                     </div>

@@ -23,11 +23,11 @@ export function PlateIcon({
         width: size,
         height: size,
         background: 'var(--color-bg)',
-        border: '2px solid rgba(217, 167, 101, 0.12)',
+        border: '2px solid rgba(0, 0, 0, 0.06)',
         boxShadow: `
-          0 10px 20px rgba(0, 0, 0, 0.6),
-          inset 0 0 0 1px rgba(217, 167, 101, 0.05),
-          inset 0 6px 10px rgba(0, 0, 0, 0.5)
+          0 10px 20px rgba(0, 0, 0, 0.08),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.03),
+          inset 0 6px 10px rgba(0, 0, 0, 0.06)
         `,
       }}
     >

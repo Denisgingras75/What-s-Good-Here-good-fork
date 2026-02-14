@@ -49,7 +49,7 @@ export function Top10Compact({
             className="flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: activeTab === 'mv' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
-              color: activeTab === 'mv' ? 'white' : 'var(--color-text-secondary)',
+              color: activeTab === 'mv' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
             }}
           >
             {town || 'MV'} Top 10
@@ -137,7 +137,7 @@ export function Top10Compact({
 }
 
 const PODIUM_STYLE = {
-  1: { color: 'var(--color-medal-gold)', glow: '#D9A765', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
+  1: { color: 'var(--color-medal-gold)', glow: '#E9A115', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
   2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '22px', nameSize: '15px', ratingSize: '15px' },
   3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '20px', nameSize: '14px', ratingSize: '14px' },
 }
@@ -159,7 +159,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
         aria-label={accessibleLabel}
         className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-colors text-left"
         style={{
-          background: 'var(--color-surface-elevated)',
+          background: rank === 1 ? 'rgba(232, 102, 60, 0.06)' : 'var(--color-surface-elevated)',
           borderLeft: `2px solid ${podium.glow}`,
         }}
       >
@@ -172,7 +172,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
             lineHeight: 1,
             minWidth: '24px',
             textAlign: 'center',
-            textShadow: `0 0 8px ${podium.glow}30, 0 0 16px ${podium.glow}15`,
+            textShadow: `0 0 6px ${podium.glow}20, 0 0 12px ${podium.glow}10`,
           }}
         >
           {rank}

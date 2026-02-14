@@ -159,7 +159,7 @@ export function NotificationBell() {
           role="menu"
           aria-label="Notifications menu"
           className="fixed top-14 right-4 w-80 max-h-96 overflow-y-auto rounded-xl shadow-xl border z-50"
-          style={{ background: 'var(--color-surface-elevated)', borderColor: 'rgba(255,255,255,0.1)' }}
+          style={{ background: 'var(--color-surface-elevated)', borderColor: 'rgba(0,0,0,0.06)' }}
         >
           {/* Header */}
           <div
@@ -201,8 +201,8 @@ export function NotificationBell() {
                 >
                   {/* Icon */}
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold"
-                    style={{ background: 'var(--color-primary)' }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold"
+                    style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
                   >
                     {notification.type === 'follow'
                       ? notification.data?.follower_name?.charAt(0).toUpperCase() || '?'

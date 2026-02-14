@@ -52,7 +52,7 @@ export function EarIconTooltip({ visible, onDismiss }) {
           width: 10,
           height: 10,
           background: 'var(--color-card)',
-          border: '1px solid rgba(217, 167, 101, 0.18)',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
           borderRight: 'none',
           borderBottom: 'none',
           transform: 'rotate(45deg)',
@@ -62,8 +62,8 @@ export function EarIconTooltip({ visible, onDismiss }) {
         className="rounded-xl px-3.5 py-2.5"
         style={{
           background: 'var(--color-card)',
-          border: '1px solid rgba(217, 167, 101, 0.18)',
-          boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 0 12px rgba(217, 167, 101, 0.06)',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
+          boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.1), 0 0 12px rgba(0, 0, 0, 0.04)',
         }}
       >
         <p

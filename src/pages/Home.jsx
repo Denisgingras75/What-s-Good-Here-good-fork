@@ -85,7 +85,7 @@ export function Home() {
       />
 
       {/* Section 2: Top 10 */}
-      <section className="px-4 py-6">
+      <section className="px-4 py-6" style={{ background: 'var(--color-surface)' }}>
         {loading ? (
           <Top10Skeleton />
         ) : error ? (
@@ -96,7 +96,7 @@ export function Home() {
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 text-sm font-medium rounded-lg"
-              style={{ background: 'var(--color-primary)', color: 'white' }}
+              style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
             >
               Retry
             </button>
@@ -176,7 +176,8 @@ function CategoryPill({ category, isActive, onClick }) {
       className="flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
       style={{
         background: isActive ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
-        color: isActive ? 'white' : 'var(--color-text-secondary)',
+        color: isActive ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+        border: isActive ? 'none' : '1px solid rgba(232, 102, 60, 0.12)',
       }}
     >
       {imageSrc && !imgError ? (
@@ -250,7 +251,7 @@ function EmptyState({ onBrowse }) {
       <button
         onClick={onBrowse}
         className="mt-4 px-6 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
-        style={{ background: 'var(--color-primary)', color: 'white' }}
+        style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
       >
         Browse All Dishes
       </button>

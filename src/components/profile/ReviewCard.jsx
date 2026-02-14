@@ -94,7 +94,7 @@ export function ReviewCard({ review, onClick }) {
         style={{
           background: 'var(--color-bg)',
           border: '1px solid var(--color-divider)',
-          boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.3)',
+          boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.08)',
         }}
       >
         {cardContent}
@@ -109,7 +109,7 @@ export function ReviewCard({ review, onClick }) {
       style={{
         background: 'var(--color-card)',
         borderColor: 'var(--color-divider)',
-        boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+        boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)',
       }}
     >
       {cardContent}

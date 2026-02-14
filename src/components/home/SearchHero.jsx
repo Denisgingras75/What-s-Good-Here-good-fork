@@ -7,13 +7,15 @@ export function SearchHero({ town, loading, categoryScroll }) {
   return (
     <section
       className="pt-8 pb-5"
-      style={{ background: 'var(--color-bg)' }}
+      style={{
+        background: 'linear-gradient(180deg, rgba(232, 102, 60, 0.08) 0%, var(--color-bg) 100%)',
+      }}
     >
       <div className="mb-5 text-center px-4">
         <h1
           className="font-bold mb-1"
           style={{
-            color: 'var(--color-text-primary)',
+            color: 'var(--color-primary)',
             fontSize: '22px',
             letterSpacing: '-0.02em',
           }}
@@ -22,7 +24,7 @@ export function SearchHero({ town, loading, categoryScroll }) {
         </h1>
         <p
           style={{
-            color: 'var(--color-text-tertiary)',
+            color: 'var(--color-text-secondary)',
             fontSize: '13px',
           }}
         >

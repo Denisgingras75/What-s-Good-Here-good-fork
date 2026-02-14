@@ -170,7 +170,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
         style={{
           background: 'var(--color-bg)',
           border: `1.5px solid ${isFocused ? 'var(--color-accent-gold)' : 'var(--color-divider)'}`,
-          boxShadow: isFocused ? '0 0 0 3px rgba(217, 167, 101, 0.15), 0 0 20px rgba(217, 167, 101, 0.1)' : 'none',
+          boxShadow: isFocused ? '0 0 0 3px rgba(232, 102, 60, 0.08), 0 0 20px rgba(232, 102, 60, 0.06)' : 'none',
           minHeight: '48px',
         }}
       >
@@ -240,8 +240,8 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
           className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50"
           style={{
             background: 'var(--color-surface)',
-            border: '1.5px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            border: '1.5px solid rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           }}
         >
           {isLoading ? (
@@ -341,7 +341,7 @@ function DishResult({ dish, rank, onClick }) {
         className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
         style={{
           background: rank === 1 ? 'var(--color-primary)' : 'var(--color-surface)',
-          color: rank === 1 ? 'white' : 'var(--color-text-tertiary)',
+          color: rank === 1 ? 'var(--color-text-on-primary)' : 'var(--color-text-tertiary)',
         }}
       >
         {rank}

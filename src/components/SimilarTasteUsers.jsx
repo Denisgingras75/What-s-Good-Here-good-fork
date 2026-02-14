@@ -72,8 +72,8 @@ export function SimilarTasteUsers() {
               {/* Avatar */}
               <button
                 onClick={() => navigate(`/user/${u.user_id}`)}
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold transition-transform active:scale-95"
-                style={{ background: 'var(--color-primary)' }}
+                className="w-12 h-12 rounded-full flex items-center justify-center font-bold transition-transform active:scale-95"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
                 {u.display_name?.charAt(0).toUpperCase() || '?'}
               </button>
@@ -104,7 +104,7 @@ export function SimilarTasteUsers() {
                 className="w-full py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
                 style={isFollowing
                   ? { background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', border: '1px solid var(--color-divider)' }
-                  : { background: 'var(--color-primary)', color: 'white' }
+                  : { background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }
                 }
               >
                 {isFollowing ? 'Following' : 'Follow'}

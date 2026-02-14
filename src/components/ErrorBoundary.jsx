@@ -2,38 +2,39 @@ import { Component } from 'react'
 
 function ErrorFallback({ error, resetError }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg)' }}>
       <div className="text-center max-w-md">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
           <span className="text-2xl">😵</span>
         </div>
-        <h1 className="text-xl font-bold text-neutral-800 mb-2">
+        <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
           Something went wrong
         </h1>
-        <p className="text-sm text-neutral-600 mb-6">
+        <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
           We've been notified and are working on it. Try refreshing the page.
         </p>
         <div className="space-y-3">
           <button
             onClick={() => window.location.reload()}
-            className="w-full px-4 py-3 text-white font-semibold rounded-xl"
-            style={{ background: 'var(--color-primary)' }}
+            className="w-full px-4 py-3 font-semibold rounded-xl"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             Refresh Page
           </button>
           <button
             onClick={resetError}
-            className="w-full px-4 py-3 text-neutral-700 font-medium rounded-xl border border-neutral-200"
+            className="w-full px-4 py-3 font-medium rounded-xl"
+            style={{ color: 'var(--color-text-primary)', border: '1px solid var(--color-divider)' }}
           >
             Try Again
           </button>
         </div>
         {import.meta.env.DEV && (
           <details className="mt-6 text-left">
-            <summary className="text-xs text-neutral-500 cursor-pointer">
+            <summary className="text-xs cursor-pointer" style={{ color: 'var(--color-text-tertiary)' }}>
               Error details (dev only)
             </summary>
-            <pre className="mt-2 p-3 bg-neutral-100 rounded-lg text-xs text-red-600 overflow-auto">
+            <pre className="mt-2 p-3 rounded-lg text-xs overflow-auto" style={{ background: 'var(--color-surface)', color: 'var(--color-danger)' }}>
               {error?.message}
             </pre>
           </details>

@@ -19,7 +19,7 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
           className="flex-shrink-0 flex items-center gap-1.5 pl-3 pr-3 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
           style={{
             background: 'var(--color-primary)',
-            color: 'white',
+            color: 'var(--color-text-on-primary)',
           }}
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

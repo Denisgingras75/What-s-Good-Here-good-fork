@@ -185,7 +185,7 @@ export function Restaurants() {
         className="px-4 pt-4 pb-3 relative"
         style={{
           background: `
-            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200, 90, 84, 0.04) 0%, transparent 70%),
+            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232, 102, 60, 0.04) 0%, transparent 70%),
             var(--color-bg)
           `,
         }}
@@ -284,8 +284,8 @@ export function Restaurants() {
               className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all"
               style={{
                 background: restaurantTab === 'open' ? 'var(--color-primary)' : 'transparent',
-                color: restaurantTab === 'open' ? 'white' : 'var(--color-text-secondary)',
-                boxShadow: restaurantTab === 'open' ? '0 2px 8px -2px rgba(200, 90, 84, 0.4)' : 'none',
+                color: restaurantTab === 'open' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+                boxShadow: restaurantTab === 'open' ? '0 2px 8px -2px rgba(232, 102, 60, 0.3)' : 'none',
               }}
             >
               Open
@@ -297,8 +297,8 @@ export function Restaurants() {
               className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all"
               style={{
                 background: restaurantTab === 'closed' ? 'var(--color-primary)' : 'transparent',
-                color: restaurantTab === 'closed' ? 'white' : 'var(--color-text-secondary)',
-                boxShadow: restaurantTab === 'closed' ? '0 2px 8px -2px rgba(200, 90, 84, 0.4)' : 'none',
+                color: restaurantTab === 'closed' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+                boxShadow: restaurantTab === 'closed' ? '0 2px 8px -2px rgba(232, 102, 60, 0.3)' : 'none',
               }}
             >
               Closed
@@ -311,7 +311,7 @@ export function Restaurants() {
               <button
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 text-sm font-medium rounded-lg"
-                style={{ background: 'var(--color-primary)', color: 'white' }}
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
                 Try Again
               </button>
@@ -333,10 +333,10 @@ export function Restaurants() {
                     onClick={() => handleRestaurantSelect(restaurant)}
                     className="w-full rounded-xl p-4 text-left transition-all active:scale-[0.99] hover:border-[rgba(224,120,86,0.2)]"
                     style={{
-                      background: 'linear-gradient(135deg, var(--color-card) 0%, rgba(217, 167, 101, 0.03) 100%)',
-                      border: '1px solid rgba(217, 167, 101, 0.1)',
+                      background: 'linear-gradient(135deg, var(--color-card) 0%, rgba(232, 102, 60, 0.02) 100%)',
+                      border: '1px solid rgba(0, 0, 0, 0.06)',
                       borderLeft: '3px solid var(--color-accent-gold)',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03)',
                       opacity: restaurant.is_open ? 1 : 0.6,
                     }}
                   >
@@ -358,9 +358,9 @@ export function Restaurants() {
                             className="inline-block mt-1 px-2 py-0.5 rounded-full font-semibold"
                             style={{
                               fontSize: '10px',
-                              background: 'rgba(200, 90, 84, 0.15)',
+                              background: 'rgba(232, 102, 60, 0.15)',
                               color: 'var(--color-primary)',
-                              border: '1px solid rgba(200, 90, 84, 0.25)',
+                              border: '1px solid rgba(232, 102, 60, 0.25)',
                             }}
                           >
                             Closed for Season
@@ -427,7 +427,7 @@ export function Restaurants() {
             className="sticky top-0 z-20 px-4 py-3"
             style={{
               background: 'var(--color-bg)',
-              boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.2)',
+              boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.08)',
               borderBottom: '1px solid var(--color-divider)',
             }}
           >
@@ -518,8 +518,8 @@ export function Restaurants() {
                 className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all"
                 style={{
                   background: activeTab === 'top' ? 'var(--color-primary)' : 'transparent',
-                  color: activeTab === 'top' ? 'white' : 'var(--color-text-secondary)',
-                  boxShadow: activeTab === 'top' ? '0 2px 8px -2px rgba(200, 90, 84, 0.4)' : 'none',
+                  color: activeTab === 'top' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+                  boxShadow: activeTab === 'top' ? '0 2px 8px -2px rgba(232, 102, 60, 0.3)' : 'none',
                 }}
               >
                 Top Rated
@@ -531,8 +531,8 @@ export function Restaurants() {
                 className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all"
                 style={{
                   background: activeTab === 'menu' ? 'var(--color-primary)' : 'transparent',
-                  color: activeTab === 'menu' ? 'white' : 'var(--color-text-secondary)',
-                  boxShadow: activeTab === 'menu' ? '0 2px 8px -2px rgba(200, 90, 84, 0.4)' : 'none',
+                  color: activeTab === 'menu' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+                  boxShadow: activeTab === 'menu' ? '0 2px 8px -2px rgba(232, 102, 60, 0.3)' : 'none',
                 }}
               >
                 Menu

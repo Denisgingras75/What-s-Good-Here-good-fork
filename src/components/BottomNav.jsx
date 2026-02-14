@@ -51,8 +51,8 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 shadow-lg"
       style={{
         background: 'var(--color-surface)',
-        borderTop: '1px solid rgba(217, 167, 101, 0.15)',
-        boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.3)'
+        borderTop: '1px solid rgba(0, 0, 0, 0.06)',
+        boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.08)'
       }}
     >
       <div className="flex justify-around items-center h-16 pb-safe">

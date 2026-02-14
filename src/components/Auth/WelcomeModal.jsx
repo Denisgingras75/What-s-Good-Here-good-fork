@@ -194,13 +194,13 @@ export function WelcomeModal() {
                 <span className="text-2xl mb-1"><ThumbsUpIcon size={32} /></span>
                 <span className="text-xs font-medium" style={{ color: 'var(--color-rating)' }}>Good Here</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(200, 90, 84, 0.15)' }}>
+              <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(232, 102, 60, 0.1)' }}>
                 <span className="text-2xl mb-1"><ThumbsDownIcon size={32} /></span>
                 <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>Not Good</span>
               </div>
               <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(245, 158, 11, 0.15)' }}>
                 <span className="text-2xl mb-1">⭐</span>
-                <span className="text-xs font-medium text-amber-400">Rate 1-10</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--color-accent-gold)' }}>Rate 1-10</span>
               </div>
             </div>
           )}
@@ -225,8 +225,8 @@ export function WelcomeModal() {
               <button
                 type="submit"
                 disabled={!name.trim()}
-                className="w-full px-6 py-4 text-white font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
-                style={{ background: 'var(--color-primary)' }}
+                className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
                 Continue
               </button>

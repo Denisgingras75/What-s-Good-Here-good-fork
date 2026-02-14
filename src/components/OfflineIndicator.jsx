@@ -38,7 +38,7 @@ export function OfflineIndicator() {
       className="fixed top-0 left-0 right-0 z-[9998] text-center py-2 px-4 text-sm font-medium animate-slideDown"
       style={{
         background: isOffline ? 'var(--color-danger)' : 'var(--color-success)',
-        color: 'white',
+        color: 'var(--color-text-on-primary)',
         paddingTop: 'max(8px, env(safe-area-inset-top))',
       }}
     >

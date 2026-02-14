@@ -122,8 +122,8 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
         <div
           className="mb-4 px-3.5 py-3 rounded-xl flex items-center gap-3"
           style={{
-            background: 'linear-gradient(135deg, rgba(244, 122, 31, 0.08) 0%, rgba(217, 167, 101, 0.06) 100%)',
-            border: '1px solid rgba(244, 122, 31, 0.15)',
+            background: 'linear-gradient(135deg, rgba(232, 102, 60, 0.06) 0%, rgba(232, 102, 60, 0.03) 100%)',
+            border: '1px solid rgba(232, 102, 60, 0.12)',
           }}
         >
           {/* Stacked avatars */}
@@ -143,9 +143,10 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
                 <Link
                   key={friend.user_id}
                   to={`/user/${friend.user_id}`}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ring-2"
                   style={{
                     background: 'var(--color-primary)',
+                    color: 'var(--color-text-on-primary)',
                     ringColor: 'var(--color-bg)',
                     zIndex: 3 - i,
                   }}
@@ -183,9 +184,9 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
         <div
           className="py-10 text-center rounded-xl"
           style={{
-            background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200, 90, 84, 0.04) 0%, transparent 70%), var(--color-bg)`,
+            background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232, 102, 60, 0.04) 0%, transparent 70%), var(--color-bg)`,
             border: '1px solid var(--color-divider)',
-            boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.2)',
+            boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.08)',
           }}
         >
           <p className="font-semibold" style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>

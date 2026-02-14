@@ -442,11 +442,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             disabled={showConfirmation}
             className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
             style={(showConfirmation && confirmationType === 'yes') || showPendingYes
-              ? { background: 'linear-gradient(to bottom right, var(--color-rating), #5A9E72)', color: 'white', boxShadow: '0 10px 15px -3px rgba(107, 179, 132, 0.3)', transform: 'scale(1.05)' }
+              ? { background: 'linear-gradient(to bottom right, var(--color-rating), #5A9E72)', color: 'var(--color-text-on-primary)', boxShadow: '0 10px 15px -3px rgba(107, 179, 132, 0.3)', transform: 'scale(1.05)' }
               : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'yes' ? (
-              <span className="text-2xl text-white animate-pulse">✓</span>
+              <span className="text-2xl animate-pulse" style={{ color: 'var(--color-text-on-primary)' }}>✓</span>
             ) : (
               <><ThumbsUpIcon size={30} /><span>Yes</span></>
             )}
@@ -456,11 +456,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             disabled={showConfirmation}
             className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
             style={(showConfirmation && confirmationType === 'no') || showPendingNo
-              ? { background: 'linear-gradient(to bottom right, var(--color-primary), #B04E49)', color: 'white', boxShadow: '0 10px 15px -3px rgba(200, 90, 84, 0.3)', transform: 'scale(1.05)' }
+              ? { background: 'linear-gradient(to bottom right, var(--color-primary), #C8502E)', color: 'var(--color-text-on-primary)', boxShadow: '0 10px 15px -3px rgba(232, 102, 60, 0.3)', transform: 'scale(1.05)' }
               : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'no' ? (
-              <span className="text-2xl text-white animate-pulse">✓</span>
+              <span className="text-2xl animate-pulse" style={{ color: 'var(--color-text-on-primary)' }}>✓</span>
             ) : (
               <><ThumbsDownIcon size={30} /><span>No</span></>
             )}
@@ -599,7 +599,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         disabled={submitting || reviewText.length > MAX_REVIEW_LENGTH}
         className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ease-out focus-ring
           ${submitting || reviewText.length > MAX_REVIEW_LENGTH ? 'opacity-50 cursor-not-allowed' : 'active:scale-98 hover:shadow-xl'}`}
-        style={{ background: 'linear-gradient(to right, var(--color-emerald), #14B8A6)', color: 'white', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)' }}
+        style={{ background: 'linear-gradient(to right, var(--color-emerald), #14B8A6)', color: 'var(--color-text-on-primary)', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.2)' }}
       >
         {submitting ? 'Saving...' : 'Submit Review'}
       </button>

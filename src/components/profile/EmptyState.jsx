@@ -75,11 +75,11 @@ export function EmptyState({ tab }) {
       className="rounded-2xl border p-10 text-center"
       style={{
         background: `
-          radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200, 90, 84, 0.04) 0%, transparent 70%),
+          radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232, 102, 60, 0.04) 0%, transparent 70%),
           var(--color-card)
         `,
         borderColor: 'var(--color-divider)',
-        boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.08)',
       }}
     >
       <div className="text-4xl mb-4">
@@ -110,9 +110,9 @@ export function EmptyState({ tab }) {
           className="inline-block mt-5 px-7 py-2.5 rounded-full font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
           style={{
             background: 'var(--color-primary)',
-            color: 'white',
+            color: 'var(--color-text-on-primary)',
             fontSize: '13px',
-            boxShadow: '0 2px 12px -4px rgba(200, 90, 84, 0.3)',
+            boxShadow: '0 2px 12px -4px rgba(232, 102, 60, 0.3)',
           }}
         >
           {ctaText}

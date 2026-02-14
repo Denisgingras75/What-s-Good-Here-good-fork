@@ -85,7 +85,7 @@ export function WelcomeSplash({ onComplete }) {
       <p
         className="absolute bottom-10 text-xs transition-opacity duration-300"
         style={{
-          color: 'rgba(255, 255, 255, 0.4)',
+          color: 'var(--color-text-tertiary)',
           opacity: isVisible && !isFadingOut ? 1 : 0,
         }}
       >

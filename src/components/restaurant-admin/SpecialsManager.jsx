@@ -117,8 +117,8 @@ export function SpecialsManager({ restaurantId, specials, onAdd, onUpdate, onDea
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2 rounded-lg font-medium text-white text-sm disabled:opacity-50"
-                style={{ background: 'var(--color-primary)' }}
+                className="flex-1 py-2 rounded-lg font-medium text-sm disabled:opacity-50"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
                 {submitting ? 'Saving...' : editingId ? 'Update' : 'Add Special'}
               </button>
@@ -177,7 +177,8 @@ export function SpecialsManager({ restaurantId, specials, onAdd, onUpdate, onDea
                   </button>
                   <button
                     onClick={() => onDeactivate(special.id)}
-                    className="text-xs font-medium px-2 py-1 rounded text-red-400"
+                    className="text-xs font-medium px-2 py-1 rounded"
+                    style={{ color: 'var(--color-red)' }}
                   >
                     Deactivate
                   </button>

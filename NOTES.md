@@ -167,31 +167,35 @@ Why each item belongs in its week. Reference for next project.
 
 ---
 
-## Design Tokens (Island Depths Theme)
+## Design Tokens (Appetite Theme — Light)
 
 Current design system values defined in `src/index.css`:
 
 ### Brand Colors
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-primary` | `#C85A54` (Deep Rust) | CTAs, primary actions, danger |
-| `--color-accent-gold` | `#D9A765` (Warm Gold) | Links, secondary accents |
+| `--color-primary` | `#E8663C` (Orange-Red) | CTAs, primary actions |
+| `--color-accent-gold` | `#E9A115` (Warm Yellow) | Links, secondary accents |
 | `--color-accent-orange` | `#E07856` (Warm Orange) | Hover states |
-| `--color-rating` | `#6BB384` (Muted Green) | Rating displays, success |
+| `--color-accent-yellow` | `#F5B731` (Bright Yellow) | Badges, stars, highlights |
+| `--color-rating` | `#16A34A` (Bright Green) | Rating displays, success |
 
 ### Text Colors
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-text-primary` | `#F5F1E8` (Soft Cream) | Main text |
-| `--color-text-secondary` | `#B8A99A` (Warm Taupe) | Secondary text |
-| `--color-text-tertiary` | `#7D7168` (Brown Gray) | Tertiary text |
+| `--color-text-primary` | `#1A1A1A` (Near-Black) | Main text |
+| `--color-text-secondary` | `#6B7280` (Medium Gray) | Secondary text |
+| `--color-text-tertiary` | `#9CA3AF` (Light Gray) | Tertiary text |
+| `--color-text-on-primary` | `#FFFFFF` (White) | Text on primary-colored backgrounds |
 
 ### Surface Colors
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-bg` | `#0D1B22` (Deep Charcoal-Navy) | Page background |
-| `--color-surface` | `#0F1F2B` | Slightly lighter surface |
-| `--color-card` | `#1A3A42` (Navy-Teal) | Card backgrounds |
+| `--color-bg` | `#F0ECE8` (Warm Stone) | Page background |
+| `--color-surface` | `#F7F4F1` (Light Stone) | Slightly lighter surface |
+| `--color-surface-elevated` | `#FFFFFF` (White) | Elevated elements |
+| `--color-card` | `#FFFFFF` (White) | Card backgrounds |
+| `--color-card-hover` | `#FFF8F4` (Warm Tint) | Card hover state |
 
 ---
 

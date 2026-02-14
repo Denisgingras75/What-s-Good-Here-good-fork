@@ -312,8 +312,8 @@ export function Admin() {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 rounded-xl font-semibold text-white"
-            style={{ background: 'var(--color-primary)' }}
+            className="px-6 py-3 rounded-xl font-semibold"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             Go Home
           </button>
@@ -466,8 +466,8 @@ export function Admin() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: editingDishId ? 'var(--color-green-dark)' : 'var(--color-primary)' }}
+            className="w-full py-3 rounded-lg font-semibold transition-all disabled:opacity-50"
+            style={{ background: editingDishId ? 'var(--color-green-dark)' : 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             {submitting
               ? (editingDishId ? 'Updating...' : 'Adding...')
@@ -493,8 +493,8 @@ export function Admin() {
             <button
               type="submit"
               disabled={searching}
-              className="px-4 py-2 rounded-lg font-medium text-white transition-all disabled:opacity-50"
-              style={{ background: 'var(--color-primary)' }}
+              className="px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
             >
               {searching ? '...' : 'Search'}
             </button>
@@ -525,13 +525,13 @@ export function Admin() {
                   <div className="flex items-center gap-2 ml-2">
                     <button
                       onClick={() => handleEdit(dish)}
-                      className="text-blue-500 hover:text-blue-700 text-sm font-medium"
+                      className="text-sm font-medium" style={{ color: 'var(--color-blue)' }}
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(dish.id, dish.name)}
-                      className="text-red-500 hover:text-red-700 text-sm font-medium"
+                      className="text-sm font-medium" style={{ color: 'var(--color-red)' }}
                     >
                       Delete
                     </button>
@@ -572,13 +572,13 @@ export function Admin() {
                 <div className="flex items-center gap-2 ml-2">
                   <button
                     onClick={() => handleEdit(dish)}
-                    className="text-blue-500 hover:text-blue-700 text-sm font-medium"
+                    className="text-sm font-medium" style={{ color: 'var(--color-blue)' }}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(dish.id, dish.name)}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                    className="text-sm font-medium" style={{ color: 'var(--color-red)' }}
                   >
                     Delete
                   </button>
@@ -681,8 +681,8 @@ export function Admin() {
             <div className="mb-4">
               <button
                 onClick={handleGenerateInvite}
-                className="px-4 py-2 rounded-lg font-medium text-white transition-all text-sm"
-                style={{ background: 'var(--color-primary)' }}
+                className="px-4 py-2 rounded-lg font-medium transition-all text-sm"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
                 Generate Invite Link
               </button>
@@ -721,8 +721,8 @@ export function Admin() {
                         }
                         document.body.removeChild(ta)
                       }}
-                      className="px-3 py-1 rounded text-xs font-medium text-white"
-                      style={{ background: 'var(--color-primary)' }}
+                      className="px-3 py-1 rounded text-xs font-medium"
+                      style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
                     >
                       Copy
                     </button>
@@ -758,7 +758,7 @@ export function Admin() {
                       </div>
                       <button
                         onClick={() => handleRevokeManager(mgr.id, mgr.profiles?.display_name)}
-                        className="text-red-500 hover:text-red-700 text-sm font-medium"
+                        className="text-sm font-medium" style={{ color: 'var(--color-red)' }}
                       >
                         Revoke
                       </button>

@@ -56,7 +56,7 @@ export function UserSearch({ onClose }) {
         style={{
           background: 'var(--color-surface-elevated)',
           border: `2px solid ${isFocused ? 'var(--color-accent-gold)' : 'var(--color-divider)'}`,
-          boxShadow: isFocused ? '0 0 20px rgba(217, 167, 101, 0.15)' : 'none',
+          boxShadow: isFocused ? '0 0 20px rgba(232, 102, 60, 0.08)' : 'none',
         }}
       >
         <svg
@@ -133,8 +133,8 @@ export function UserSearch({ onClose }) {
                 >
                   {/* Avatar */}
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ background: 'var(--color-primary)' }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
+                    style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
                   >
                     {user.display_name?.charAt(0).toUpperCase() || '?'}
                   </div>

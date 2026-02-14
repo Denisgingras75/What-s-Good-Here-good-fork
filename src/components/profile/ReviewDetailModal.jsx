@@ -126,8 +126,8 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
         <div className="p-4 border-t" style={{ borderColor: 'var(--color-divider)' }}>
           <button
             onClick={() => navigate(`/dish/${review.dish_id}`)}
-            className="w-full py-3 rounded-xl font-semibold text-white transition-colors"
-            style={{ background: 'var(--color-primary)' }}
+            className="w-full py-3 rounded-xl font-semibold transition-colors"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             View Dish Details
           </button>

@@ -112,8 +112,8 @@ export function ProfileSkeleton() {
 export function DishCardSkeleton() {
   return (
     <div
-      className="w-full bg-white rounded-2xl overflow-hidden border"
-      style={{ borderColor: 'var(--color-divider)' }}
+      className="w-full rounded-2xl overflow-hidden border"
+      style={{ background: 'var(--color-card)', borderColor: 'var(--color-divider)' }}
       role="status"
       aria-label="Loading dish"
     >

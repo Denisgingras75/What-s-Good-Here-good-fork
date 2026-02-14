@@ -311,7 +311,7 @@ export function Profile() {
                   style={{
                     background: 'var(--color-card)',
                     borderColor: 'var(--color-divider)',
-                    boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+                    boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
                   }}
                 >
                   <p
@@ -337,7 +337,7 @@ export function Profile() {
                   style={{
                     background: 'var(--color-card)',
                     borderColor: 'var(--color-divider)',
-                    boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+                    boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
                   }}
                 >
                   <p className="text-sm font-bold" style={{
@@ -451,21 +451,21 @@ export function Profile() {
                 className="w-full rounded-2xl p-4 flex items-center gap-4 transition-all hover:scale-[0.99] active:scale-[0.98]"
                 style={{
                   background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-orange) 100%)',
-                  boxShadow: '0 4px 20px -4px rgba(200, 90, 84, 0.4), 0 2px 8px -2px rgba(0, 0, 0, 0.3)',
+                  boxShadow: '0 4px 20px -4px rgba(232, 102, 60, 0.25), 0 2px 8px -2px rgba(0, 0, 0, 0.1)',
                 }}
               >
                 <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                   <CameraIcon size={28} />
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-bold text-white" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
+                  <h3 className="font-bold" style={{ fontSize: '17px', letterSpacing: '-0.01em', color: 'var(--color-text-on-primary)' }}>
                     {unratedCount} photo{unratedCount === 1 ? '' : 's'} to rate
                   </h3>
-                  <p className="text-white/70" style={{ fontSize: '13px' }}>
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)' }}>
                     Tap to rate your dishes
                   </p>
                 </div>
-                <svg className="w-5 h-5 text-white/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(255, 255, 255, 0.6)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -477,7 +477,7 @@ export function Profile() {
             className="sticky top-0 z-10 py-2.5"
             style={{
               background: 'var(--color-surface)',
-              boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.2)',
+              boxShadow: '0 4px 12px -4px rgba(0, 0, 0, 0.06)',
               borderBottom: '1px solid var(--color-divider)',
             }}
           >
@@ -488,7 +488,7 @@ export function Profile() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl font-medium transition-all whitespace-nowrap active:scale-[0.97] ${
                     activeTab === tab.id
-                      ? 'text-white'
+                      ? 'text-[color:var(--color-text-on-primary)]'
                       : 'text-[color:var(--color-text-secondary)]'
                   }`}
                   style={{
@@ -496,7 +496,7 @@ export function Profile() {
                     ...(activeTab === tab.id
                       ? {
                           background: 'var(--color-primary)',
-                          boxShadow: '0 2px 8px -2px rgba(200, 90, 84, 0.4)',
+                          boxShadow: '0 2px 8px -2px rgba(232, 102, 60, 0.25)',
                         }
                       : { background: 'var(--color-surface-elevated)' }),
                   }}
@@ -622,7 +622,7 @@ export function Profile() {
               style={{
                 background: 'var(--color-card)',
                 borderColor: 'var(--color-divider)',
-                boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+                boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
               }}
             >
               <div className="px-4 py-3.5 border-b" style={{ borderColor: 'var(--color-divider)' }}>
@@ -727,7 +727,7 @@ export function Profile() {
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-[color:var(--color-surface-elevated)] transition-colors border-t"
                 style={{ borderColor: 'var(--color-divider)' }}
               >
-                <span className="font-medium text-red-400">Sign Out</span>
+                <span className="font-medium" style={{ color: 'var(--color-danger)' }}>Sign Out</span>
               </button>
             </div>
           </div>
@@ -739,11 +739,11 @@ export function Profile() {
             className="rounded-2xl border p-7"
             style={{
               background: `
-                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(200, 90, 84, 0.05) 0%, transparent 70%),
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(232, 102, 60, 0.05) 0%, transparent 70%),
                 var(--color-card)
               `,
               borderColor: 'var(--color-divider)',
-              boxShadow: '0 4px 24px -8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(217, 167, 101, 0.06)',
+              boxShadow: '0 4px 24px -8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.04)',
             }}
           >
             <div className="text-center mb-7">
@@ -777,9 +777,14 @@ export function Profile() {
             {message && (
               <div className={`p-3 rounded-lg mb-4 text-sm ${
                 message.type === 'error'
-                  ? 'bg-red-500/20 text-red-400'
-                  : 'bg-emerald-500/20 text-emerald-400'
-              }`}>
+                  ? ''
+                  : ''
+              }`}
+                style={{
+                  background: message.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  color: message.type === 'error' ? 'var(--color-red)' : 'var(--color-emerald)',
+                }}
+              >
                 {message.text}
               </div>
             )}
@@ -794,7 +799,7 @@ export function Profile() {
                   background: 'var(--color-surface-elevated)',
                   borderColor: 'var(--color-divider)',
                   fontSize: '14px',
-                  boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.2)',
+                  boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.06)',
                 }}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">

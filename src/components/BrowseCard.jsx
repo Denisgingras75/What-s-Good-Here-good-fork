@@ -68,8 +68,8 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
       className="w-full rounded-2xl border shadow-sm transition-all duration-200 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] active:shadow-md text-left group cursor-pointer"
       style={{
         background: 'var(--color-card)',
-        borderColor: 'rgba(217, 167, 101, 0.1)',
-        boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.4)'
+        borderColor: 'rgba(0, 0, 0, 0.06)',
+        boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.08)'
       }}
     >
       {/* Image with rating badge */}

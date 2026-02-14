@@ -21,8 +21,8 @@ export function HeroIdentityCard({
       className="relative px-4 pt-8 pb-6 overflow-hidden"
       style={{
         background: `
-          radial-gradient(ellipse 90% 50% at 20% 0%, var(--color-primary-rgb, 200 90 84) / 0.03 0%, transparent 70%),
-          radial-gradient(ellipse 70% 60% at 80% 100%, rgba(217, 167, 101, 0.04) 0%, transparent 70%),
+          radial-gradient(ellipse 90% 50% at 20% 0%, rgba(232, 102, 60, 0.03) 0%, transparent 70%),
+          radial-gradient(ellipse 70% 60% at 80% 100%, rgba(0, 0, 0, 0.02) 0%, transparent 70%),
           var(--color-bg)
         `,
       }}
@@ -41,10 +41,11 @@ export function HeroIdentityCard({
         {/* Avatar */}
         <div className="relative flex-shrink-0">
           <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
             style={{
               background: 'var(--color-primary)',
-              boxShadow: '0 4px 20px -4px rgba(200, 90, 84, 0.4), 0 0 0 3px rgba(200, 90, 84, 0.2)',
+              color: 'var(--color-text-on-primary)',
+              boxShadow: '0 4px 20px -4px rgba(232, 102, 60, 0.4), 0 0 0 3px rgba(232, 102, 60, 0.2)',
             }}
           >
             {profile?.display_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
@@ -81,8 +82,8 @@ export function HeroIdentityCard({
                 <button
                   onClick={handleSaveName}
                   disabled={nameStatus === 'taken' || nameStatus === 'checking'}
-                  className="px-3 py-1.5 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                  style={{ background: 'var(--color-primary)' }}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
+                  style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
                 >
                   Save
                 </button>

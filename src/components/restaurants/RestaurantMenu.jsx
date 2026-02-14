@@ -141,9 +141,9 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
         <div
           className="py-10 text-center rounded-xl"
           style={{
-            background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200, 90, 84, 0.04) 0%, transparent 70%), var(--color-bg)',
+            background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232, 102, 60, 0.04) 0%, transparent 70%), var(--color-bg)',
             border: '1px solid var(--color-divider)',
-            boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.2)',
+            boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.08)',
           }}
         >
           <p className="font-semibold" style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
@@ -176,7 +176,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
         className="flex-shrink-0 overflow-y-auto py-3"
         style={{
           width: '33%',
-          background: 'linear-gradient(180deg, var(--color-bg) 0%, rgba(13, 27, 34, 0.95) 100%)',
+          background: 'linear-gradient(180deg, var(--color-bg) 0%, rgba(247, 244, 241, 0.95) 100%)',
           borderRight: '1px solid var(--color-divider)',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -195,7 +195,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
               className="w-full text-left px-3.5 py-3 transition-all relative"
               style={{
                 background: isActive
-                  ? 'linear-gradient(90deg, rgba(217, 167, 101, 0.12) 0%, transparent 100%)'
+                  ? 'linear-gradient(90deg, rgba(232, 102, 60, 0.08) 0%, transparent 100%)'
                   : 'transparent',
               }}
             >
@@ -205,8 +205,8 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full"
                   style={{
                     height: '60%',
-                    background: 'linear-gradient(180deg, var(--color-accent-gold), rgba(217, 167, 101, 0.4))',
-                    boxShadow: '0 0 6px rgba(217, 167, 101, 0.3)',
+                    background: 'linear-gradient(180deg, var(--color-primary), rgba(232, 102, 60, 0.4))',
+                    boxShadow: '0 0 6px rgba(232, 102, 60, 0.3)',
                   }}
                 />
               )}
@@ -214,7 +214,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
                 className="block font-semibold leading-tight"
                 style={{
                   fontSize: '14px',
-                  color: isActive ? 'var(--color-accent-gold)' : 'var(--color-text-tertiary)',
+                  color: isActive ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
                   letterSpacing: '-0.01em',
                 }}
               >
@@ -224,7 +224,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
                 className="block mt-0.5 font-medium"
                 style={{
                   fontSize: '11px',
-                  color: isActive ? 'rgba(217, 167, 101, 0.6)' : 'rgba(125, 113, 104, 0.5)',
+                  color: isActive ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)',
                 }}
               >
                 {section.dishes.length} {section.dishes.length === 1 ? 'item' : 'items'}
@@ -296,7 +296,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
                           className="flex-shrink-0 px-1 py-0.5 rounded font-bold"
                           style={{
                             fontSize: '9px',
-                            background: 'rgba(217, 167, 101, 0.15)',
+                            background: 'var(--color-accent-gold-muted, rgba(232, 102, 60, 0.1))',
                             color: 'var(--color-accent-gold)',
                             lineHeight: '1',
                           }}
@@ -309,7 +309,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
                           className="flex-shrink-0 px-1 py-0.5 rounded font-bold"
                           style={{
                             fontSize: '9px',
-                            background: 'rgba(200, 90, 84, 0.15)',
+                            background: 'rgba(232, 102, 60, 0.1)',
                             color: 'var(--color-primary)',
                             lineHeight: '1',
                           }}

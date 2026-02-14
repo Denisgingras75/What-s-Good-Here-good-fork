@@ -84,8 +84,8 @@ export function EditFavoritesSection({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 px-4 py-2 text-white font-medium rounded-xl transition-colors disabled:opacity-50"
-              style={{ background: 'var(--color-primary)' }}
+              className="flex-1 px-4 py-2 font-medium rounded-xl transition-colors disabled:opacity-50"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
             >
               {saving ? 'Saving...' : 'Save'}
             </button>

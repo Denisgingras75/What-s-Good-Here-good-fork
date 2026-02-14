@@ -199,7 +199,7 @@ export function VariantSelector({ variants, currentDishId, onSelect }) {
             }`}
             style={{
               background: isActive ? 'var(--color-primary)' : 'var(--color-surface)',
-              color: isActive ? 'white' : 'var(--color-text-secondary)',
+              color: isActive ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
               borderColor: 'var(--color-divider)',
               border: isActive ? 'none' : '1px solid var(--color-divider)',
               '--tw-ring-color': 'var(--color-primary)',

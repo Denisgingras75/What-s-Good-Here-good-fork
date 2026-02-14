@@ -65,7 +65,7 @@ export function VotedDishCard({
       style={{
         background: 'var(--color-card)',
         borderColor: 'var(--color-divider)',
-        boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(217, 167, 101, 0.04)',
+        boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)',
       }}
     >
       <div className="flex">
@@ -110,7 +110,7 @@ export function VotedDishCard({
                   <span className="text-xs text-[color:var(--color-text-tertiary)]">
                     · avg {dish.community_avg.toFixed(1)}
                     {ownRatingDiff !== 0 && (
-                      <span className={ownRatingDiff > 0 ? 'text-emerald-500' : 'text-red-400'}>
+                      <span style={{ color: ownRatingDiff > 0 ? 'var(--color-emerald)' : 'var(--color-red)' }}>
                         {' '}({ownRatingDiff > 0 ? '+' : ''}{ownRatingDiff.toFixed(1)})
                       </span>
                     )}

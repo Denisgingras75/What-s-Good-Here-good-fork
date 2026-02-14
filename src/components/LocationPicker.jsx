@@ -79,7 +79,7 @@ export function RadiusSheet({ isOpen, onClose, radius, onRadiusChange }) {
                       : 'var(--color-divider)'
                   }}
                 >
-                  <span className={radius === r ? 'text-white' : ''}>
+                  <span style={radius === r ? { color: 'var(--color-text-on-primary)' } : undefined}>
                     {r <= 5 ? '🚶' : r <= 10 ? '🚗' : '🛣️'}
                   </span>
                 </div>

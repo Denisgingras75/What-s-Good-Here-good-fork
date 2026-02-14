@@ -370,7 +370,7 @@ export function Dish() {
           <button
             onClick={() => navigate('/')}
             className="mt-4 px-4 py-2 text-sm font-medium rounded-lg"
-            style={{ background: 'var(--color-primary)', color: 'white' }}
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             Go Home
           </button>
@@ -471,7 +471,7 @@ export function Dish() {
             {/* Rating badge */}
             {isRanked && (
               <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
-                <span className="text-lg font-bold" style={{ color: dish.avg_rating ? getRatingColor(dish.avg_rating) : 'white' }}>
+                <span className="text-lg font-bold" style={{ color: dish.avg_rating ? getRatingColor(dish.avg_rating) : 'var(--color-text-on-primary)' }}>
                   {dish.avg_rating || `${dish.percent_worth_it}%`}
                 </span>
                 <span className="text-xs text-white/80 ml-1">
@@ -572,8 +572,8 @@ export function Dish() {
                       >
                         {/* Avatar */}
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                          style={{ background: 'var(--color-primary)' }}
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
+                          style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
                         >
                           {vote.display_name?.charAt(0).toUpperCase() || '?'}
                         </div>
@@ -699,8 +699,8 @@ export function Dish() {
                         >
                           {/* Avatar */}
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                            style={{ background: 'var(--color-primary)' }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
                           >
                             {review.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
                           </div>
