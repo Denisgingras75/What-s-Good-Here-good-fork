@@ -57,7 +57,7 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
             {imgSrc ? (
               <img src={imgSrc} alt={dish.name} loading="lazy" className="w-full h-full object-cover" />
             ) : (
-              <DishPlaceholder restaurantName={dish.restaurants?.name} restaurantTown={dish.restaurants?.town} showCTA />
+              <DishPlaceholder restaurantName={dish.restaurants?.name} restaurantTown={dish.restaurants?.town} category={dish.category} showCTA />
             )}
           </div>
 

@@ -462,7 +462,7 @@ export function Dish() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <DishPlaceholder restaurantName={dish.restaurant_name} restaurantTown={dish.restaurant_town} showCTA />
+              <DishPlaceholder restaurantName={dish.restaurant_name} restaurantTown={dish.restaurant_town} category={dish.category} showCTA />
             )}
 
             {/* Gradient overlay */}

@@ -45,7 +45,7 @@ function getInitials(name) {
 /**
  * Get color/style based on restaurant's town
  */
-function getTownStyle(town) {
+export function getTownStyle(town) {
   if (!town) return { bg: DEFAULT_COLOR.bg, text: DEFAULT_COLOR.text, isGradient: false }
 
   // Special handling for Aquinnah - use cliff gradient

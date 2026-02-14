@@ -86,7 +86,7 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
             onLoad={() => setImageLoaded(true)}
           />
         ) : (
-          <DishPlaceholder restaurantName={restaurant_name} restaurantTown={restaurant_town} showCTA />
+          <DishPlaceholder restaurantName={restaurant_name} restaurantTown={restaurant_town} category={dish.category} showCTA />
         )}
 
         {/* Gradient overlay */}

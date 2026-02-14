@@ -63,7 +63,7 @@ export const DishCard = memo(function DishCard({ dish, onVote, onLoginRequired, 
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
           />
         ) : (
-          <DishPlaceholder restaurantName={restaurant_name} restaurantTown={restaurant_town} showCTA />
+          <DishPlaceholder restaurantName={restaurant_name} restaurantTown={restaurant_town} category={category} showCTA />
         )}
 
         {/* Subtle gradient for badge contrast */}

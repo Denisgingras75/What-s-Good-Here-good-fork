@@ -1,17 +1,34 @@
-import { RestaurantAvatar } from './RestaurantAvatar'
+import { RestaurantAvatar, getTownStyle } from './RestaurantAvatar'
+import { getCategoryNeonImage } from '../constants/categories'
 
 /**
  * Placeholder for dish cards without a user photo.
- * Shows full-bleed RestaurantAvatar with optional photo CTA.
+ * Shows full-bleed RestaurantAvatar with optional category neon icon overlay and photo CTA.
  */
-export function DishPlaceholder({ restaurantName, restaurantTown, showCTA = false }) {
+export function DishPlaceholder({ restaurantName, restaurantTown, category, showCTA = false }) {
+  const neonIcon = getCategoryNeonImage(category)
+  const townStyle = getTownStyle(restaurantTown)
+
   return (
     <>
-      <RestaurantAvatar
-        name={restaurantName}
-        town={restaurantTown}
-        fill
-      />
+      {neonIcon ? (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ background: townStyle.bg }}
+        >
+          <img
+            src={neonIcon}
+            alt=""
+            className="w-4/5 h-4/5 object-contain opacity-40"
+          />
+        </div>
+      ) : (
+        <RestaurantAvatar
+          name={restaurantName}
+          town={restaurantTown}
+          fill
+        />
+      )}
       {showCTA && (
         <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm">
           <span className="text-xs font-medium text-white/90 flex items-center gap-1.5">
