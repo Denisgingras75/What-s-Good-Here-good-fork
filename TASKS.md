@@ -353,3 +353,51 @@ If you cover the logo, nothing identifies this as What's Good Here. No visual or
 **Status:** Ready for brainstorming session
 
 **Files:** `src/pages/Home.jsx`, `src/components/home/SearchHero.jsx`, `src/components/home/Top10Compact.jsx`
+
+---
+
+## T27: Add OG image for social sharing previews
+
+**Why:** `index.html` references `/og-image.png` but the file doesn't exist. When someone shares the app link on Instagram, iMessage, Slack, or Twitter — no preview image shows up. This makes the app look broken or unfinished on every share.
+
+**Acceptance criteria:**
+- `public/og-image.png` exists (1200x630px)
+- Image shows app branding (logo, tagline, dark background matching Island Depths theme)
+- Sharing the app URL on iMessage/Instagram/Twitter shows the image in the preview card
+- `index.html` og:image and twitter:image URLs resolve correctly
+
+**Status:** Ready — needs design asset created then dropped into `public/`
+
+**Files:** `public/og-image.png`, `index.html`
+
+---
+
+## T28: Add dynamic meta tags for dish/restaurant sharing
+
+**Why:** Every shared link shows the same generic preview: "What's Good Here — Find the best dishes..." When someone shares a specific dish like `/dish/abc123`, the preview should say "Lobster Roll at Larsen's Fish Market" with the dish photo. Without this, shared links have no context and get fewer clicks.
+
+**Acceptance criteria:**
+- Install `react-helmet-async`
+- Dish detail page sets og:title to `{dish_name} at {restaurant_name}`, og:description to rating/votes summary, og:image to dish photo
+- Restaurant page sets og:title to restaurant name
+- Fallback to default meta tags on pages without dynamic data
+- `npm run build` passes
+
+**Status:** Ready
+
+**Files:** `src/pages/Dish.jsx`, `src/pages/Restaurants.jsx`, `src/App.jsx`, `index.html`
+
+---
+
+## T29: Add apple-touch-icon for iOS home screen
+
+**Why:** When someone adds the app to their iPhone home screen, iOS looks for an `apple-touch-icon`. Without one, it takes a screenshot of the page instead of showing the app icon. Makes the home screen shortcut look unprofessional.
+
+**Acceptance criteria:**
+- `<link rel="apple-touch-icon" href="/wgh-icon.png">` added to `index.html` (or a dedicated 180x180px icon)
+- Icon displays correctly when adding to iOS home screen
+- Icon matches app branding
+
+**Status:** Ready
+
+**Files:** `index.html`, potentially `public/apple-touch-icon.png`
