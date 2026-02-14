@@ -35,7 +35,7 @@ export function Top10Compact({
       >
         {categoryLabel
           ? (town ? `The best ${categoryLabel} in ${town}` : `The best ${categoryLabel} on the Vineyard`)
-          : (town ? `The best dishes in ${town}` : 'The best dishes on the Vineyard')
+          : 'People have spoken'
         }
       </p>
 
