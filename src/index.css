@@ -29,57 +29,60 @@
 }
 
 /* ===========================
-   What's Good Here — Island Depths Theme
-   Dark mode with food psychology + ocean island vibes
+   What's Good Here — Appetite Theme
+   Light mode with food psychology colors (red + orange + yellow)
    =========================== */
 :root {
-  /* Primary: Deep Rust/Terracotta - appetite trigger, premium feel */
-  --color-primary: #C85A54;
-  --color-primary-muted: rgba(200, 90, 84, 0.15);
-  --color-primary-glow: rgba(200, 90, 84, 0.3);
+  /* Primary: Orange-Red - appetite trigger, energy, action */
+  --color-primary: #E8663C;
+  --color-primary-muted: rgba(232, 102, 60, 0.10);
+  --color-primary-glow: rgba(232, 102, 60, 0.20);
 
-  /* Rating: Muted natural green - softer, less techy */
-  --color-rating: #6BB384;
+  /* Rating: Bright green for light backgrounds */
+  --color-rating: #16A34A;
 
-  /* Secondary: Warm Gold - links, secondary buttons, accents */
-  --color-accent-gold: #D9A765;
-  --color-accent-gold-muted: rgba(217, 167, 101, 0.15);
-  --color-link-secondary: #D9A765;
+  /* Secondary: Warm Yellow - happiness, warmth, appetite */
+  --color-accent-gold: #E9A115;
+  --color-accent-gold-muted: rgba(233, 161, 21, 0.12);
+  --color-link-secondary: #E9A115;
+
+  /* Bright yellow for badges, stars, highlights */
+  --color-accent-yellow: #F5B731;
 
   /* Tertiary: Warm Orange - hover states, accent borders */
   --color-accent-orange: #E07856;
 
-  /* Text hierarchy - warm cream primary, warm-tinted grays */
-  --color-text-primary: #F5F1E8;      /* Soft cream */
-  --color-text-secondary: #B8A99A;    /* Warm taupe gray */
-  --color-text-tertiary: #7D7168;     /* Warm brown-gray */
+  /* Text hierarchy - dark text on light backgrounds */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
 
-  /* Surfaces - deep charcoal-navy, ocean depth feel */
-  --color-bg: #0D1B22;                /* Deep charcoal-navy */
-  --color-surface: #0F1F2B;           /* Slightly lighter */
-  --color-surface-elevated: #162B35;
-  --color-divider: rgba(200, 90, 84, 0.10);  /* Rust tint dividers */
+  /* Surfaces - warm stone, light and inviting */
+  --color-bg: #F0ECE8;
+  --color-surface: #F7F4F1;
+  --color-surface-elevated: #FFFFFF;
+  --color-divider: rgba(0, 0, 0, 0.08);
 
-  /* Cards - rich navy-teal, tropical water depth */
-  --color-card: #1A3A42;
-  --color-card-hover: #243A43;
+  /* Cards - white on warm stone */
+  --color-card: #FFFFFF;
+  --color-card-hover: #FFF8F4;
 
-  /* Medal ranks — top 3 in lists */
-  --color-medal-gold: #D9A765;          /* Same as accent-gold */
-  --color-medal-silver: #A8B5BF;        /* Cool slate silver */
-  --color-medal-bronze: #C4855C;        /* Warm copper-bronze */
+  /* Medal ranks - darkened for light bg readability */
+  --color-medal-gold: #B8860B;
+  --color-medal-silver: #6B7280;
+  --color-medal-bronze: #A0522D;
 
   /* Feedback states */
-  --color-danger: #C85A54;            /* Same as primary */
-  --color-success: #6BB384;           /* Muted natural green */
+  --color-danger: #DC2626;
+  --color-success: #16A34A;
 
-  /* "Avoid" action */
-  --color-muted: #6B7680;
+  /* Muted action */
+  --color-muted: #9CA3AF;
 
   /* Text on primary-colored backgrounds (buttons, banners) */
-  --color-text-on-primary: #1A1A1A;
+  --color-text-on-primary: #FFFFFF;
 
-  /* Semantic status colors — success/error/warning variants */
+  /* Semantic status colors */
   --color-emerald: #10B981;
   --color-emerald-light: #22C55E;
   --color-red: #EF4444;
@@ -101,12 +104,12 @@
   --color-tier-community: #3B82F6;
   --color-tier-hidden: #6B7280;
 
-  /* Glow effects */
-  --glow-primary: 0 0 20px rgba(200, 90, 84, 0.25), 0 0 40px rgba(200, 90, 84, 0.1);
-  --glow-gold: 0 0 15px rgba(217, 167, 101, 0.2);
+  /* Glow effects - softer for light theme */
+  --glow-primary: 0 0 20px rgba(232, 102, 60, 0.15), 0 0 40px rgba(232, 102, 60, 0.05);
+  --glow-gold: 0 0 15px rgba(233, 161, 21, 0.15);
 
   /* Focus ring */
-  --focus-ring: 0 0 0 3px rgba(200, 90, 84, 0.25);
+  --focus-ring: 0 0 0 3px rgba(232, 102, 60, 0.25);
 }
 
 @tailwind base;
@@ -157,7 +160,7 @@
   }
 
   .glass-header {
-    background: rgba(13, 27, 34, 0.95);
+    background: rgba(247, 244, 241, 0.95);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
   }
@@ -220,7 +223,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #162B35 0%, #0D1B22 50%, #080F14 100%);
+    background: linear-gradient(145deg, #1E1A19 0%, #111111 50%, #0A0A0A 100%);
     opacity: 1;
     transition: opacity 0.4s ease-out;
   }
