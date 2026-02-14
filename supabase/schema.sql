@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
   is_open BOOLEAN DEFAULT true,
   cuisine TEXT,
   town TEXT,
+  region TEXT NOT NULL DEFAULT 'mv',
   menu_section_order TEXT[] DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
