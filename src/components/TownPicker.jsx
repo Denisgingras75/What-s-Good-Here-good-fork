@@ -48,20 +48,28 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
     )
   }
 
+  const currentTown = MV_TOWNS.find(t => t.value === town)
+
   return (
     <button
       onClick={() => onToggle(true)}
-      className="flex-shrink-0 flex items-center gap-1.5 pl-3 pr-3 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
+      className="flex-shrink-0 flex flex-col items-center gap-1.5 px-2 py-1 transition-all active:scale-[0.97]"
       style={{
-        background: 'var(--color-surface-elevated)',
-        color: 'var(--color-text-secondary)',
+        minWidth: '56px',
+        fontSize: '11px',
+        color: 'var(--color-accent-gold)',
       }}
     >
-      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <span>{currentLabel}</span>
+      <div
+        className="w-12 h-12 rounded-full flex items-center justify-center"
+        style={{ background: 'var(--color-surface-elevated)' }}
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+        </svg>
+      </div>
+      <span className="font-semibold">{currentTown?.label || 'All Island'}</span>
     </button>
   )
 }

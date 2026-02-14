@@ -173,30 +173,34 @@ function CategoryPill({ category, isActive, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
+      className="flex-shrink-0 flex flex-col items-center gap-1.5 px-2 py-1 transition-all active:scale-[0.97]"
       style={{
-        background: isActive ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
-        color: isActive ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
-        border: isActive ? 'none' : '1px solid rgba(232, 102, 60, 0.12)',
+        minWidth: '56px',
+        fontSize: '11px',
+        color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
       }}
     >
-      {imageSrc && !imgError ? (
-        <img
-          src={imageSrc}
-          alt=""
-          className="w-6 h-6 rounded-full object-cover"
-          style={{ opacity: loaded ? 1 : 0 }}
-          onLoad={() => setLoaded(true)}
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
-          style={{ background: 'var(--color-surface)' }}
-        >
-          {category.emoji}
-        </span>
-      )}
-      {category.label}
+      <div
+        className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
+        style={{
+          background: 'var(--color-surface-elevated)',
+          boxShadow: isActive ? '0 0 0 2px var(--color-primary)' : 'none',
+        }}
+      >
+        {imageSrc && !imgError ? (
+          <img
+            src={imageSrc}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ opacity: loaded ? 1 : 0 }}
+            onLoad={() => setLoaded(true)}
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <span className="text-lg">{category.emoji}</span>
+        )}
+      </div>
+      <span className="font-semibold">{category.label}</span>
     </button>
   )
 }
