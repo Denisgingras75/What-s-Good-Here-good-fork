@@ -176,7 +176,7 @@ export function RestaurantMenu({ dishes, loading, error, searchQuery = '', menuS
         className="flex-shrink-0 overflow-y-auto py-3"
         style={{
           width: '33%',
-          background: 'linear-gradient(180deg, var(--color-bg) 0%, rgba(247, 244, 241, 0.95) 100%)',
+          background: 'var(--color-bg)',
           borderRight: '1px solid var(--color-divider)',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
