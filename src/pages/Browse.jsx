@@ -701,16 +701,26 @@ export function Browse() {
                 </button>
               </div>
             ) : (
-              /* Ranked List View - Top 10 with medals for top 3 */
-              <div className="space-y-2">
-                {filteredDishes.slice(0, 10).map((dish, index) => (
-                  <RankedDishRow
-                    key={dish.dish_id}
-                    dish={dish}
-                    rank={index + 1}
-                    sortBy={sortBy}
-                  />
-                ))}
+              /* Ranked List View — matches Top 10 style */
+              <div>
+                {filteredDishes.slice(0, 10).map((dish, index) => {
+                  const rank = index + 1
+                  return (
+                    <div key={dish.dish_id} style={{ marginBottom: rank <= 3 ? '6px' : '0' }}>
+                      <RankedDishRow
+                        dish={dish}
+                        rank={rank}
+                        sortBy={sortBy}
+                      />
+                      {rank === 3 && filteredDishes.length > 3 && (
+                        <div
+                          className="mt-3 mb-2 mx-2"
+                          style={{ borderBottom: '1px solid var(--color-divider)' }}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
 
                 {/* Show more if there are more than 10 */}
                 {filteredDishes.length > 10 && (
@@ -725,7 +735,7 @@ export function Browse() {
                     >
                       Show {filteredDishes.length - 10} more dishes
                     </summary>
-                    <div className="space-y-2 mt-3">
+                    <div className="mt-3">
                       {filteredDishes.slice(10).map((dish, index) => (
                         <RankedDishRow
                           key={dish.dish_id}
