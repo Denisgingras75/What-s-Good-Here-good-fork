@@ -1,6 +1,6 @@
 // Category to image URL mapping - v4.0 SUPABASE STORAGE
 // All images hosted on Supabase storage for reliable loading on all devices/networks
-const SUPABASE_STORAGE = 'https://fzgbxwonitnqmeguqixn.supabase.co/storage/v1/object/public/dish-photos'
+const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/dish-photos`
 
 export const CATEGORY_IMAGES = {
   'burger': `${SUPABASE_STORAGE}/burger.jpg`,
