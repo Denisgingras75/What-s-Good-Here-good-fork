@@ -145,14 +145,6 @@ export function getCategoryNeonImage(id) {
   return CATEGORY_NEON_IMAGES[id.toLowerCase()] || null
 }
 
-// Preload category images for smooth Browse page loading
-export function preloadCategoryImages() {
-  Object.values(CATEGORY_NEON_IMAGES).forEach(src => {
-    const img = new Image()
-    img.src = src
-  })
-}
-
 // Category display info - used for profile stats and tier display
 // Maps category id to emoji and label
 export const CATEGORY_INFO = {
