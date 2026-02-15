@@ -1,7 +1,28 @@
 -- =============================================
 -- Events table + promotion flag for specials
 -- =============================================
--- Run in Supabase SQL Editor
+
+-- 0. Ensure helper functions exist (idempotent)
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM admins WHERE user_id = (select auth.uid())
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
+
+CREATE OR REPLACE FUNCTION is_restaurant_manager(p_restaurant_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM restaurant_managers
+    WHERE user_id = (select auth.uid())
+      AND restaurant_id = p_restaurant_id
+      AND accepted_at IS NOT NULL
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
 
 -- 1. Create events table
 CREATE TABLE IF NOT EXISTS events (
