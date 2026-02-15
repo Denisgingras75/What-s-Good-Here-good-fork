@@ -77,22 +77,22 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
           <path
             d="M0 14 C6 10, 12 18, 18 14 S30 10, 36 14 S48 18, 52 14 L52 28 L0 28 Z"
             fill="#3d8b9e"
-            opacity="0.3"
+            opacity="0.4"
           />
           <path
             d="M0 18 C7 14, 14 22, 20 18 S32 14, 38 18 S50 22, 52 18 L52 28 L0 28 Z"
             fill="#4a9fb3"
-            opacity="0.25"
+            opacity="0.3"
           />
           <path
             d="M0 22 C8 18, 16 26, 24 22 S36 18, 44 22 S52 26, 52 22 L52 28 L0 28 Z"
             fill="#5bb5c7"
-            opacity="0.2"
+            opacity="0.25"
           />
         </svg>
         {/* Location pin — bold filled to match food icon weight */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-4px' }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--color-accent-gold)" opacity="0.6">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--color-accent-gold)" opacity="0.7">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
           </svg>
         </div>

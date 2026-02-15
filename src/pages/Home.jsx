@@ -197,7 +197,7 @@ function CategoryPill({ category, isActive, onClick }) {
             className="w-full h-full object-cover"
             style={{
               opacity: loaded ? 1 : 0,
-              filter: isActive ? 'brightness(1.05) saturate(0.8)' : 'brightness(0.85) saturate(0.65)',
+              filter: isActive ? 'brightness(1.2) saturate(0.8)' : 'brightness(1.0) saturate(0.7)',
               transition: 'filter 0.2s ease',
             }}
             onLoad={() => setLoaded(true)}
