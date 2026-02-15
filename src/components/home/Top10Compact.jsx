@@ -75,7 +75,7 @@ export function Top10Compact({
             letterSpacing: '-0.02em',
           }}
         >
-          {town ? `${town} Best of the Best` : "Martha's Vineyard Best of the Best"}
+          {town ? `${town} Top 10 Right Now` : 'MV Top 10 Right Now'}
         </h3>
       ) : null}
 

@@ -9,37 +9,26 @@ export function SearchHero({ town, loading, categoryScroll }) {
       className="pt-8 pb-5"
       style={{ background: 'var(--color-bg)' }}
     >
-      <div className="mb-5 text-center px-4">
+      <div className="mb-3 text-center px-4">
         <h1
-          className="font-bold mb-1"
+          className="font-bold"
           style={{
             color: 'var(--color-primary)',
             fontSize: '22px',
             letterSpacing: '-0.02em',
+            marginBottom: '6px',
           }}
         >
           What's Good Here
         </h1>
-        {/* Decorative wave underline */}
-        <svg
-          className="mx-auto mb-1"
-          width="150"
-          height="8"
-          viewBox="0 0 150 8"
-          fill="none"
-          style={{ opacity: 0.26 }}
-        >
-          <path
-            d="M0 4 C12 1, 25 7, 37 4 S62 1, 75 4 S100 7, 112 4 S137 1, 150 4"
-            stroke="var(--color-primary)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
         <p
+          className="font-medium"
           style={{
-            color: '#F07A52',
+            color: '#C08B7A',
+            opacity: 0.94,
             fontSize: '13px',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
           }}
         >
           the #1 bite near you
