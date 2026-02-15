@@ -60,8 +60,8 @@ serve(async (req) => {
       })
     }
 
-    // Cap radius at 16100m (~10 miles)
-    const clampedRadius = Math.min(radiusMeters || 16100, 16100)
+    // Cap radius at 40234m (~25 miles) — covers MV + Cape Cod
+    const clampedRadius = Math.min(radiusMeters || 40234, 40234)
 
     // Call Google Places Nearby Search (New) API
     const url = 'https://places.googleapis.com/v1/places:searchNearby'

@@ -3,17 +3,17 @@ import { placesApi } from '../api/placesApi'
 import { logger } from '../utils/logger'
 
 const MILES_TO_METERS = 1609.34
-const MAX_DISCOVERY_RADIUS_MI = 10
+const MAX_DISCOVERY_RADIUS_MI = 25
 
 /**
  * Discover nearby restaurants via Google Places that aren't already in the DB.
  * Only runs when: user is authenticated and location is available.
- * Search radius is capped at 10 miles (Oak Bluffs / Edgartown focus).
+ * Search radius is capped at 25 miles (MV + Cape Cod coverage).
  *
  * @param {Object} params
  * @param {number} params.lat - User latitude
  * @param {number} params.lng - User longitude
- * @param {number} params.radius - Radius in miles (capped at 10)
+ * @param {number} params.radius - Radius in miles (capped at 25)
  * @param {boolean} params.isAuthenticated - Whether user is logged in
  * @param {string[]} params.existingPlaceIds - Google Place IDs already in DB
  */
