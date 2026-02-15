@@ -748,7 +748,7 @@ export function Profile() {
           >
             <div className="text-center mb-7">
               <img
-                src="/logo.png"
+                src="/logo-wordmark.svg"
                 alt="What's Good Here"
                 className="w-40 h-auto mx-auto mb-5"
               />

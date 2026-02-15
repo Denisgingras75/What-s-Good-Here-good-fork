@@ -427,3 +427,44 @@ If you cover the logo, nothing identifies this as What's Good Here. No visual or
 - `src/components/home/RankedDishRow.jsx` (show price/distance for more sort modes)
 - `src/pages/Dish.jsx` (added ValueBadge import, value_percentile to transform, badge in header)
 - `src/pages/RestaurantDetail.jsx` (added specials/events hooks, "Happening Here" section, contact info row)
+
+---
+
+## ~~T29: Sprint 2 — Brand Refresh, Content Safety, Instagram~~ DONE
+
+**Why:** Replace vineyard-specific branding with scalable wordmark. Close content moderation gaps. Add Instagram support.
+
+**What was done:**
+- Created SVG wordmark logos (full, compact WGH, light version)
+- TopBar: swapped MV outline → WGH lettermark
+- WelcomeSplash: swapped logo.png → wordmark SVG
+- SearchHero: gold accent on "Good"
+- `validateUserContent()` in reviewBlocklist.js for all user text
+- Client-side validation in AddDishModal, AddRestaurantModal
+- API-side validation in dishesApi, restaurantsApi, specialsApi, eventsApi
+- Duplicate dish warning in AddDishModal
+- `instagram_url` column in schema.sql
+- Instagram link on RestaurantDetail
+- Manager portal: "Info" tab with editable contact/social fields
+- Deleted old assets: mv-outline.png, logo.png, logo-text-v1.svg, wgh-splash.png
+
+**DB migration required:**
+```sql
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS instagram_url TEXT;
+```
+
+**Files:**
+- `public/logo-wordmark.svg`, `public/logo-wgh.svg`, `public/logo-wordmark-light.svg` (NEW)
+- `src/components/TopBar.jsx` (updated logo)
+- `src/components/WelcomeSplash.jsx` (updated logo)
+- `src/components/home/SearchHero.jsx` (gold "Good")
+- `src/lib/reviewBlocklist.js` (added validateUserContent)
+- `src/api/dishesApi.js`, `restaurantsApi.js`, `specialsApi.js`, `eventsApi.js` (content validation)
+- `src/components/AddDishModal.jsx` (content validation + duplicate warning)
+- `src/components/AddRestaurantModal.jsx` (content validation)
+- `src/pages/RestaurantDetail.jsx` (Instagram link + existingDishes prop)
+- `supabase/schema.sql` (instagram_url column)
+- `src/api/restaurantManagerApi.js` (updateRestaurantInfo + expanded select)
+- `src/components/restaurant-admin/RestaurantInfoEditor.jsx` (NEW)
+- `src/components/restaurant-admin/index.js` (barrel export)
+- `src/pages/ManageRestaurant.jsx` (Info tab)

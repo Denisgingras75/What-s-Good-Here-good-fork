@@ -18,7 +18,7 @@ export function SearchHero({ town, loading, categoryScroll }) {
             letterSpacing: '-0.02em',
           }}
         >
-          What's Good Here
+          What's <span style={{ color: 'var(--color-accent-gold)' }}>Good</span> Here
         </h1>
         <p
           style={{

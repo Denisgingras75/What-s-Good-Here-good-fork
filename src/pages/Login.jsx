@@ -178,7 +178,7 @@ export function Login() {
           <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
             {/* Logo */}
             <img
-              src="/logo.png"
+              src="/logo-wordmark.svg"
               alt="What's Good Here"
               className="w-64 md:w-72 h-auto mb-8"
             />
@@ -270,7 +270,7 @@ export function Login() {
           <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
             {/* Logo */}
             <img
-              src="/logo.png"
+              src="/logo-wordmark.svg"
               alt="What's Good Here"
               className="w-48 h-auto mb-6"
             />

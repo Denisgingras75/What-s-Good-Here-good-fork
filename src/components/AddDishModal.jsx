@@ -3,6 +3,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useAuth } from '../context/AuthContext'
 import { dishesApi } from '../api/dishesApi'
 import { ALL_CATEGORIES } from '../constants/categories'
+import { validateUserContent } from '../lib/reviewBlocklist'
 import { capture } from '../lib/analytics'
 import { logger } from '../utils/logger'
 import { LoginModal } from './Auth/LoginModal'
@@ -11,7 +12,7 @@ import { LoginModal } from './Auth/LoginModal'
  * Modal for adding a dish to a restaurant
  * Auth-gated — shows LoginModal if not logged in
  */
-export function AddDishModal({ isOpen, onClose, restaurantId, restaurantName, onDishCreated }) {
+export function AddDishModal({ isOpen, onClose, restaurantId, restaurantName, onDishCreated, existingDishes = [] }) {
   const { user } = useAuth()
   const containerRef = useFocusTrap(isOpen, onClose)
 
@@ -20,6 +21,7 @@ export function AddDishModal({ isOpen, onClose, restaurantId, restaurantName, on
   const [price, setPrice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const [duplicateWarning, setDuplicateWarning] = useState(null)
 
   // Reset on open
   useEffect(() => {
@@ -28,6 +30,7 @@ export function AddDishModal({ isOpen, onClose, restaurantId, restaurantName, on
       setCategory('')
       setPrice('')
       setError(null)
+      setDuplicateWarning(null)
     }
   }, [isOpen])
 
@@ -54,6 +57,23 @@ export function AddDishModal({ isOpen, onClose, restaurantId, restaurantName, on
     if (!category) {
       setError('Please select a category')
       return
+    }
+
+    // Client-side content validation
+    const contentError = validateUserContent(name.trim(), 'Dish name')
+    if (contentError) {
+      setError(contentError)
+      return
+    }
+
+    // Duplicate dish check (warn but don't block)
+    if (!duplicateWarning && existingDishes.length > 0) {
+      const trimmedName = name.trim().toLowerCase()
+      const duplicate = existingDishes.find(d => d.dish_name?.toLowerCase() === trimmedName || d.name?.toLowerCase() === trimmedName)
+      if (duplicate) {
+        setDuplicateWarning(`A dish named "${duplicate.dish_name || duplicate.name}" already exists here. Add anyway?`)
+        return
+      }
     }
 
     setSubmitting(true)
@@ -134,12 +154,35 @@ export function AddDishModal({ isOpen, onClose, restaurantId, restaurantName, on
             </div>
           )}
 
+          {duplicateWarning && (
+            <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'rgba(217, 167, 101, 0.15)', color: 'var(--color-accent-gold)' }}>
+              {duplicateWarning}
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="submit"
+                  className="px-3 py-1 rounded text-xs font-semibold"
+                  style={{ background: 'var(--color-accent-gold)', color: 'var(--color-bg)' }}
+                >
+                  Add Anyway
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setDuplicateWarning(null); setName('') }}
+                  className="px-3 py-1 rounded text-xs font-semibold"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Dish Name *</label>
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); setDuplicateWarning(null) }}
               placeholder="e.g. Classic Cheeseburger"
               autoFocus
               className="w-full px-4 py-2.5 rounded-lg text-sm"

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { createClassifiedError } from '../utils/errorHandler'
 import { sanitizeSearchQuery } from '../utils/sanitize'
+import { validateUserContent } from '../lib/reviewBlocklist'
 import { logger } from '../utils/logger'
 
 /**
@@ -409,6 +410,10 @@ export const dishesApi = {
    */
   async create({ restaurantId, name, category, price }) {
     try {
+      // Content moderation
+      const contentError = validateUserContent(name, 'Dish name')
+      if (contentError) throw new Error(contentError)
+
       // Check rate limit first
       const { data: rateCheck, error: rateError } = await supabase.rpc('check_dish_create_rate_limit')
       if (rateError) throw createClassifiedError(rateError)

@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { logger } from '../utils/logger'
 import { sanitizeSearchQuery } from '../utils/sanitize'
 import { createClassifiedError } from '../utils/errorHandler'
+import { validateUserContent } from '../lib/reviewBlocklist'
 
 /**
  * Restaurants API - Centralized data fetching for restaurants
@@ -141,8 +142,12 @@ export const restaurantsApi = {
    * @param {Object} params - Restaurant data
    * @returns {Promise<Object>} Created restaurant
    */
-  async create({ name, address, lat, lng, town, cuisine, googlePlaceId, websiteUrl, facebookUrl, phone }) {
+  async create({ name, address, lat, lng, town, cuisine, googlePlaceId, websiteUrl, facebookUrl, instagramUrl, phone }) {
     try {
+      // Content moderation
+      const contentError = validateUserContent(name, 'Restaurant name')
+      if (contentError) throw new Error(contentError)
+
       // Check rate limit first
       const { data: rateCheck, error: rateError } = await supabase.rpc('check_restaurant_create_rate_limit')
       if (rateError) throw createClassifiedError(rateError)
@@ -167,6 +172,7 @@ export const restaurantsApi = {
           google_place_id: googlePlaceId || null,
           website_url: websiteUrl || null,
           facebook_url: facebookUrl || null,
+          instagram_url: instagramUrl || null,
           phone: phone || null,
           created_by: user.id,
           is_open: true,

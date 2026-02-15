@@ -76,6 +76,21 @@ export function containsBlockedContent(text) {
 }
 
 /**
+ * Validate any user-generated text for blocked content.
+ * Returns an error message string if blocked, or null if clean.
+ * @param {string} text - Text to validate
+ * @param {string} fieldName - Human-readable field name for error message
+ * @returns {string|null} Error message or null
+ */
+export function validateUserContent(text, fieldName = 'Content') {
+  if (!text?.trim()) return null;
+  if (containsBlockedContent(text)) {
+    return `${fieldName} contains inappropriate content. Please revise.`;
+  }
+  return null;
+}
+
+/**
  * Escape special regex characters in a string
  */
 function escapeRegex(string) {

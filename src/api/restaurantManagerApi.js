@@ -20,7 +20,11 @@ export const restaurantManagerApi = {
           id,
           name,
           address,
-          town
+          town,
+          phone,
+          website_url,
+          facebook_url,
+          instagram_url
         )
       `)
       .eq('user_id', user.id)
@@ -153,6 +157,34 @@ export const restaurantManagerApi = {
 
     if (error) {
       logger.error('Error accepting invite:', error)
+      throw createClassifiedError(error)
+    }
+
+    return data
+  },
+
+  /**
+   * Update restaurant contact/social info (manager)
+   * @param {string} restaurantId
+   * @param {Object} updates - { phone, website_url, facebook_url, instagram_url }
+   * @returns {Promise<Object>}
+   */
+  async updateRestaurantInfo(restaurantId, updates) {
+    const allowed = {}
+    if (updates.phone !== undefined) allowed.phone = updates.phone?.trim() || null
+    if (updates.website_url !== undefined) allowed.website_url = updates.website_url?.trim() || null
+    if (updates.facebook_url !== undefined) allowed.facebook_url = updates.facebook_url?.trim() || null
+    if (updates.instagram_url !== undefined) allowed.instagram_url = updates.instagram_url?.trim() || null
+
+    const { data, error } = await supabase
+      .from('restaurants')
+      .update(allowed)
+      .eq('id', restaurantId)
+      .select('id, name, phone, website_url, facebook_url, instagram_url')
+      .single()
+
+    if (error) {
+      logger.error('Error updating restaurant info:', error)
       throw createClassifiedError(error)
     }
 

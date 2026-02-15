@@ -8,6 +8,7 @@ import { restaurantsApi } from '../api/restaurantsApi'
 import { dishesApi } from '../api/dishesApi'
 import { placesApi } from '../api/placesApi'
 import { ALL_CATEGORIES } from '../constants/categories'
+import { validateUserContent } from '../lib/reviewBlocklist'
 import { capture } from '../lib/analytics'
 import { logger } from '../utils/logger'
 import { LoginModal } from './Auth/LoginModal'
@@ -143,6 +144,12 @@ export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
   const handleDetailsNext = () => {
     if (!name.trim()) {
       setError('Restaurant name is required')
+      return
+    }
+    // Content validation
+    const contentError = validateUserContent(name.trim(), 'Restaurant name')
+    if (contentError) {
+      setError(contentError)
       return
     }
     if (!address.trim()) {

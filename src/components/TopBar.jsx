@@ -1,7 +1,7 @@
 import { NotificationBell } from './NotificationBell'
 
 /**
- * TopBar - Brand anchor with MV island silhouette and notification bell
+ * TopBar - Brand anchor with WGH lettermark and notification bell
  */
 export function TopBar() {
   return (
@@ -10,12 +10,12 @@ export function TopBar() {
         {/* Spacer for symmetry */}
         <div style={{ width: '28px' }} />
 
-        {/* Martha's Vineyard island silhouette — centered */}
+        {/* WGH lettermark — centered */}
         <img
-          src="/mv-outline.png"
-          alt="Martha's Vineyard"
+          src="/logo-wgh.svg"
+          alt="What's Good Here"
           className="top-bar-icon"
-          style={{ height: '28px', width: 'auto', opacity: 0.9 }}
+          style={{ height: '22px', width: 'auto', opacity: 0.9 }}
         />
 
         {/* Notification Bell */}

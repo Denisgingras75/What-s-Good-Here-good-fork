@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useRestaurantManager } from '../hooks/useRestaurantManager'
 import { restaurantManagerApi } from '../api/restaurantManagerApi'
 import { logger } from '../utils/logger'
-import { SpecialsManager, DishesManager, EventsManager } from '../components/restaurant-admin'
+import { SpecialsManager, DishesManager, EventsManager, RestaurantInfoEditor } from '../components/restaurant-admin'
 
 export function ManageRestaurant() {
   const navigate = useNavigate()
@@ -102,6 +102,17 @@ export function ManageRestaurant() {
       setMessage({ type: 'success', text: 'Dish updated!' })
     } catch (error) {
       logger.error('Error updating dish:', error)
+      setMessage({ type: 'error', text: `Failed to update: ${error.message}` })
+    }
+  }
+
+  // Restaurant info handler
+  async function handleUpdateInfo(updates) {
+    try {
+      await restaurantManagerApi.updateRestaurantInfo(restaurant.id, updates)
+      setMessage({ type: 'success', text: 'Restaurant info updated!' })
+    } catch (error) {
+      logger.error('Error updating restaurant info:', error)
       setMessage({ type: 'error', text: `Failed to update: ${error.message}` })
     }
   }
@@ -219,7 +230,7 @@ export function ManageRestaurant() {
       {/* Tabs */}
       <div className="px-4 pt-4">
         <div className="flex gap-2 mb-4">
-          {['specials', 'events', 'menu'].map((tab) => (
+          {['specials', 'events', 'menu', 'info'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -229,7 +240,7 @@ export function ManageRestaurant() {
                 : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }
               }
             >
-              {tab === 'specials' ? 'Specials' : tab === 'events' ? 'Events' : 'Menu'}
+              {tab === 'specials' ? 'Specials' : tab === 'events' ? 'Events' : tab === 'menu' ? 'Menu' : 'Info'}
             </button>
           ))}
         </div>
@@ -259,12 +270,17 @@ export function ManageRestaurant() {
             onUpdate={handleUpdateEvent}
             onDeactivate={handleDeactivateEvent}
           />
-        ) : (
+        ) : activeTab === 'menu' ? (
           <DishesManager
             restaurantId={restaurant.id}
             dishes={dishes}
             onAdd={handleAddDish}
             onUpdate={handleUpdateDish}
+          />
+        ) : (
+          <RestaurantInfoEditor
+            restaurant={restaurant}
+            onUpdate={handleUpdateInfo}
           />
         )}
       </div>

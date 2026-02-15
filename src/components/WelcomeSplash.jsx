@@ -73,9 +73,9 @@ export function WelcomeSplash({ onComplete }) {
         }}
       >
         <img
-          src="/logo.png"
+          src="/logo-wordmark.svg"
           alt="What's Good Here"
-          className="w-[336px] md:w-[432px] lg:w-[504px] h-auto"
+          className="w-[280px] md:w-[360px] h-auto"
           draggable={false}
           onError={(e) => logger.error('Splash image failed to load:', e)}
         />

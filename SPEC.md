@@ -22,7 +22,7 @@ Evidence: `supabase/schema.sql:24-275`
 
 | Table | PK | Key Columns | Relationships | Constraints | Status |
 |---|---|---|---|---|---|
-| **restaurants** | `id` UUID | name, address, lat/lng, is_open, cuisine, town, menu_section_order[] | — | — | **VERIFIED** |
+| **restaurants** | `id` UUID | name, address, lat/lng, is_open, cuisine, town, menu_section_order[], website_url, facebook_url, instagram_url, phone | — | — | **VERIFIED** |
 | **dishes** | `id` UUID | name, category, menu_section, price, avg_rating, total_votes, consensus_*, value_score, parent_dish_id, tags[] | FK → restaurants; self-ref parent_dish_id (variants) | — | **VERIFIED** |
 | **votes** | `id` UUID | dish_id, user_id, would_order_again (bool), rating_10 (decimal), review_text, vote_position, category_snapshot | FK → dishes, auth.users; UNIQUE(dish_id, user_id) | review_text max 200 chars | **VERIFIED** |
 | **profiles** | `id` UUID = auth.users(id) | display_name, has_onboarded, preferred_categories[], follower_count, following_count | PK references auth.users | unique lowercase display_name | **VERIFIED** |
@@ -492,3 +492,31 @@ All API files follow:
 5. ~~**Pending vote storage key mismatch**~~ — **FIXED** (T04). CLAUDE.md now lists the correct key.
 
 6. ~~**Production RLS may have duplicate policies**~~ — **FIXED** (T02). Migration created to drop 16 duplicate policies. See `supabase/migrations/cleanup_rls_policies.sql`.
+
+---
+
+## Sprint 2 Changes (2026-02-15)
+
+### Brand Refresh
+- New text-only wordmark logos: `logo-wordmark.svg`, `logo-wgh.svg`, `logo-wordmark-light.svg`
+- TopBar uses WGH lettermark (replaces MV island outline)
+- WelcomeSplash uses full wordmark (replaces old logo.png)
+- SearchHero "Good" has gold accent color
+- Old assets removed: mv-outline.png, logo.png, logo-text-v1.svg, wgh-splash.png
+
+### Content Filtering
+- `validateUserContent()` added to `src/lib/reviewBlocklist.js` — reusable validator for all user text
+- Client-side validation in AddDishModal, AddRestaurantModal
+- API-side validation (defense in depth) in dishesApi, restaurantsApi, specialsApi, eventsApi
+- Duplicate dish warning in AddDishModal (warns but doesn't block)
+
+### Instagram Support
+- `instagram_url` column added to restaurants table in schema.sql
+- Instagram link shown on RestaurantDetail page
+- Manager portal: new "Info" tab with editable contact/social fields
+- `restaurantManagerApi.updateRestaurantInfo()` method added
+
+### DB Migration Required
+```sql
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS instagram_url TEXT;
+```

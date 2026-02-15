@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { logger } from '../utils/logger'
 import { createClassifiedError } from '../utils/errorHandler'
+import { validateUserContent } from '../lib/reviewBlocklist'
 
 export const eventsApi = {
   /**
@@ -66,6 +67,12 @@ export const eventsApi = {
    * Create a new event
    */
   async create({ restaurantId, eventName, description, eventDate, startTime, endTime, eventType, recurringPattern, recurringDayOfWeek }) {
+    // Content moderation
+    const nameError = validateUserContent(eventName, 'Event name')
+    if (nameError) throw new Error(nameError)
+    const descError = validateUserContent(description, 'Description')
+    if (descError) throw new Error(descError)
+
     const { data: { user } } = await supabase.auth.getUser()
 
     const { data, error } = await supabase
