@@ -25,8 +25,8 @@ export function SearchHero({ town, loading, categoryScroll }) {
         </h1>
         <p
           style={{
-            color: '#F0D9B5',
-            opacity: 0.6,
+            color: 'var(--color-text-secondary)',
+            opacity: 0.7,
             fontSize: '12.5px',
             fontWeight: 500,
             letterSpacing: '0.08em',
