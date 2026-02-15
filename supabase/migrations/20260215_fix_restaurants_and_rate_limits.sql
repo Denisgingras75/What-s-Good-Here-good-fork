@@ -75,10 +75,10 @@ GRANT EXECUTE ON FUNCTION check_and_record_rate_limit TO authenticated;
 -- =============================================
 -- Note: This may fail if pg_cron is not enabled. That's OK - it just means
 -- old rate limit records won't auto-cleanup. They won't affect functionality.
-DO $$
+DO $outer$
 BEGIN
-  PERFORM cron.schedule('cleanup-old-rate-limits', '15 * * * *', $$DELETE FROM rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'$$);
+  PERFORM cron.schedule('cleanup-old-rate-limits', '15 * * * *', 'DELETE FROM rate_limits WHERE created_at < NOW() - INTERVAL ''1 hour''');
 EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'pg_cron not available - skipping rate limit cleanup job';
 END;
-$$;
+$outer$;
