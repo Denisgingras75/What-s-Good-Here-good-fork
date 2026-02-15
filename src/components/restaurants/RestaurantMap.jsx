@@ -129,20 +129,20 @@ export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant })
                         {restaurant.name}
                       </div>
                       {restaurant.cuisine && (
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '2px' }}>
                           {restaurant.cuisine}
                         </div>
                       )}
-                      <div style={{ fontSize: '12px', color: '#888' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                         {dishCount} {dishCount === 1 ? 'dish' : 'dishes'}
                         {distanceMiles != null && ` \u00b7 ${distanceMiles} mi`}
                       </div>
                       {!isOpen && (
-                        <div style={{ fontSize: '11px', color: '#C85A54', marginTop: '2px', fontWeight: 600 }}>
+                        <div style={{ fontSize: '11px', color: 'var(--color-primary)', marginTop: '2px', fontWeight: 600 }}>
                           Closed for Season
                         </div>
                       )}
-                      <div style={{ fontSize: '11px', color: '#4A90D9', marginTop: '4px', fontWeight: 500 }}>
+                      <div style={{ fontSize: '11px', color: 'var(--color-accent-gold)', marginTop: '4px', fontWeight: 500 }}>
                         View dishes &rarr;
                       </div>
                     </button>

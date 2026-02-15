@@ -167,6 +167,26 @@ export function Home() {
         ) : (
           <EmptyState onBrowse={() => navigate('/browse')} />
         )}
+
+        {/* Browse all restaurants link */}
+        {!loading && !error && top10Dishes.length > 0 && (
+          <div className="max-w-lg mx-auto mt-4 text-center">
+            <button
+              onClick={() => navigate('/restaurants')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
+              style={{
+                color: 'var(--color-accent-gold)',
+                background: 'rgba(217, 167, 101, 0.08)',
+                border: '1px solid rgba(217, 167, 101, 0.15)',
+              }}
+            >
+              Browse all restaurants
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        )}
       </section>
 
       <RadiusSheet
