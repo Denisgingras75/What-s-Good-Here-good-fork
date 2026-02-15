@@ -362,3 +362,28 @@ If you cover the logo, nothing identifies this as What's Good Here. No visual or
 **Status:** Ready for brainstorming session
 
 **Files:** `src/pages/Home.jsx`, `src/components/home/SearchHero.jsx`, `src/components/home/Top10Compact.jsx`
+
+---
+
+## ~~T27: Local Hub — Events, Specials & Automated Scraping~~ DONE
+
+**Why:** Monetization beyond the ad-free dish-ranking core. The Discover page becomes a "Local Hub" surfacing Daily Specials, Live Music, and Events. An automated agent scrapes restaurant websites/Facebook daily to populate the feed.
+
+**What was built:**
+- **Database:** `events` table with RLS, indexes; `is_promoted` + `source` columns on specials
+- **API:** `eventsApi.js` — getActiveEvents, getByRestaurant, create, update, deactivate
+- **Hooks:** `useEvents.js` — useEvents(filters), useRestaurantEvents(id)
+- **Components:** `EventCard.jsx` (display card), `EventsManager.jsx` (CRUD form)
+- **Discover page:** Rewritten as "Local Hub" with filter chips, mixed specials+events feed, promoted items
+- **Manager portal:** Events tab added (3rd tab alongside Specials, Menu)
+- **Scraper:** `restaurant-scraper` + `scraper-dispatcher` edge functions using Claude Haiku
+- **pg_cron:** Daily 6 AM EST dispatch (commented template in migration, to enable after deploy)
+
+**Files:**
+- `supabase/migrations/20260215_events_and_promotions.sql`
+- `supabase/schema.sql` (events table, indexes, RLS)
+- `src/api/eventsApi.js`, `src/hooks/useEvents.js`, `src/constants/eventTypes.js`
+- `src/components/EventCard.jsx`, `src/components/restaurant-admin/EventsManager.jsx`
+- `src/pages/Discover.jsx`, `src/pages/ManageRestaurant.jsx`
+- `src/api/restaurantManagerApi.js`, `src/api/index.js`
+- `supabase/functions/restaurant-scraper/index.ts`, `supabase/functions/scraper-dispatcher/index.ts`

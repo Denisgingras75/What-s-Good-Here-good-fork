@@ -5,7 +5,7 @@ import { RestaurantAvatar } from './RestaurantAvatar'
 /**
  * Card displaying a restaurant special/deal
  */
-export const SpecialCard = memo(function SpecialCard({ special }) {
+export const SpecialCard = memo(function SpecialCard({ special, promoted }) {
   const navigate = useNavigate()
   const {
     deal_name,
@@ -27,6 +27,7 @@ export const SpecialCard = memo(function SpecialCard({ special }) {
       style={{
         background: 'var(--color-card)',
         border: '1px solid var(--color-divider)',
+        borderLeft: promoted ? '3px solid var(--color-accent-gold)' : '1px solid var(--color-divider)',
       }}
     >
       <div className="flex gap-3">
@@ -39,6 +40,16 @@ export const SpecialCard = memo(function SpecialCard({ special }) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
+          {/* Featured badge */}
+          {promoted && (
+            <span
+              className="text-xs font-medium mb-1 inline-block"
+              style={{ color: 'var(--color-accent-gold)' }}
+            >
+              Featured
+            </span>
+          )}
+
           {/* Deal Name */}
           <h3 className="font-bold text-base" style={{ color: 'var(--color-text-primary)' }}>
             {deal_name}

@@ -18,7 +18,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
 -- =============================================
--- 1. TABLES (17 tables in dependency order)
+-- 1. TABLES (18 tables in dependency order)
 -- =============================================
 
 -- 1a. restaurants
@@ -216,6 +216,8 @@ CREATE TABLE IF NOT EXISTS specials (
   description TEXT,
   price DECIMAL(10, 2),
   is_active BOOLEAN DEFAULT true,
+  is_promoted BOOLEAN DEFAULT false,
+  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'auto_scrape')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   expires_at TIMESTAMPTZ,
   created_by UUID REFERENCES auth.users(id)
@@ -254,7 +256,26 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 
 
--- 1s. category_median_prices (view)
+-- 1s. events
+CREATE TABLE IF NOT EXISTS events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  event_name TEXT NOT NULL,
+  description TEXT,
+  event_date DATE NOT NULL,
+  start_time TIME,
+  end_time TIME,
+  event_type TEXT NOT NULL CHECK (event_type IN ('live_music', 'trivia', 'comedy', 'karaoke', 'open_mic', 'other')),
+  recurring_pattern TEXT CHECK (recurring_pattern IN ('weekly', 'monthly') OR recurring_pattern IS NULL),
+  recurring_day_of_week INT CHECK (recurring_day_of_week BETWEEN 0 AND 6 OR recurring_day_of_week IS NULL),
+  is_active BOOLEAN DEFAULT true,
+  is_promoted BOOLEAN DEFAULT false,
+  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'auto_scrape')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  created_by UUID REFERENCES auth.users(id)
+);
+
+-- 1t. category_median_prices (view)
 -- SECURITY INVOKER ensures this runs with the querying user's permissions, not the creator's
 CREATE OR REPLACE VIEW category_median_prices
 WITH (security_invoker = true) AS
@@ -324,6 +345,11 @@ CREATE INDEX IF NOT EXISTS idx_user_badges_unlocked ON user_badges(unlocked_at D
 -- specials
 CREATE INDEX IF NOT EXISTS idx_specials_active ON specials(is_active, restaurant_id);
 CREATE INDEX IF NOT EXISTS idx_specials_created_by ON specials(created_by);
+
+-- events
+CREATE INDEX IF NOT EXISTS idx_events_restaurant ON events(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_events_active_upcoming ON events(event_date, is_promoted DESC) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type) WHERE is_active = true;
 
 -- restaurant_managers
 CREATE INDEX IF NOT EXISTS idx_restaurant_managers_user ON restaurant_managers(user_id);
@@ -435,6 +461,13 @@ CREATE POLICY "Read specials" ON specials FOR SELECT USING (is_active = true OR 
 CREATE POLICY "Admin or manager insert specials" ON specials FOR INSERT WITH CHECK (is_admin() OR is_restaurant_manager(restaurant_id));
 CREATE POLICY "Admin or manager update specials" ON specials FOR UPDATE USING (is_admin() OR is_restaurant_manager(restaurant_id));
 CREATE POLICY "Admin or manager delete specials" ON specials FOR DELETE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+
+-- events: conditional read, admin + manager write
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Read active events" ON events FOR SELECT USING (is_active = true OR is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager insert events" ON events FOR INSERT WITH CHECK (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager update events" ON events FOR UPDATE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager delete events" ON events FOR DELETE USING (is_admin() OR is_restaurant_manager(restaurant_id));
 
 -- restaurant_managers: admins + own rows
 CREATE POLICY "Admins read all managers" ON restaurant_managers FOR SELECT USING (is_admin());

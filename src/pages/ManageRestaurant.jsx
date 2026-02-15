@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useRestaurantManager } from '../hooks/useRestaurantManager'
 import { restaurantManagerApi } from '../api/restaurantManagerApi'
 import { logger } from '../utils/logger'
-import { SpecialsManager, DishesManager } from '../components/restaurant-admin'
+import { SpecialsManager, DishesManager, EventsManager } from '../components/restaurant-admin'
 
 export function ManageRestaurant() {
   const navigate = useNavigate()
@@ -14,6 +14,7 @@ export function ManageRestaurant() {
   const [activeTab, setActiveTab] = useState('specials')
   const [specials, setSpecials] = useState([])
   const [dishes, setDishes] = useState([])
+  const [events, setEvents] = useState([])
   const [dataLoading, setDataLoading] = useState(true)
   const [message, setMessage] = useState(null)
 
@@ -26,13 +27,15 @@ export function ManageRestaurant() {
     async function fetchData() {
       setDataLoading(true)
       try {
-        const [specialsData, dishesData] = await Promise.all([
+        const [specialsData, dishesData, eventsData] = await Promise.all([
           restaurantManagerApi.getRestaurantSpecials(restaurant.id),
           restaurantManagerApi.getRestaurantDishes(restaurant.id),
+          restaurantManagerApi.getRestaurantEvents(restaurant.id),
         ])
         if (cancelled) return
         setSpecials(specialsData)
         setDishes(dishesData)
+        setEvents(eventsData)
       } catch (error) {
         if (cancelled) return
         logger.error('Error fetching restaurant data:', error)
@@ -100,6 +103,40 @@ export function ManageRestaurant() {
     } catch (error) {
       logger.error('Error updating dish:', error)
       setMessage({ type: 'error', text: `Failed to update: ${error.message}` })
+    }
+  }
+
+  // Events handlers
+  async function handleAddEvent(params) {
+    try {
+      const newEvent = await restaurantManagerApi.createEvent(params)
+      setEvents(prev => [newEvent, ...prev])
+      setMessage({ type: 'success', text: 'Event added!' })
+    } catch (error) {
+      logger.error('Error adding event:', error)
+      setMessage({ type: 'error', text: `Failed to add event: ${error.message}` })
+    }
+  }
+
+  async function handleUpdateEvent(id, updates) {
+    try {
+      const updated = await restaurantManagerApi.updateEvent(id, updates)
+      setEvents(prev => prev.map(e => e.id === id ? updated : e))
+      setMessage({ type: 'success', text: 'Event updated!' })
+    } catch (error) {
+      logger.error('Error updating event:', error)
+      setMessage({ type: 'error', text: `Failed to update: ${error.message}` })
+    }
+  }
+
+  async function handleDeactivateEvent(id) {
+    try {
+      const updated = await restaurantManagerApi.deactivateEvent(id)
+      setEvents(prev => prev.map(e => e.id === id ? updated : e))
+      setMessage({ type: 'success', text: 'Event deactivated' })
+    } catch (error) {
+      logger.error('Error deactivating event:', error)
+      setMessage({ type: 'error', text: `Failed to deactivate: ${error.message}` })
     }
   }
 
@@ -182,7 +219,7 @@ export function ManageRestaurant() {
       {/* Tabs */}
       <div className="px-4 pt-4">
         <div className="flex gap-2 mb-4">
-          {['specials', 'menu'].map((tab) => (
+          {['specials', 'events', 'menu'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -192,7 +229,7 @@ export function ManageRestaurant() {
                 : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }
               }
             >
-              {tab === 'specials' ? 'Specials' : 'Menu'}
+              {tab === 'specials' ? 'Specials' : tab === 'events' ? 'Events' : 'Menu'}
             </button>
           ))}
         </div>
@@ -213,6 +250,14 @@ export function ManageRestaurant() {
             onAdd={handleAddSpecial}
             onUpdate={handleUpdateSpecial}
             onDeactivate={handleDeactivateSpecial}
+          />
+        ) : activeTab === 'events' ? (
+          <EventsManager
+            restaurantId={restaurant.id}
+            events={events}
+            onAdd={handleAddEvent}
+            onUpdate={handleUpdateEvent}
+            onDeactivate={handleDeactivateEvent}
           />
         ) : (
           <DishesManager

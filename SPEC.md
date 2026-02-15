@@ -16,9 +16,9 @@ Tech: React 19, Vite, Tailwind CSS, React Router v7, Supabase (Postgres + Auth +
 
 ## Core Data Model
 
-### Tables (17)
+### Tables (18)
 
-Evidence: `supabase/schema.sql:24-259`
+Evidence: `supabase/schema.sql:24-275`
 
 | Table | PK | Key Columns | Relationships | Constraints | Status |
 |---|---|---|---|---|---|
@@ -35,7 +35,8 @@ Evidence: `supabase/schema.sql:24-259`
 | **bias_events** | `id` UUID | user_id, dish_id, dish_name, user_rating, consensus_rating, deviation, was_early_voter, bias_before/after, seen | FK → auth.users, dishes | — | **VERIFIED** |
 | **badges** | `key` TEXT | name, subtitle, description, icon, is_public_eligible, sort_order, rarity, family, category | — | 41 seeded badges | **VERIFIED** |
 | **user_badges** | `id` UUID | user_id, badge_key, unlocked_at, metadata_json | FK → auth.users, badges; UNIQUE(user_id, badge_key) | — | **VERIFIED** |
-| **specials** | `id` UUID | restaurant_id, deal_name, description, price, is_active, expires_at, created_by | FK → restaurants, auth.users | — | **VERIFIED** |
+| **specials** | `id` UUID | restaurant_id, deal_name, description, price, is_active, is_promoted, source, expires_at, created_by | FK → restaurants, auth.users | source IN (manual, auto_scrape) | **VERIFIED** |
+| **events** | `id` UUID | restaurant_id, event_name, description, event_date, start_time, end_time, event_type, recurring_pattern, recurring_day_of_week, is_active, is_promoted, source, created_by | FK → restaurants, auth.users | event_type IN (live_music, trivia, comedy, karaoke, open_mic, other); source IN (manual, auto_scrape) | **VERIFIED** |
 | **restaurant_managers** | `id` UUID | user_id, restaurant_id, role, invited_at, accepted_at, created_by | FK → auth.users, restaurants; UNIQUE(user_id, restaurant_id) | — | **VERIFIED** |
 | **restaurant_invites** | `id` UUID | token (unique hex), restaurant_id, created_by, expires_at, used_by, used_at | FK → restaurants, auth.users | expires after 7 days | **VERIFIED** |
 | **rate_limits** | `id` UUID | user_id, action, created_at | FK → auth.users | pg_cron hourly cleanup | **VERIFIED** |
@@ -275,15 +276,38 @@ Switching restaurants resets to "Top Rated" tab. Search filters work in both vie
 
 **VERIFIED** — `src/pages/UserProfile.jsx`
 
-### Feature 9: Discover (Social)
+### Feature 9: Local Hub (Discover)
 
-**User flow:** Tap "Discover" tab → see similar taste users, friends' activity
-**Screens:** `Discover.jsx`
-**Components:** `SimilarTasteUsers`, `FollowListModal`, `UserSearch`
-**API calls:** `tasteApi.getSimilarTasteUsers()`, `followsApi`
-**Data reads:** `get_similar_taste_users` RPC
+**User flow:** Tap "Discover" tab → see mixed feed of specials and events with filter chips
+**Screens:** `Discover.jsx` (renamed to "Local Hub")
+**Components:** `SpecialCard`, `EventCard`
+**Hooks:** `useSpecials`, `useEvents`
+**API calls:** `specialsApi.getActiveSpecials()`, `eventsApi.getActiveEvents()`
+**Data reads:** specials, events tables with restaurant joins
+**Filter chips:** All | Specials | Live Music | Trivia | Comedy | Other Events
+**Promoted items:** Gold left border + "Featured" badge, pinned to top of feed
 
-**VERIFIED** — `src/pages/Discover.jsx`
+**VERIFIED** — `src/pages/Discover.jsx`, `src/components/SpecialCard.jsx`, `src/components/EventCard.jsx`
+
+### Feature 9b: Events Management
+
+**User flow:** Manager portal → Events tab → CRUD events for restaurant
+**Screens:** `ManageRestaurant.jsx` (Events tab)
+**Components:** `EventsManager`
+**API calls:** `restaurantManagerApi.createEvent()`, `.updateEvent()`, `.deactivateEvent()`
+**Data reads/writes:** events table
+**Auth gate:** Manager or admin only
+
+**VERIFIED** — `src/components/restaurant-admin/EventsManager.jsx`
+
+### Feature 9c: Automated Scraper
+
+**Architecture:** pg_cron (daily 6 AM EST) → scraper-dispatcher edge function → restaurant-scraper edge function per restaurant
+**Flow:** Fetch restaurant websites/Facebook pages → Claude Haiku extracts events/specials → upsert with source='auto_scrape'
+**Edge functions:** `supabase/functions/restaurant-scraper/`, `supabase/functions/scraper-dispatcher/`
+**Secrets:** ANTHROPIC_API_KEY in Supabase Edge Function secrets
+
+**VERIFIED** — `supabase/functions/restaurant-scraper/index.ts`, `supabase/functions/scraper-dispatcher/index.ts`
 
 ### Feature 10: Favorites
 
