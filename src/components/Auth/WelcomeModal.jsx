@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useProfile } from '../../hooks/useProfile'
+import { WghLogo } from '../WghLogo'
 import { ThumbsUpIcon } from '../ThumbsUpIcon'
 import { ThumbsDownIcon } from '../ThumbsDownIcon'
 import { capture } from '../../lib/analytics'
@@ -8,14 +9,12 @@ import { capture } from '../../lib/analytics'
 const STEPS = [
   {
     id: 'welcome',
-    image: '/wgh-icon.png',
     title: 'Find the best dishes on Martha\'s Vineyard',
     subtitle: 'Real ratings from locals & visitors like you',
     description: 'No more guessing. See what\'s actually worth ordering.',
   },
   {
     id: 'how-it-works',
-    emoji: null,
     icon: 'thumbsUp',
     title: 'Vote on dishes you\'ve tried',
     subtitle: 'Good Here or Not Good — it\'s that simple',
@@ -23,7 +22,7 @@ const STEPS = [
   },
   {
     id: 'name',
-    emoji: '👋',
+    emoji: '\uD83D\uDC4B',
     title: 'Enter your name',
     subtitle: 'Join the community',
     description: 'Friends can find you by your name',
@@ -37,15 +36,14 @@ export function WelcomeModal() {
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [phase, setPhase] = useState('onboarding') // 'onboarding' | 'celebration' | 'fade-out'
 
-  // Show modal when user is logged in but hasn't completed onboarding
-  // Build steps dynamically — skip name if user already set one during signup
+  // Skip name step if user already set one during signup
   const hasName = profile?.display_name && profile.display_name.trim().length > 0
   const activeSteps = hasName ? STEPS.filter(s => s.id !== 'name') : STEPS
 
   useEffect(() => {
     if (user && !loading && profile) {
-      // Show only if user hasn't completed onboarding
       if (!profile.has_onboarded) {
         setIsOpen(true)
         capture('onboarding_started')
@@ -53,16 +51,29 @@ export function WelcomeModal() {
     }
   }, [user, profile, loading])
 
+  const displayName = name.trim() || profile?.display_name || ''
+
+  const completeOnboarding = async (nameSet) => {
+    setSaving(true)
+    const updates = { has_onboarded: true }
+    if (name.trim()) updates.display_name = name.trim()
+    await updateProfile(updates)
+    capture('onboarding_completed', { name_set: nameSet })
+    setSaving(false)
+
+    // Show celebration screen
+    setPhase('celebration')
+
+    // Auto-dismiss after 2.5s
+    setTimeout(() => setPhase('fade-out'), 2500)
+    setTimeout(() => setIsOpen(false), 2800)
+  }
+
   const handleNext = async () => {
     if (step < activeSteps.length - 1) {
       setStep(step + 1)
     } else {
-      // Last step for users who already have a name — complete onboarding
-      setSaving(true)
-      await updateProfile({ has_onboarded: true })
-      capture('onboarding_completed', { name_set: hasName })
-      setSaving(false)
-      setIsOpen(false)
+      await completeOnboarding(hasName)
     }
   }
 
@@ -72,27 +83,86 @@ export function WelcomeModal() {
     }
   }
 
-  // Handle name step submission — final step, completes onboarding
   const handleNameSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) return
-    setSaving(true)
-    await updateProfile({ display_name: name.trim(), has_onboarded: true })
-    capture('onboarding_completed', { name_set: true })
-    setSaving(false)
-    setIsOpen(false)
+    await completeOnboarding(true)
   }
 
   const handleSkipName = async () => {
-    setSaving(true)
-    await updateProfile({ has_onboarded: true })
-    capture('onboarding_completed', { name_set: false })
-    setSaving(false)
-    setIsOpen(false)
+    await completeOnboarding(false)
   }
 
   if (!isOpen) return null
 
+  // ==================== CELEBRATION SCREEN ====================
+  if (phase === 'celebration' || phase === 'fade-out') {
+    return (
+      <div
+        className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
+        style={{
+          opacity: phase === 'fade-out' ? 0 : 1,
+          transition: 'opacity 300ms ease-out',
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{ background: 'var(--color-bg)' }}
+        />
+
+        <div className="relative z-10 text-center px-8">
+          {/* Logo */}
+          <div className="flex justify-center mb-5">
+            <WghLogo size={48} />
+          </div>
+
+          {/* Brand name */}
+          <h1
+            style={{
+              fontFamily: "'Sora', sans-serif",
+              fontSize: '28px',
+              fontWeight: 700,
+              color: 'var(--color-primary)',
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            What's Good Here
+          </h1>
+
+          {/* Welcome line */}
+          <p
+            className="mt-3"
+            style={{
+              color: 'var(--color-text-primary)',
+              fontSize: '17px',
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}
+          >
+            Welcome{displayName ? `, ${displayName}` : ''}.
+          </p>
+
+          {/* Tagline */}
+          <p
+            className="mt-6"
+            style={{
+              color: 'var(--color-text-secondary)',
+              opacity: 0.7,
+              fontSize: '12.5px',
+              fontWeight: 500,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            the #1 bite near you
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ==================== ONBOARDING STEPS ====================
   const currentStep = activeSteps[step]
   const isNameStep = currentStep.id === 'name'
 
@@ -136,9 +206,9 @@ export function WelcomeModal() {
           </div>
 
           {/* Step icon */}
-          {currentStep.image ? (
-            <div className="w-24 h-24 mx-auto mb-6">
-              <img src={currentStep.image} alt="" className="w-full h-full object-contain" />
+          {currentStep.id === 'welcome' ? (
+            <div className="flex justify-center mb-6">
+              <WghLogo size={56} />
             </div>
           ) : (
             <div
@@ -164,7 +234,7 @@ export function WelcomeModal() {
             )}
           </div>
 
-          {/* How it works visual - only on step 2 */}
+          {/* How it works visual */}
           {currentStep.id === 'how-it-works' && (
             <div className="flex justify-center gap-4 mb-6">
               <div className="flex flex-col items-center p-3 rounded-xl" style={{ background: 'rgba(107, 179, 132, 0.15)' }}>
@@ -182,7 +252,7 @@ export function WelcomeModal() {
             </div>
           )}
 
-          {/* Name input step — final step */}
+          {/* Name input step */}
           {isNameStep ? (
             <form onSubmit={handleNameSubmit} className="space-y-4">
               <input
