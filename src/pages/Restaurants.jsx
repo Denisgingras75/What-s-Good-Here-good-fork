@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +11,8 @@ import { RadiusSheet } from '../components/LocationPicker'
 import { LocationBanner } from '../components/LocationBanner'
 import { AddRestaurantModal } from '../components/AddRestaurantModal'
 import { ErrorBoundary } from '../components/ErrorBoundary'
+import { placesApi } from '../api/placesApi'
+import { logger } from '../utils/logger'
 
 const RestaurantMap = lazy(() =>
   import('../components/restaurants/RestaurantMap').then(m => ({ default: m.RestaurantMap }))
@@ -38,11 +40,11 @@ export function Restaurants() {
     [restaurants]
   )
 
-  // Discover nearby restaurants from Google Places (auth only, capped at 10mi)
+  // Discover nearby restaurants from Google Places (auth only, radius + 5mi buffer)
   const { places: nearbyPlaces, loading: nearbyLoading } = useNearbyPlaces({
     lat: location?.lat,
     lng: location?.lng,
-    radius,
+    radius: radius + 5,
     isAuthenticated: !!user,
     existingPlaceIds,
   })
@@ -225,6 +227,7 @@ export function Restaurants() {
                   }}
                   isAuthenticated={!!user}
                   existingPlaceIds={existingPlaceIds}
+                  radiusMi={radius}
                 />
               </Suspense>
             </ErrorBoundary>
@@ -308,48 +311,14 @@ export function Restaurants() {
             </p>
             <div className="space-y-2">
               {nearbyPlaces.map((place) => (
-                <div
+                <NearbyPlaceCard
                   key={place.placeId}
-                  className="rounded-xl p-4 flex items-center justify-between gap-3"
-                  style={{
-                    background: 'var(--color-card)',
-                    border: '1px solid var(--color-divider)',
+                  place={place}
+                  onAdd={() => {
+                    setAddRestaurantInitialQuery(place.name)
+                    setAddRestaurantModalOpen(true)
                   }}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="font-semibold truncate"
-                      style={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
-                    >
-                      {place.name}
-                    </p>
-                    {place.address && (
-                      <p
-                        className="text-xs truncate mt-0.5"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        {place.address}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setAddRestaurantInitialQuery(place.name)
-                      setAddRestaurantModalOpen(true)
-                    }}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
-                    style={{
-                      background: 'rgba(217, 167, 101, 0.12)',
-                      color: 'var(--color-accent-gold)',
-                      border: '1px solid rgba(217, 167, 101, 0.2)',
-                    }}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add to WGH
-                  </button>
-                </div>
+                />
               ))}
             </div>
           </div>
@@ -403,6 +372,105 @@ export function Restaurants() {
         onClose={() => setAddRestaurantModalOpen(false)}
         initialQuery={addRestaurantInitialQuery}
       />
+    </div>
+  )
+}
+
+// Card for a discovered Google Place — fetches details (Google Maps URL, website) on mount
+function NearbyPlaceCard({ place, onAdd }) {
+  const [details, setDetails] = useState(null)
+  const fetchedRef = useRef(false)
+
+  const fetchDetails = useCallback(async () => {
+    if (fetchedRef.current || !place.placeId) return
+    fetchedRef.current = true
+    try {
+      const d = await placesApi.getDetails(place.placeId)
+      setDetails(d)
+    } catch (err) {
+      logger.error('Place details error:', err)
+    }
+  }, [place.placeId])
+
+  useEffect(() => {
+    fetchDetails()
+  }, [fetchDetails])
+
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: 'var(--color-card)',
+        border: '1px solid var(--color-divider)',
+      }}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p
+            className="font-semibold truncate"
+            style={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
+          >
+            {place.name}
+          </p>
+          {place.address && (
+            <p
+              className="text-xs truncate mt-0.5"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              {place.address}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={onAdd}
+          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
+          style={{
+            background: 'rgba(217, 167, 101, 0.12)',
+            color: 'var(--color-accent-gold)',
+            border: '1px solid rgba(217, 167, 101, 0.2)',
+          }}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Add to WGH
+        </button>
+      </div>
+
+      {/* Google Maps + Website links */}
+      {(details?.googleMapsUrl || details?.websiteUrl) && (
+        <div className="flex gap-4 mt-2">
+          {details.googleMapsUrl && (
+            <a
+              href={details.googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs font-medium"
+              style={{ color: 'var(--color-accent-gold)' }}
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              Google Maps
+            </a>
+          )}
+          {details.websiteUrl && (
+            <a
+              href={details.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs font-medium"
+              style={{ color: 'var(--color-accent-gold)' }}
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+              Website
+            </a>
+          )}
+        </div>
+      )}
     </div>
   )
 }

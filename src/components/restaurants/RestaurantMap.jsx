@@ -5,6 +5,9 @@ import 'leaflet/dist/leaflet.css'
 import { placesApi } from '../../api/placesApi'
 import { logger } from '../../utils/logger'
 
+const MILES_TO_METERS = 1609.34
+const EXTRA_RADIUS_MI = 5
+
 // Auto-fit bounds on first render only
 function FitBounds({ restaurants, userLocation }) {
   const map = useMap()
@@ -31,62 +34,59 @@ function FitBounds({ restaurants, userLocation }) {
   return null
 }
 
-// Fetches Google Places when the map viewport changes
-function MapPlacesLoader({ onPlacesLoaded, existingPlaceIds }) {
+// Fetches Google Places within the user's radius + 5mi
+// Triggers on initial load and when map stops moving (if center shifted enough)
+function MapPlacesLoader({ onPlacesLoaded, existingPlaceIds, userLocation, radiusMi }) {
   const map = useMap()
   const timerRef = useRef(null)
-  const lastCenterRef = useRef(null)
+  const lastFetchRef = useRef(null)
+  const discoveryRadiusMeters = Math.round((radiusMi + EXTRA_RADIUS_MI) * MILES_TO_METERS)
 
-  const fetchPlaces = useCallback(async () => {
-    const center = map.getCenter()
-    const bounds = map.getBounds()
+  const fetchPlaces = useCallback(async (center) => {
+    if (!center) return
 
-    // Calculate radius from bounds (diagonal / 2 in meters)
-    const ne = bounds.getNorthEast()
-    const sw = bounds.getSouthWest()
-    const radiusMeters = Math.round(
-      map.distance(ne, sw) / 2
-    )
-
-    // Skip if center hasn't moved significantly (< 500m)
-    if (lastCenterRef.current) {
-      const dist = map.distance(center, lastCenterRef.current)
+    // Skip if we fetched from a very similar center recently (< 500m)
+    if (lastFetchRef.current) {
+      const dist = map.distance(center, lastFetchRef.current)
       if (dist < 500) return
     }
-    lastCenterRef.current = center
+    lastFetchRef.current = center
 
     // Cap at 40km (~25mi) to match edge function limit
-    const clampedRadius = Math.min(radiusMeters, 40234)
+    const clampedRadius = Math.min(discoveryRadiusMeters, 40234)
 
     try {
       const places = await placesApi.discoverNearby(center.lat, center.lng, clampedRadius)
-      // Filter out places already in DB
       const existingSet = new Set(existingPlaceIds || [])
       const filtered = places.filter(p => p.lat && p.lng && !existingSet.has(p.placeId))
       onPlacesLoaded(filtered)
     } catch (err) {
       logger.error('Map places fetch error:', err)
     }
-  }, [map, onPlacesLoaded, existingPlaceIds])
+  }, [map, onPlacesLoaded, existingPlaceIds, discoveryRadiusMeters])
 
   useMapEvents({
     moveend: () => {
       // Debounce: wait 800ms after map stops moving
       if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(fetchPlaces, 800)
+      const center = map.getCenter()
+      timerRef.current = setTimeout(() => fetchPlaces(center), 800)
     },
   })
 
-  // Fetch on initial mount too
+  // Fetch on initial mount using user location or map center
   useEffect(() => {
-    const timer = setTimeout(fetchPlaces, 500)
+    const center = userLocation?.lat && userLocation?.lng
+      ? L.latLng(userLocation.lat, userLocation.lng)
+      : map.getCenter()
+    const timer = setTimeout(() => fetchPlaces(center), 500)
     return () => clearTimeout(timer)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }
 
-// Search bar overlay on the map
+// Search bar overlay — geocodes and flies to location, then triggers Places fetch
 function MapSearchBar({ onSearch }) {
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -96,7 +96,6 @@ function MapSearchBar({ onSearch }) {
     if (!query.trim()) return
     setSearching(true)
     try {
-      // Use Nominatim geocoder (free, no API key)
       const encoded = encodeURIComponent(query.trim())
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1&countrycodes=us`
@@ -104,6 +103,7 @@ function MapSearchBar({ onSearch }) {
       const data = await res.json()
       if (data.length > 0) {
         const { lat, lon } = data[0]
+        // flyTo triggers moveend which triggers MapPlacesLoader
         map.flyTo([parseFloat(lat), parseFloat(lon)], 14, { duration: 1.5 })
         if (onSearch) onSearch(query.trim())
       }
@@ -166,7 +166,132 @@ function MapSearchBar({ onSearch }) {
   )
 }
 
-export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant, onAddPlace, isAuthenticated, existingPlaceIds }) {
+// Popup content for a discovered Google Place — fetches details on mount
+function PlacePopupContent({ place, onAddPlace }) {
+  const [details, setDetails] = useState(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
+  const fetchedRef = useRef(false)
+
+  const fetchDetails = useCallback(async () => {
+    if (fetchedRef.current || !place.placeId) return
+    fetchedRef.current = true
+    setLoadingDetails(true)
+    try {
+      const d = await placesApi.getDetails(place.placeId)
+      setDetails(d)
+    } catch (err) {
+      logger.error('Place details fetch error:', err)
+    } finally {
+      setLoadingDetails(false)
+    }
+  }, [place.placeId])
+
+  // Fetch details when popup opens (component mounts)
+  useEffect(() => {
+    fetchDetails()
+  }, [fetchDetails])
+
+  const googleMapsUrl = details?.googleMapsUrl
+  const websiteUrl = details?.websiteUrl
+
+  return (
+    <div style={{ minWidth: '160px' }}>
+      <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>
+        {place.name}
+      </div>
+      {place.address && (
+        <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '4px' }}>
+          {place.address}
+        </div>
+      )}
+      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontStyle: 'italic' }}>
+        Not on WGH yet
+      </div>
+
+      {loadingDetails && (
+        <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginBottom: '6px' }}>
+          Loading details...
+        </div>
+      )}
+
+      {/* Links row */}
+      {(googleMapsUrl || websiteUrl) && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+          {googleMapsUrl && (
+            <a
+              href={googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#4A90D9',
+                textDecoration: 'none',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              Google Maps
+            </a>
+          )}
+          {websiteUrl && (
+            <a
+              href={websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#4A90D9',
+                textDecoration: 'none',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A8.966 8.966 0 0 1 3 12c0-1.97.633-3.792 1.708-5.272" />
+              </svg>
+              Website
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Add to WGH button */}
+      {onAddPlace && (
+        <button
+          onClick={() => onAddPlace(place.name)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '6px 12px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'rgba(107, 179, 132, 0.15)',
+            color: '#6BB384',
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Add to WGH
+        </button>
+      )}
+    </div>
+  )
+}
+
+export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant, onAddPlace, isAuthenticated, existingPlaceIds, radiusMi }) {
   const defaultCenter = [41.43, -70.56] // Martha's Vineyard
   const center = userLocation?.lat && userLocation?.lng
     ? [userLocation.lat, userLocation.lng]
@@ -199,14 +324,16 @@ export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant, o
 
         <FitBounds restaurants={restaurants} userLocation={userLocation} />
 
-        {/* Search bar */}
+        {/* Search bar — geocodes and flies to location, moveend then triggers Places fetch */}
         <MapSearchBar />
 
-        {/* Dynamic Google Places loader — only for authenticated users */}
+        {/* Dynamic Google Places loader — uses radius setting + 5mi */}
         {isAuthenticated && (
           <MapPlacesLoader
             onPlacesLoaded={setDiscoveredPlaces}
             existingPlaceIds={existingPlaceIds}
+            userLocation={userLocation}
+            radiusMi={radiusMi || 10}
           />
         )}
 
@@ -316,42 +443,7 @@ export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant, o
             }}
           >
             <Popup>
-              <div style={{ minWidth: '140px' }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>
-                  {place.name}
-                </div>
-                {place.address && (
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '4px' }}>
-                    {place.address}
-                  </div>
-                )}
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontStyle: 'italic' }}>
-                  Not on WGH yet
-                </div>
-                {onAddPlace && (
-                  <button
-                    onClick={() => onAddPlace(place.name)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      border: 'none',
-                      background: 'rgba(107, 179, 132, 0.15)',
-                      color: '#6BB384',
-                    }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add to WGH
-                  </button>
-                )}
-              </div>
+              <PlacePopupContent place={place} onAddPlace={onAddPlace} />
             </Popup>
           </CircleMarker>
         ))}
