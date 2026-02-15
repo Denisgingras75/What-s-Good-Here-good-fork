@@ -85,8 +85,8 @@ export function WelcomeSplash({ onComplete }) {
         </h1>
         <p
           style={{
-            color: '#F0D9B5',
-            opacity: 0.55,
+            color: 'var(--color-text-secondary)',
+            opacity: 0.7,
             fontSize: '13px',
             fontWeight: 500,
             letterSpacing: '0.14em',
