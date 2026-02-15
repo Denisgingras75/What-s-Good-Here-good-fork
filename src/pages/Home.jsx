@@ -132,7 +132,7 @@ function CategoryScroll({ town, onTownChange, selectedCategory, onCategoryChange
 
   if (townPickerOpen) {
     return (
-      <div className="flex items-center gap-2.5 overflow-x-auto px-4 pb-1" style={scrollStyle}>
+      <div className="flex items-center gap-2.5 overflow-x-auto pl-2 pr-4 pb-1" style={scrollStyle}>
         <TownPicker
           town={town}
           onTownChange={onTownChange}
@@ -144,7 +144,7 @@ function CategoryScroll({ town, onTownChange, selectedCategory, onCategoryChange
   }
 
   return (
-    <div className="flex items-center gap-2.5 px-4 pb-1">
+    <div className="flex items-center gap-2.5 pl-2 pr-4 pb-1">
       <TownPicker
         town={town}
         onTownChange={onTownChange}
@@ -183,8 +183,8 @@ function CategoryPill({ category, isActive, onClick }) {
       <div
         className="rounded-full flex items-center justify-center overflow-hidden"
         style={{
-          width: '52px',
-          height: '52px',
+          width: '56px',
+          height: '56px',
           background: 'var(--color-surface-elevated)',
           boxShadow: isActive ? '0 0 0 2px var(--color-primary)' : 'none',
         }}
