@@ -217,8 +217,13 @@ export function Restaurants() {
               }>
                 <RestaurantMap
                   restaurants={filteredRestaurants}
+                  nearbyPlaces={nearbyPlaces}
                   userLocation={location}
                   onSelectRestaurant={handleRestaurantSelect}
+                  onAddPlace={(placeName) => {
+                    setAddRestaurantInitialQuery(placeName)
+                    setAddRestaurantModalOpen(true)
+                  }}
                 />
               </Suspense>
             </ErrorBoundary>

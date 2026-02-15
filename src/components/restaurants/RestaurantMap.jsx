@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaf
 import 'leaflet/dist/leaflet.css'
 
 // Auto-fit bounds when restaurants or location change
-function FitBounds({ restaurants, userLocation }) {
+function FitBounds({ restaurants, nearbyPlaces, userLocation }) {
   const map = useMap()
   const prevCountRef = useRef(0)
 
@@ -13,24 +13,31 @@ function FitBounds({ restaurants, userLocation }) {
       .filter(r => r.lat && r.lng)
       .map(r => [r.lat, r.lng])
 
+    // Include nearby places in bounds
+    if (nearbyPlaces) {
+      nearbyPlaces
+        .filter(p => p.lat && p.lng)
+        .forEach(p => points.push([p.lat, p.lng]))
+    }
+
     if (userLocation?.lat && userLocation?.lng) {
       points.push([userLocation.lat, userLocation.lng])
     }
 
     if (points.length === 0) return
 
-    // Fit bounds when restaurant count changes or on first render
+    // Fit bounds when point count changes or on first render
     if (points.length !== prevCountRef.current) {
       const bounds = L.latLngBounds(points)
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
       prevCountRef.current = points.length
     }
-  }, [restaurants, userLocation, map])
+  }, [restaurants, nearbyPlaces, userLocation, map])
 
   return null
 }
 
-export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant }) {
+export function RestaurantMap({ restaurants, nearbyPlaces = [], userLocation, onSelectRestaurant, onAddPlace }) {
   const defaultCenter = [41.43, -70.56] // Martha's Vineyard
   const center = userLocation?.lat && userLocation?.lng
     ? [userLocation.lat, userLocation.lng]
@@ -58,7 +65,7 @@ export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant })
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <FitBounds restaurants={restaurants} userLocation={userLocation} />
+        <FitBounds restaurants={restaurants} nearbyPlaces={nearbyPlaces} userLocation={userLocation} />
 
         {/* User location — blue pulsing dot */}
         {userLocation?.lat && userLocation?.lng && (
@@ -93,7 +100,7 @@ export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant })
           </>
         )}
 
-        {/* Restaurant pins */}
+        {/* DB restaurant pins — gold */}
         {restaurants
           .filter(r => r.lat && r.lng)
           .map(restaurant => {
@@ -151,6 +158,64 @@ export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant })
               </CircleMarker>
             )
           })}
+
+        {/* Google Places pins — green dashed, "not on WGH yet" */}
+        {nearbyPlaces
+          .filter(p => p.lat && p.lng)
+          .map(place => (
+            <CircleMarker
+              key={place.placeId}
+              center={[place.lat, place.lng]}
+              radius={7}
+              pathOptions={{
+                color: '#6BB384',
+                fillColor: '#6BB384',
+                fillOpacity: 0.3,
+                weight: 2,
+                dashArray: '4 4',
+                opacity: 0.7,
+              }}
+            >
+              <Popup>
+                <div style={{ minWidth: '140px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>
+                    {place.name}
+                  </div>
+                  {place.address && (
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '4px' }}>
+                      {place.address}
+                    </div>
+                  )}
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontStyle: 'italic' }}>
+                    Not on WGH yet
+                  </div>
+                  {onAddPlace && (
+                    <button
+                      onClick={() => onAddPlace(place.name)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: 'rgba(107, 179, 132, 0.15)',
+                        color: '#6BB384',
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add to WGH
+                    </button>
+                  )}
+                </div>
+              </Popup>
+            </CircleMarker>
+          ))}
       </MapContainer>
     </div>
   )
