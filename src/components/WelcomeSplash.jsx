@@ -84,13 +84,14 @@ export function WelcomeSplash({ onComplete }) {
           What's Good Here
         </h1>
         <p
-          className="font-medium"
           style={{
-            color: 'var(--color-accent-gold)',
+            color: '#F0D9B5',
+            opacity: 0.55,
             fontSize: '13px',
-            letterSpacing: '0.12em',
+            fontWeight: 500,
+            letterSpacing: '0.14em',
             textTransform: 'uppercase',
-            marginTop: '8px',
+            marginTop: '10px',
           }}
         >
           Martha's Vineyard

@@ -24,13 +24,14 @@ export function SearchHero({ town, loading, categoryScroll }) {
           What's Good Here
         </h1>
         <p
-          className="font-medium"
           style={{
-            color: 'var(--color-text-tagline)',
-            opacity: 0.94,
-            fontSize: '13px',
-            letterSpacing: '0.06em',
+            color: '#F0D9B5',
+            opacity: 0.6,
+            fontSize: '12.5px',
+            fontWeight: 500,
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
+            marginTop: '4px',
           }}
         >
           the #1 bite near you
