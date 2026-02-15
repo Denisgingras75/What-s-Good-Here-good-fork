@@ -73,11 +73,12 @@ export function WelcomeSplash({ onComplete }) {
       >
         <h1
           style={{
-            fontFamily: "'Pacifico', cursive",
-            fontSize: '48px',
+            fontFamily: "'Sora', sans-serif",
+            fontSize: '42px',
+            fontWeight: 800,
             color: 'var(--color-primary)',
-            lineHeight: 1.2,
-            letterSpacing: '-0.01em',
+            lineHeight: 1.15,
+            letterSpacing: '-0.03em',
           }}
         >
           What's Good Here

@@ -12,10 +12,11 @@ export function SearchHero({ town, loading, categoryScroll }) {
       <div className="mb-3 text-center px-4">
         <h1
           style={{
-            fontFamily: "'Pacifico', cursive",
+            fontFamily: "'Sora', sans-serif",
+            fontWeight: 800,
             color: 'var(--color-primary)',
             fontSize: '28px',
-            letterSpacing: '-0.01em',
+            letterSpacing: '-0.03em',
             marginBottom: '6px',
             lineHeight: 1.2,
           }}
