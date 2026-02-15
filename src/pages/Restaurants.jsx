@@ -56,7 +56,7 @@ export function Restaurants() {
     [restaurants]
   )
 
-  // Discover nearby restaurants from Google Places (only for authenticated users at radius >= 10mi)
+  // Discover nearby restaurants from Google Places (authenticated users, capped at 10mi)
   const { places: nearbyPlaces, loading: nearbyLoading } = useNearbyPlaces({
     lat: location?.lat,
     lng: location?.lng,
@@ -496,8 +496,8 @@ export function Restaurants() {
             </div>
           )}
 
-          {/* Discover More Restaurants — Google Places suggestions (auth only, radius >= 10mi) */}
-          {user && radius >= 10 && nearbyPlaces.length > 0 && (
+          {/* Discover More Restaurants — Google Places nearby search (auth only) */}
+          {user && nearbyPlaces.length > 0 && (
             <div className="mt-8">
               <div className="flex items-center gap-3 mb-4">
                 <div
@@ -566,7 +566,7 @@ export function Restaurants() {
               </div>
             </div>
           )}
-          {user && radius >= 10 && !nearbyLoading && nearbyPlaces.length === 0 && (
+          {user && !nearbyLoading && nearbyPlaces.length === 0 && (
             <p
               className="mt-6 text-center text-xs py-3"
               style={{ color: 'var(--color-text-tertiary)' }}
@@ -574,7 +574,7 @@ export function Restaurants() {
               No additional restaurants found nearby from Google
             </p>
           )}
-          {user && radius >= 10 && nearbyLoading && (
+          {user && nearbyLoading && (
             <div className="mt-8 flex justify-center py-4">
               <div className="animate-spin w-5 h-5 border-2 rounded-full" style={{ borderColor: 'var(--color-divider)', borderTopColor: 'var(--color-accent-gold)' }} />
             </div>

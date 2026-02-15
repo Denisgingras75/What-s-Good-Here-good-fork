@@ -44,26 +44,26 @@ export const placesApi = {
    * @returns {Promise<Object>} { name, address, lat, lng, phone, websiteUrl, googleMapsUrl }
    */
   /**
-   * Discover nearby restaurants via Google Places (generic discovery query)
+   * Discover nearby restaurants via Google Places Nearby Search
    * @param {number} lat - User latitude
    * @param {number} lng - User longitude
-   * @param {number} radiusMeters - Search radius in meters
-   * @returns {Promise<Array>} Array of { placeId, name, address }
+   * @param {number} radiusMeters - Search radius in meters (capped at 10mi server-side)
+   * @returns {Promise<Array>} Array of { placeId, name, address, lat, lng }
    */
   async discoverNearby(lat, lng, radiusMeters) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return []
 
-      const response = await supabase.functions.invoke('places-autocomplete', {
-        body: { input: 'restaurant', lat, lng, radius: radiusMeters },
+      const response = await supabase.functions.invoke('places-nearby-search', {
+        body: { lat, lng, radiusMeters },
       })
 
       if (response.error) {
         throw createClassifiedError(response.error)
       }
 
-      return response.data?.predictions || []
+      return response.data?.places || []
     } catch (error) {
       logger.error('Places discover nearby error:', error)
       return []
