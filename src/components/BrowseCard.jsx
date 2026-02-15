@@ -8,8 +8,22 @@ import { EarIconTooltip } from './EarIconTooltip'
 import { getStorageItem, setStorageItem, STORAGE_KEYS } from '../lib/storage'
 
 export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
-  if (!dish) return null
   const [imageLoaded, setImageLoaded] = useState(!dish?.photo_url)
+
+  // Ear icon tooltip — show once per device
+  const [showEarTooltip, setShowEarTooltip] = useState(false)
+  const tooltipChecked = useRef(false)
+
+  useEffect(() => {
+    if (onToggleFavorite && !tooltipChecked.current) {
+      tooltipChecked.current = true
+      if (!getStorageItem(STORAGE_KEYS.HAS_SEEN_EAR_TOOLTIP)) {
+        setShowEarTooltip(true)
+      }
+    }
+  }, [onToggleFavorite])
+
+  if (!dish) return null
 
   const {
     dish_id,
@@ -26,19 +40,6 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
     best_variant_name,
     best_variant_rating,
   } = dish
-
-  // Ear icon tooltip — show once per device
-  const [showEarTooltip, setShowEarTooltip] = useState(false)
-  const tooltipChecked = useRef(false)
-
-  useEffect(() => {
-    if (onToggleFavorite && !tooltipChecked.current) {
-      tooltipChecked.current = true
-      if (!getStorageItem(STORAGE_KEYS.HAS_SEEN_EAR_TOOLTIP)) {
-        setShowEarTooltip(true)
-      }
-    }
-  }, [onToggleFavorite])
 
   function dismissEarTooltip() {
     setShowEarTooltip(false)
