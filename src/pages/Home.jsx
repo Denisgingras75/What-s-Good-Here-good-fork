@@ -63,8 +63,9 @@ export function Home() {
       .slice(0, 10)
   }, [dishes, profile?.preferred_categories])
 
-  // Whether to show the toggle (user is logged in and has preferences)
-  const showPersonalToggle = !selectedCategory && user && profile?.preferred_categories?.length > 0
+  // Personal toggle disabled for now — re-enable later
+  // const showPersonalToggle = !selectedCategory && user && profile?.preferred_categories?.length > 0
+  const showPersonalToggle = false
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>

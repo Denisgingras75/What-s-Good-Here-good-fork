@@ -640,7 +640,7 @@ export function Profile() {
                 </h2>
               </div>
 
-              {/* Edit Favorites */}
+              {/* Edit Favorites — disabled while personal Top 10 is off
               <EditFavoritesSection
                 currentCategories={profile?.preferred_categories || []}
                 editing={editingFavorites}
@@ -656,6 +656,7 @@ export function Profile() {
                 }}
                 onCategoriesChange={setEditedCategories}
               />
+              */}
 
               {/* Sound Toggle */}
               <button

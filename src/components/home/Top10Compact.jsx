@@ -28,16 +28,15 @@ export function Top10Compact({
 
   return (
     <section className="animate-fadeIn">
-      {/* Micro-headline */}
-      <p
-        className="font-bold mb-1"
-        style={{ color: 'var(--color-accent-gold)', fontSize: '13px' }}
-      >
-        {categoryLabel
-          ? (town ? `The best ${categoryLabel} in ${town}` : `The best ${categoryLabel} on the Vineyard`)
-          : 'People have spoken'
-        }
-      </p>
+      {/* Micro-headline — only for category filtering */}
+      {categoryLabel && (
+        <p
+          className="font-bold mb-3"
+          style={{ color: 'var(--color-primary)', fontSize: '19px', letterSpacing: '-0.02em' }}
+        >
+          {town ? `Best ${categoryLabel} in ${town}` : `Best ${categoryLabel} on the Vineyard`}
+        </p>
+      )}
 
       {/* Header */}
       {showToggle ? (
@@ -71,12 +70,12 @@ export function Top10Compact({
         <h3
           className="font-bold mb-4"
           style={{
-            color: 'var(--color-text-primary)',
-            fontSize: '15px',
-            letterSpacing: '-0.01em',
+            color: 'var(--color-primary)',
+            fontSize: '19px',
+            letterSpacing: '-0.02em',
           }}
         >
-          Top 10 {town ? `in ${town}` : 'on the Island'}
+          {town ? `${town} Best of the Best` : "Martha's Vineyard Best of the Best"}
         </h3>
       ) : null}
 
