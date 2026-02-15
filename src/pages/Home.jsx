@@ -177,8 +177,8 @@ function CategoryPill({ category, isActive, onClick }) {
       className="flex-shrink-0 flex flex-col items-center gap-1.5 px-2 py-1 transition-all active:scale-[0.97]"
       style={{
         minWidth: '56px',
-        fontSize: '11px',
-        color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+        fontSize: '11.5px',
+        color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
       }}
     >
       <div
@@ -195,7 +195,11 @@ function CategoryPill({ category, isActive, onClick }) {
             src={imageSrc}
             alt=""
             className="w-full h-full object-cover"
-            style={{ opacity: loaded ? 1 : 0 }}
+            style={{
+              opacity: loaded ? 1 : 0,
+              filter: isActive ? 'brightness(1.05) saturate(0.8)' : 'brightness(0.85) saturate(0.65)',
+              transition: 'filter 0.2s ease',
+            }}
             onLoad={() => setLoaded(true)}
             onError={() => setImgError(true)}
           />
@@ -203,7 +207,7 @@ function CategoryPill({ category, isActive, onClick }) {
           <span className="text-lg">{category.emoji}</span>
         )}
       </div>
-      <span className="font-semibold">{category.label}</span>
+      <span className="font-medium" style={{ letterSpacing: '0.01em' }}>{category.label}</span>
     </button>
   )
 }
