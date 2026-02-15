@@ -17,9 +17,13 @@ export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
-  const [message, setMessage] = useState(null)
-  const [showLogin, setShowLogin] = useState(false) // Controls welcome vs login view
-  const [mode, setMode] = useState('options') // 'options' | 'signin' | 'signup' | 'forgot'
+  const [message, setMessage] = useState(
+    isPostConfirmation ? { type: 'success', text: 'Email verified! Sign in to get started.' } : null
+  )
+  // If user arrives with confirmation hash params, go straight to sign-in
+  const isPostConfirmation = window.location.hash.includes('type=signup') || window.location.hash.includes('type=email')
+  const [showLogin, setShowLogin] = useState(isPostConfirmation) // Controls welcome vs login view
+  const [mode, setMode] = useState(isPostConfirmation ? 'signin' : 'options') // 'options' | 'signin' | 'signup' | 'forgot'
   const [usernameStatus, setUsernameStatus] = useState(null) // null | 'checking' | 'available' | 'taken'
 
   // Redirect authenticated users to home (or where they came from)

@@ -123,6 +123,7 @@ export const authApi = {
           data: {
             display_name: username,
           },
+          emailRedirectTo: window.location.origin,
         },
       })
 
