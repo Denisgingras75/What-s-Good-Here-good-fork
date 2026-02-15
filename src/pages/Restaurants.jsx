@@ -11,7 +11,7 @@ import { useFavorites } from '../hooks/useFavorites'
 import { useRestaurants } from '../hooks/useRestaurants'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { AddDishModal } from '../components/AddDishModal'
-import { RestaurantDishes, RestaurantMenu } from '../components/restaurants'
+import { RestaurantDishes, RestaurantMenu, RestaurantMap } from '../components/restaurants'
 import { RadiusSheet } from '../components/LocationPicker'
 import { LocationBanner } from '../components/LocationBanner'
 import { AddRestaurantModal } from '../components/AddRestaurantModal'
@@ -34,6 +34,7 @@ export function Restaurants() {
   const [showRadiusSheet, setShowRadiusSheet] = useState(false)
   const [addRestaurantModalOpen, setAddRestaurantModalOpen] = useState(false)
   const [addRestaurantInitialQuery, setAddRestaurantInitialQuery] = useState('')
+  const [viewMode, setViewMode] = useState('list')
 
   const { location, radius, setRadius, permissionState, requestLocation } = useLocationContext()
 
@@ -278,29 +279,55 @@ export function Restaurants() {
               </h2>
             </div>
 
-            {/* Radius chip */}
-            <button
-              onClick={() => setShowRadiusSheet(true)}
-              aria-label={`Search radius: ${radius} miles. Tap to change`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all"
-              style={{
-                background: 'var(--color-surface-elevated)',
-                borderColor: 'var(--color-divider)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              <span>{radius} mi</span>
-              <svg
-                aria-hidden="true"
-                className="w-3 h-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                style={{ color: 'var(--color-text-tertiary)' }}
+            <div className="flex items-center gap-2">
+              {/* Map/List toggle */}
+              <button
+                onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+                aria-label={viewMode === 'list' ? 'Switch to map view' : 'Switch to list view'}
+                className="flex items-center justify-center w-8 h-8 rounded-full border transition-all active:scale-95"
+                style={{
+                  background: viewMode === 'map' ? 'rgba(200, 90, 84, 0.15)' : 'var(--color-surface-elevated)',
+                  borderColor: viewMode === 'map' ? 'rgba(200, 90, 84, 0.3)' : 'var(--color-divider)',
+                  color: viewMode === 'map' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+                {viewMode === 'list' ? (
+                  /* Map icon */
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+                  </svg>
+                ) : (
+                  /* List icon */
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Radius chip */}
+              <button
+                onClick={() => setShowRadiusSheet(true)}
+                aria-label={`Search radius: ${radius} miles. Tap to change`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all"
+                style={{
+                  background: 'var(--color-surface-elevated)',
+                  borderColor: 'var(--color-divider)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                <span>{radius} mi</span>
+                <svg
+                  aria-hidden="true"
+                  className="w-3 h-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Location permission banner */}
@@ -348,7 +375,19 @@ export function Restaurants() {
             </button>
           </div>
 
-          {fetchError ? (
+          {/* Map View */}
+          {viewMode === 'map' && !fetchError && !loading && (
+            <div className="mt-4">
+              <RestaurantMap
+                restaurants={filteredRestaurants}
+                userLocation={location}
+                onSelectRestaurant={handleRestaurantSelect}
+              />
+            </div>
+          )}
+
+          {/* List View */}
+          {viewMode === 'map' && !fetchError && !loading ? null : fetchError ? (
             <div className="text-center py-12">
               <p role="alert" className="text-sm mb-4" style={{ color: 'var(--color-danger)' }}>{fetchError.message}</p>
               <button
