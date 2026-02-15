@@ -126,7 +126,8 @@ const VALID_CATEGORIES = [
   'sandwich', 'salad', 'seafood', 'fish', 'tendys', 'fried chicken',
   'apps', 'fries', 'entree', 'dessert', 'donuts', 'pokebowl',
   'asian', 'chicken', 'quesadilla', 'soup',
-  'ribs', 'sides', 'duck', 'lamb', 'pork',
+  'ribs', 'sides', 'duck', 'lamb', 'pork', 'clams',
+  'oysters', 'coffee', 'cocktails', 'ice cream',
 ]
 
 const SYSTEM_PROMPT = `You are a menu data extraction assistant for a food discovery app on Martha's Vineyard.
@@ -169,10 +170,15 @@ Given raw menu text, extract every food dish and return structured JSON.
 | chicken | Chicken entrees (not fried chicken, not tenders) |
 | quesadilla | Quesadillas |
 | soup | Soups (non-chowder) |
+| cocktails | Cocktails, mixed drinks, signature drinks |
+| coffee | Coffee drinks, espresso, lattes, specialty coffee |
+| ice cream | Ice cream, gelato, frozen treats, milkshakes |
+| oysters | Oysters (raw bar, oyster plates) |
+| clams | Clam dishes (steamers, stuffed clams, clam strips) |
 
 ## Extraction Rules
 
-1. **Skip drinks/beverages entirely** — no cocktails, beer, wine, coffee, juice, soda, smoothies
+1. **Include cocktails, coffee drinks, and specialty beverages** — skip generic beer/wine lists, soda, plain juice
 2. **Skip condiment-level sides under ~$4** — skip things like extra sauce, dressing on the side, bread roll
 3. **Include substantive sides $4+** — fries, onion rings, vegetables, etc.
 4. **Deduplicate sizes** — if a dish comes in small/large or lunch/dinner sizes, keep only the larger/dinner version

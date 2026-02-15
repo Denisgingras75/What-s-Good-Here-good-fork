@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS restaurants (
   facebook_url TEXT,
   instagram_url TEXT,
   phone TEXT,
+  menu_url TEXT,
+  menu_last_checked TIMESTAMPTZ,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
