@@ -86,7 +86,7 @@ export function Home() {
       />
 
       {/* Section 2: Top 10 */}
-      <section className="px-4 py-6" style={{ background: 'var(--color-surface)' }}>
+      <section className="px-4 pt-8 pb-6" style={{ background: 'var(--color-surface)' }}>
         {loading ? (
           <Top10Skeleton />
         ) : error ? (
