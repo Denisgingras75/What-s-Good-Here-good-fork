@@ -187,7 +187,7 @@ function CategoryPill({ category, isActive, onClick }) {
           width: '56px',
           height: '56px',
           background: 'var(--color-surface-elevated)',
-          boxShadow: isActive ? '0 0 0 2px rgba(200, 90, 84, 0.6)' : 'none',
+          boxShadow: isActive ? '0 0 0 2px rgba(200, 90, 84, 0.5)' : 'none',
         }}
       >
         {imageSrc && !imgError ? (
