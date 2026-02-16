@@ -120,34 +120,38 @@
    Food psychology colors: orange-red + warm stone
    =========================== */
 [data-theme="light"] {
-  --color-primary: #E8663C;
-  --color-primary-muted: rgba(232, 102, 60, 0.14);
-  --color-primary-glow: rgba(232, 102, 60, 0.20);
+  /* 10% — Deep warm crimson accent (the dish) */
+  --color-primary: #9E2B1E;
+  --color-primary-muted: rgba(158, 43, 30, 0.14);
+  --color-primary-glow: rgba(158, 43, 30, 0.20);
   --color-rating: #16A34A;
   --color-accent-gold: #E9A115;
   --color-accent-gold-muted: rgba(233, 161, 21, 0.15);
   --color-link-secondary: #E9A115;
   --color-accent-orange: #E07856;
   --color-accent-yellow: #D4960A;
+  /* Text — warm, recedes into atmosphere */
   --color-text-primary: #2A2218;
   --color-text-secondary: #7A6E62;
   --color-text-tertiary: #A89888;
+  /* 60% — Warm stone backdrop (the table) */
   --color-bg: #F0ECE8;
-  --color-surface: #F2EDE6;
-  --color-surface-elevated: #FAF3EC;
-  --color-divider: rgba(200, 100, 60, 0.12);
-  --color-card: #FDF6F0;
-  --color-card-hover: #F9EDE3;
+  --color-surface: #E8D4C8;
+  --color-surface-elevated: #EFCFBE;
+  /* 30% — Orange-red appetite atmosphere (the room) */
+  --color-divider: rgba(200, 80, 40, 0.20);
+  --color-card: #F2CDBC;
+  --color-card-hover: #EBC2AE;
   --color-medal-gold: #B8860B;
   --color-medal-silver: #8A8278;
   --color-medal-bronze: #A0522D;
-  --color-danger: #DC2626;
+  --color-danger: #9E2B1E;
   --color-success: #16A34A;
   --color-muted: #A09488;
   --color-text-on-primary: #FFFFFF;
-  --glow-primary: 0 0 20px rgba(232, 102, 60, 0.15), 0 0 40px rgba(232, 102, 60, 0.05);
+  --glow-primary: 0 0 20px rgba(158, 43, 30, 0.15), 0 0 40px rgba(158, 43, 30, 0.05);
   --glow-gold: 0 0 15px rgba(233, 161, 21, 0.15);
-  --focus-ring: 0 0 0 3px rgba(232, 102, 60, 0.25);
+  --focus-ring: 0 0 0 3px rgba(158, 43, 30, 0.25);
 }
 
 @tailwind base;
@@ -204,7 +208,7 @@
   }
 
   [data-theme="light"] .glass-header {
-    background: rgba(242, 237, 230, 0.95);
+    background: rgba(232, 212, 200, 0.95);
   }
 
   .card-elevated {

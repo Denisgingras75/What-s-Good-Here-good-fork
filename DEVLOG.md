@@ -8,12 +8,13 @@ A shared log of what each contributor worked on. Add your entries at the top.
 ## 2026-02-16 - Daniel + Claude
 
 ### 60/30/10 Color Ratio (Light Mode)
-- Applied food psychology 60/30/10 ratio to light theme
-- **60% (The Table):** Warm stone backdrop unchanged, surface warmed from `#F7F4F1` to `#F2EDE6`
-- **30% (Appetite Atmosphere):** Cards shifted from pure `#FFFFFF` to warm blush-cream `#FDF6F0`, dividers tinted terracotta `rgba(200,100,60,0.12)`, surface-elevated warmed to `#FAF3EC`
+- Applied food psychology 60/30/10 ratio to light theme — proper layer separation
+- **60% (The Table):** Warm stone backdrop `#F0ECE8`, surface `#E8D4C8`
+- **30% (The Room):** Orange-red appetite atmosphere — cards `#F2CDBC`, hover `#EBC2AE`, elevated `#EFCFBE`. Like sitting in a restaurant with terracotta walls and warm lighting
+- **10% (The Dish):** Deep warm crimson `#9E2B1E` replaces orange-red for primary accent. Pops against warm orange surfaces without competing. Burgundy CTAs, headers, active states
 - **Text:** Neutral slate grays replaced with warm taupe (`#7A6E62`, `#A89888`) so text recedes into warm atmosphere
-- **10% (The Dish):** Accent colors unchanged — orange-red `#E8663C` and gold `#E9A115` now pop harder against the warm runway
-- Glass header updated to match new surface tone
+- **Danger color** aligned to new primary crimson
+- Glow/focus tokens updated to match new primary
 - Dark mode untouched — was already hitting the ratio
 
 ---
