@@ -490,8 +490,6 @@ export const dishesApi = {
         .from('dishes')
         .select(`
           *,
-          parent_dish_id,
-          display_order,
           restaurants (
             id,
             name,
@@ -508,9 +506,12 @@ export const dishesApi = {
         throw createClassifiedError(dishError)
       }
 
-      // Count yes_votes and check variants in parallel
-      // Note: avg_rating and total_votes come from pre-computed dish columns.
-      const [yesVotesResult, hasVariantsResult] = await Promise.all([
+      // Count total_votes, yes_votes and check variants in parallel
+      const [totalVotesResult, yesVotesResult, hasVariantsResult] = await Promise.all([
+        supabase
+          .from('votes')
+          .select('*', { count: 'exact', head: true })
+          .eq('dish_id', dishId),
         supabase
           .from('votes')
           .select('*', { count: 'exact', head: true })
@@ -519,6 +520,7 @@ export const dishesApi = {
         this.hasVariants(dishId),
       ])
 
+      const totalVotes = totalVotesResult.error ? 0 : (totalVotesResult.count || 0)
       const yesVotes = yesVotesResult.error ? 0 : (yesVotesResult.count || 0)
       if (yesVotesResult.error) {
         logger.error('Error counting yes votes for dish:', yesVotesResult.error)
@@ -526,6 +528,7 @@ export const dishesApi = {
 
       return {
         ...dish,
+        total_votes: totalVotes,
         yes_votes: yesVotes,
         has_variants: hasVariantsResult,
       }
