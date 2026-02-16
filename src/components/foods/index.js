@@ -1,6 +1,8 @@
 // Barrel export for food SVG components
 export { AppsSVG } from './AppsSVG'
 export { BreakfastSVG } from './BreakfastSVG'
+export { CocktailSVG } from './CocktailSVG'
+export { CoffeeSVG } from './CoffeeSVG'
 export { BreakfastSandwichSVG } from './BreakfastSandwichSVG'
 export { BurgerSVG } from './BurgerSVG'
 export { ChowderSVG } from './ChowderSVG'

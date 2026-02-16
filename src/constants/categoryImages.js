@@ -28,6 +28,18 @@ export const CATEGORY_IMAGES = {
   'donuts': `${SUPABASE_STORAGE}/donuts.jpg`,
   'asian': `${SUPABASE_STORAGE}/asian.jpg`,
   'quesadilla': `${SUPABASE_STORAGE}/quesadilla.jpg`,
+  'dessert': `${SUPABASE_STORAGE}/dessert.jpg`,
+  'fish': `${SUPABASE_STORAGE}/fish.jpg`,
+  'clams': `${SUPABASE_STORAGE}/clams.jpg`,
+  'pork': `${SUPABASE_STORAGE}/pork.jpg`,
+  'oysters': `${SUPABASE_STORAGE}/oysters.jpg`,
+  'coffee': `${SUPABASE_STORAGE}/coffee.jpg`,
+  'cocktails': `${SUPABASE_STORAGE}/cocktails.jpg`,
+  'ice cream': `${SUPABASE_STORAGE}/ice-cream.jpg`,
+  'lamb': `${SUPABASE_STORAGE}/lamb.jpg`,
+  'ribs': `${SUPABASE_STORAGE}/ribs.jpg`,
+  'duck': `${SUPABASE_STORAGE}/duck.jpg`,
+  'sides': `${SUPABASE_STORAGE}/sides.jpg`,
 }
 
 // Fallback image - pizza from Supabase storage

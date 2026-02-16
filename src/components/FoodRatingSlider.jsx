@@ -8,6 +8,8 @@ import {
   BreakfastSandwichSVG,
   BurgerSVG,
   ChowderSVG,
+  CocktailSVG,
+  CoffeeSVG,
   DessertSVG,
   EntreeSVG,
   FriedChickenSVG,
@@ -209,9 +211,21 @@ function getFoodComponent(category) {
     'entree': EntreeSVG,
     'dessert': DessertSVG,
     'oysters': SeafoodSVG,
-    'coffee': ChowderSVG,
-    'cocktails': ChowderSVG,
+    'coffee': CoffeeSVG,
+    'cocktails': CocktailSVG,
     'ice cream': DessertSVG,
+    'steak': EntreeSVG,
+    'fish': SeafoodSVG,
+    'chicken': FriedChickenSVG,
+    'pork': EntreeSVG,
+    'lamb': EntreeSVG,
+    'clams': SeafoodSVG,
+    'ribs': EntreeSVG,
+    'sides': FriesSVG,
+    'donuts': DessertSVG,
+    'duck': EntreeSVG,
+    'asian': PokeBowlSVG,
+    'quesadilla': TacoSVG,
   }
 
   return foodMap[category] || PizzaSVG // Default to pizza for now
@@ -219,7 +233,7 @@ function getFoodComponent(category) {
 
 // Check if food is served on a plate (doesn't shrink, plate stays)
 function hasPlate(category) {
-  const platedFoods = ['pasta', 'salad', 'breakfast', 'entree', 'apps', 'seafood', 'fried chicken', 'sushi', 'pokebowl', 'wings', 'tendys', 'fries', 'chowder', 'soup', 'dessert', 'oysters', 'coffee', 'cocktails', 'ice cream']
+  const platedFoods = ['pasta', 'salad', 'breakfast', 'entree', 'apps', 'seafood', 'fried chicken', 'sushi', 'pokebowl', 'wings', 'tendys', 'fries', 'chowder', 'soup', 'dessert', 'oysters', 'coffee', 'cocktails', 'ice cream', 'steak', 'fish', 'chicken', 'pork', 'lamb', 'clams', 'ribs', 'duck', 'asian', 'donuts', 'quesadilla', 'sides']
   return platedFoods.includes(category)
 }
 
@@ -249,6 +263,18 @@ function getCrumbColor(category) {
     'coffee': '#6F4E37', // Coffee brown
     'cocktails': '#E8A060', // Amber
     'ice cream': '#F5E6D3', // Vanilla cream
+    'steak': '#8B4513', // Brown
+    'fish': '#FA8072', // Salmon pink
+    'chicken': '#D4A574', // Skin color
+    'pork': '#D4A574', // Skin color
+    'lamb': '#8B4513', // Brown
+    'clams': '#C8D8D0', // Shell gray-green
+    'ribs': '#8B4513', // Brown
+    'sides': '#F4D03F', // Golden
+    'donuts': '#D4A574', // Dough color
+    'duck': '#8B4513', // Brown
+    'asian': '#E8C060', // Noodle color
+    'quesadilla': '#E8C060', // Tortilla color
   }
 
   return colorMap[category] || '#D97706'
