@@ -189,7 +189,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
           {rank}
         </span>
 
-        {/* Dish + restaurant info */}
+        {/* Dish + restaurant + rating info */}
         <div className="flex-1 min-w-0">
           <p
             className="font-bold truncate"
@@ -214,25 +214,20 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
           >
             {restaurant_name}
           </p>
-        </div>
-
-        {/* Rating */}
-        <div className="flex-shrink-0 text-right">
-          {isRanked ? (
-            <span
-              className="font-bold"
-              style={{
-                color: getRatingColor(avg_rating),
-                fontSize: podium.ratingSize,
-              }}
-            >
-              {avg_rating}
-            </span>
-          ) : (
-            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-              {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
-            </span>
-          )}
+          <p style={{ marginTop: '3px', fontSize: '13px' }}>
+            {isRanked ? (
+              <>
+                <span className="font-bold" style={{ color: getRatingColor(avg_rating) }}>
+                  {avg_rating}
+                </span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}> · {total_votes} votes</span>
+              </>
+            ) : (
+              <span style={{ color: 'var(--color-text-tertiary)' }}>
+                {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
+              </span>
+            )}
+          </p>
         </div>
       </button>
     )
@@ -280,31 +275,21 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
         >
           {restaurant_name}
         </p>
+        <p style={{ marginTop: '3px', fontSize: '13px' }}>
+          {isRanked ? (
+            <>
+              <span className="font-bold" style={{ color: getRatingColor(avg_rating) }}>
+                {avg_rating}
+              </span>
+              <span style={{ color: 'var(--color-text-tertiary)' }}> · {total_votes} votes</span>
+            </>
+          ) : (
+            <span style={{ color: 'var(--color-text-tertiary)' }}>
+              {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
+            </span>
+          )}
+        </p>
       </div>
-
-      <div className="flex-shrink-0 text-right">
-        {isRanked ? (
-          <span className="text-sm font-bold" style={{ color: getRatingColor(avg_rating) }}>
-            {avg_rating}
-          </span>
-        ) : (
-          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-            {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
-          </span>
-        )}
-      </div>
-
-      {/* Chevron — tappable affordance */}
-      <svg
-        className="w-4 h-4 flex-shrink-0"
-        style={{ color: 'var(--color-text-tertiary)' }}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
     </button>
   )
 })
