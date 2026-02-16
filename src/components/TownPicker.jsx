@@ -91,15 +91,14 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
           />
         </svg>
         {/* MV island silhouette */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-4px' }}>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-6px' }}>
           <img
             src="/mv-outline.png"
             alt=""
             style={{
-              width: '32px',
+              width: '38px',
               height: 'auto',
-              filter: 'brightness(0) invert(1)',
-              opacity: 0.85,
+              opacity: 0.9,
             }}
             draggable={false}
           />
