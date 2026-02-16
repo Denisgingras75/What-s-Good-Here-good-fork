@@ -269,11 +269,11 @@ function NumberOneHero({ dish, town, onClick }) {
     >
       <p
         style={{
-          fontSize: '10px',
+          fontSize: '16px',
           fontWeight: 700,
-          letterSpacing: '0.16em',
+          letterSpacing: '0.10em',
           textTransform: 'uppercase',
-          color: 'var(--color-medal-gold)',
+          color: 'var(--color-primary)',
           marginBottom: '8px',
         }}
       >
@@ -284,7 +284,7 @@ function NumberOneHero({ dish, town, onClick }) {
           fontFamily: "'aglet-sans', sans-serif",
           fontWeight: 700,
           fontSize: '24px',
-          color: 'var(--color-text-primary)',
+          color: 'var(--color-medal-gold)',
           lineHeight: 1.15,
           letterSpacing: '-0.02em',
         }}
