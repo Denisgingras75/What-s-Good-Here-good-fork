@@ -448,109 +448,109 @@ Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited 
 
 ### Light Mode — Appetite (warm stone bg `#F0ECE8`, card `#F2CDBC`)
 
-Deeper, richer, more saturated tones that stand out against the warm peach/stone palette. Use earthy mid-tones and bold food colors — avoid pastels or anything too light (they'll wash out against the warm beige).
+Deeper, richer, more saturated tones that stand out against the copper peach card color. The icon circle uses `#F2CDBC` (30% atmosphere / card color) which reads as a warm plate sitting on the `#F0ECE8` stone background.
 
 ```
 [Category Name]
 
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a [food item]. Color palette: [color 1 name] [hex], [color 2 name] [hex], [color 3 name] [hex]. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a [food item]. Color palette: [color 1 name] [hex], [color 2 name] [hex], [color 3 name] [hex]. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 #### All 19 Light Mode Prompts
 
 **1. Pizza:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a pizza slice. Color palette: rich tomato red #B83A2A, golden melted cheese #C8922A, toasted crust brown #8B6842. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a pizza slice. Color palette: rich tomato red #B83A2A, golden melted cheese #C8922A, toasted crust brown #8B6842. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **2. Burgers:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a burger. Color palette: seared patty brown #6B3A28, golden bun amber #B87D3A, fresh lettuce green #4A7A3A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a burger. Color palette: seared patty brown #6B3A28, golden bun amber #B87D3A, fresh lettuce green #4A7A3A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **3. Seafood:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a shrimp. Color palette: deep coral #C45A42, ocean teal #2A7A7A, shell pink-brown #9A6252. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a shrimp. Color palette: deep coral #C45A42, ocean teal #2A7A7A, shell pink-brown #9A6252. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **4. Wings:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of chicken wings. Color palette: hot sauce red-orange #C44A22, crispy golden brown #A87A3A, charred amber #7A5228. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of chicken wings. Color palette: hot sauce red-orange #C44A22, crispy golden brown #A87A3A, charred amber #7A5228. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **5. Sushi:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of sushi rolls. Color palette: salmon orange #C86A42, nori dark green #2A5A3A, rice cream #B8A882. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of sushi rolls. Color palette: salmon orange #C86A42, nori dark green #2A5A3A, rice cream #B8A882. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **6. Breakfast:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of eggs and bacon on a plate. Color palette: egg yolk gold #C89A2A, crispy bacon burgundy #8A3A2A, warm toast brown #A87A52. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of eggs and bacon on a plate. Color palette: egg yolk gold #C89A2A, crispy bacon burgundy #8A3A2A, warm toast brown #A87A52. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **7. Lobster Rolls:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a lobster roll. Color palette: lobster red #B84A32, buttered bun gold #C89A52, butter cream #A88A52. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a lobster roll. Color palette: lobster red #B84A32, buttered bun gold #C89A52, butter cream #A88A52. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **8. Chowder:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a bowl of chowder. Color palette: creamy bisque #B89A6A, ceramic bowl brown #7A5A3A, herb green #4A6A3A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a bowl of chowder. Color palette: creamy bisque #B89A6A, ceramic bowl brown #7A5A3A, herb green #4A6A3A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **9. Pasta:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a plate of pasta. Color palette: rich marinara red #B84232, golden pasta #C8A252, basil green #3A6A2A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a plate of pasta. Color palette: rich marinara red #B84232, golden pasta #C8A252, basil green #3A6A2A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **10. Steak:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a steak. Color palette: seared beef burgundy #7A2A22, charred crust brown #5A3A28, rosemary green #4A6A42. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a steak. Color palette: seared beef burgundy #7A2A22, charred crust brown #5A3A28, rosemary green #4A6A42. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **11. Sandwiches:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a sandwich. Color palette: toasted bread brown #A67C52, roasted meat sienna #7A4B32, deep olive green #4A6B3A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a sandwich. Color palette: toasted bread brown #A67C52, roasted meat sienna #7A4B32, deep olive green #4A6B3A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **12. Salads:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a salad bowl. Color palette: deep leafy green #3A6A2A, tomato red #B84A32, wooden bowl brown #8A6A42. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a salad bowl. Color palette: deep leafy green #3A6A2A, tomato red #B84A32, wooden bowl brown #8A6A42. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **13. Tacos:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a taco. Color palette: corn tortilla gold #B88A3A, seasoned meat brown #7A4A2A, cilantro green #3A7A3A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a taco. Color palette: corn tortilla gold #B88A3A, seasoned meat brown #7A4A2A, cilantro green #3A7A3A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **14. Tenders:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of chicken tenders. Color palette: crispy golden #B88A32, fried coating amber #9A7232, dipping sauce red #B84A2A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of chicken tenders. Color palette: crispy golden #B88A32, fried coating amber #9A7232, dipping sauce red #B84A2A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **15. Desserts:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a slice of cake. Color palette: rich chocolate brown #6A3A22, strawberry red #B84252, frosting cream #A89A72. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a slice of cake. Color palette: rich chocolate brown #6A3A22, strawberry red #B84252, frosting cream #A89A72. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **16. Fish:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a whole fish. Color palette: ocean blue-teal #2A6A7A, silver scale grey #6A7A7A, lemon gold #C8A232. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a whole fish. Color palette: ocean blue-teal #2A6A7A, silver scale grey #6A7A7A, lemon gold #C8A232. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **17. Clams:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of clam shells. Color palette: shell sand brown #8A7252, deep ocean teal #2A5A6A, pearl cream #A89A7A. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of clam shells. Color palette: shell sand brown #8A7252, deep ocean teal #2A5A6A, pearl cream #A89A7A. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **18. Chicken:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a roasted chicken leg. Color palette: roasted golden brown #A87A32, crispy skin amber #8A6228, herb sage green #4A6A42. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of a roasted chicken leg. Color palette: roasted golden brown #A87A32, crispy skin amber #8A6228, herb sage green #4A6A42. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 **19. Pork:**
 ```
-Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of pork ribs. Color palette: smoked meat burgundy #7A3A2A, BBQ glaze brown #9A5A32, char amber #6A4A28. Transparent background, designed for a warm beige stone background (#F0ECE8). Use rich, saturated mid-tones — no pastels.
+Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of pork ribs. Color palette: smoked meat burgundy #7A3A2A, BBQ glaze brown #9A5A32, char amber #6A4A28. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
 ---

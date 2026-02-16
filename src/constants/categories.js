@@ -120,8 +120,8 @@ export function getCategoryEmoji(id) {
   return category?.emoji || '🍽️'
 }
 
-// Category neon image mappings
-const CATEGORY_NEON_IMAGES = {
+// Category image mappings — dark mode (Island Depths)
+const CATEGORY_IMAGES_DARK = {
   pizza: '/categories/pizza.png',
   burger: '/categories/burgers.png',
   taco: '/categories/tacos.png',
@@ -139,10 +139,40 @@ const CATEGORY_NEON_IMAGES = {
   dessert: '/categories/desserts.png',
 }
 
-// Get neon image path for a category id
+// Category image mappings — light mode (Appetite)
+// As light icons are generated, add them here. Falls back to dark if missing.
+const CATEGORY_IMAGES_LIGHT = {
+  pizza: '/categories/pizza-light.png',
+  burger: '/categories/burgers-light.png',
+  seafood: '/categories/seafood-light.png',
+  wings: '/categories/wings-light.png',
+  sushi: '/categories/sushi-light.png',
+  breakfast: '/categories/breakfast-light.png',
+  'lobster roll': '/categories/lobster-rolls-light.png',
+  chowder: '/categories/chowder-light.png',
+  pasta: '/categories/pasta-light.png',
+  steak: '/categories/steak-light.png',
+  sandwich: '/categories/sandwiches-light.png',
+  salad: '/categories/salads-light.png',
+  taco: '/categories/tacos-light.png',
+  tendys: '/categories/tendys-light.png',
+  dessert: '/categories/desserts-light.png',
+  fish: '/categories/fish-light.png',
+  clams: '/categories/clams-light.png',
+  chicken: '/categories/chicken-light.png',
+  pork: '/categories/pork-light.png',
+}
+
+// Get category image path for current theme
+// Checks document theme attribute, falls back to dark images
 export function getCategoryNeonImage(id) {
   if (!id) return null
-  return CATEGORY_NEON_IMAGES[id.toLowerCase()] || null
+  const key = id.toLowerCase()
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light'
+  if (isLight && CATEGORY_IMAGES_LIGHT[key]) {
+    return CATEGORY_IMAGES_LIGHT[key]
+  }
+  return CATEGORY_IMAGES_DARK[key] || null
 }
 
 // Category display info - used for profile stats and tier display
