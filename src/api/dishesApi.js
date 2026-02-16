@@ -290,7 +290,7 @@ export const dishesApi = {
       const { data: dishes, error: dishError } = await supabase
         .from('dishes')
         .select(`
-          id, name, category, photo_url, avg_rating, total_votes,
+          id, name, category, photo_url, avg_rating,
           restaurants!inner ( id, name, town, is_open )
         `)
         .in('id', trendingIds)
@@ -308,7 +308,7 @@ export const dishesApi = {
           category: d.category,
           photo_url: d.photo_url,
           avg_rating: d.avg_rating,
-          total_votes: d.total_votes,
+          total_votes: voteCounts[d.id] || 0,
           recent_votes: voteCounts[d.id] || 0,
           restaurant_id: d.restaurants.id,
           restaurant_name: d.restaurants.name,
@@ -341,7 +341,7 @@ export const dishesApi = {
       let query = supabase
         .from('dishes')
         .select(`
-          id, name, category, photo_url, avg_rating, total_votes, created_at,
+          id, name, category, photo_url, avg_rating, created_at,
           restaurants!inner ( id, name, town, is_open )
         `)
         .eq('restaurants.is_open', true)
@@ -362,7 +362,6 @@ export const dishesApi = {
           category: d.category,
           photo_url: d.photo_url,
           avg_rating: d.avg_rating,
-          total_votes: d.total_votes,
           created_at: d.created_at,
           restaurant_id: d.restaurants.id,
           restaurant_name: d.restaurants.name,

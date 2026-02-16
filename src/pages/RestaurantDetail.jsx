@@ -26,7 +26,7 @@ export function RestaurantDetail() {
   const [loadingRestaurant, setLoadingRestaurant] = useState(true)
   const [fetchError, setFetchError] = useState(null)
 
-  const [activeTab, setActiveTab] = useState('top')
+  const [activeTab, setActiveTab] = useState(null) // null = auto-detect
   const [dishSearchQuery, setDishSearchQuery] = useState('')
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [addDishModalOpen, setAddDishModalOpen] = useState(false)
@@ -68,6 +68,14 @@ export function RestaurantDetail() {
   const { dishes, loading: dishesLoading, error: dishesError, refetch } = useDishes(
     location, radius, null, restaurantId
   )
+
+  // Auto-detect best default tab: Menu if no votes yet, Top Rated if votes exist
+  useEffect(() => {
+    if (activeTab !== null || dishesLoading || !dishes) return
+    const hasVotes = dishes.some(d => (d.total_votes || 0) > 0)
+    const hasMenuSections = dishes.some(d => d.menu_section)
+    setActiveTab(hasVotes ? 'top' : (hasMenuSections ? 'menu' : 'top'))
+  }, [dishes, dishesLoading, activeTab])
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id)
 
@@ -361,7 +369,7 @@ export function RestaurantDetail() {
       </div>
 
       {/* Dish Content */}
-      {activeTab === 'top' ? (
+      {(activeTab || 'top') === 'top' ? (
         <RestaurantDishes
           dishes={dishes}
           loading={dishesLoading}

@@ -37,8 +37,10 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
       const aPct = a.percent_worth_it || 0
       const bPct = b.percent_worth_it || 0
       if (bPct !== aPct) return bPct - aPct
-      // Final tie-breaker: vote count
-      return (b.total_votes || 0) - (a.total_votes || 0)
+      // Final tie-breaker: vote count, then alphabetical
+      const voteDiff = (b.total_votes || 0) - (a.total_votes || 0)
+      if (voteDiff !== 0) return voteDiff
+      return (a.dish_name || '').localeCompare(b.dish_name || '')
     })
 
     return {
