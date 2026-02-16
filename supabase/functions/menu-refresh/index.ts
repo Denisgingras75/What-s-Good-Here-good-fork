@@ -128,8 +128,8 @@ async function fetchMenuContent(url: string): Promise<string> {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'WhatsGoodHere-MenuBot/1.0',
-        'Accept': 'text/html',
+        'User-Agent': 'Mozilla/5.0 (compatible; WhatsGoodHere-MenuBot/1.0)',
+        'Accept': 'text/html,application/xhtml+xml',
       },
     })
 
@@ -139,7 +139,27 @@ async function fetchMenuContent(url: string): Promise<string> {
 
     const html = await response.text()
 
-    return html
+    // Strategy 1: Extract JSON-LD structured data (common on Squarespace/Wix)
+    const jsonLdMatches = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || []
+    const jsonLdText = jsonLdMatches
+      .map(m => m.replace(/<\/?script[^>]*>/gi, ''))
+      .join(' ')
+
+    // Strategy 2: Extract text from data attributes and visible content
+    // Keep script tags that contain menu-related data (prices, items)
+    const menuScripts: string[] = []
+    const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/gi
+    let match
+    while ((match = scriptRegex.exec(html)) !== null) {
+      const content = match[1]
+      // Keep scripts that look like they contain menu/price data
+      if (content.match(/\$\d+|\bprice\b|\bmenu\b.*\d{1,3}\.\d{2}/i) && content.length < 5000) {
+        menuScripts.push(content)
+      }
+    }
+
+    // Strategy 3: Standard HTML text extraction
+    const plainText = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
@@ -153,7 +173,14 @@ async function fetchMenuContent(url: string): Promise<string> {
       .replace(/&#039;|&apos;/g, "'")
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 12000) // More generous than event scraper — menus can be long
+
+    // Combine all sources, prioritizing structured data
+    const parts: string[] = []
+    if (jsonLdText.length > 20) parts.push('=== STRUCTURED DATA ===\n' + jsonLdText)
+    if (menuScripts.length > 0) parts.push('=== EMBEDDED DATA ===\n' + menuScripts.join('\n'))
+    parts.push('=== PAGE TEXT ===\n' + plainText)
+
+    return parts.join('\n\n').slice(0, 15000)
   } finally {
     clearTimeout(timeout)
   }
@@ -223,7 +250,7 @@ async function upsertDishes(
   // Get existing dishes
   const { data: existingDishes, error: fetchErr } = await supabase
     .from('dishes')
-    .select('id, name, category, menu_section, price, total_votes, photo_url')
+    .select('id, name, category, menu_section, price, photo_url')
     .eq('restaurant_id', restaurantId)
 
   if (fetchErr) {
