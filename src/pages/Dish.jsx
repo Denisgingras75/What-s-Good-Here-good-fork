@@ -717,7 +717,7 @@ export function Dish() {
                       {/* Header: User info and rating */}
                       <div className="flex items-center justify-between mb-2">
                         <Link
-                          to={`/profile/${review.user_id}`}
+                          to={`/user/${review.user_id}`}
                           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                         >
                           {/* Avatar */}

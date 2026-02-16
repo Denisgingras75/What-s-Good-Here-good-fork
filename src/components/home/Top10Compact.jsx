@@ -24,6 +24,8 @@ export function Top10Compact({
     ? personalDishes
     : dishes
 
+  const hasAnyVotes = dishes?.some(d => (d.total_votes || 0) > 0)
+
   if (!dishes?.length && !categoryLabel) return null
 
   return (
@@ -35,7 +37,7 @@ export function Top10Compact({
       >
         {categoryLabel
           ? (town ? `The best ${categoryLabel} in ${town}` : `The best ${categoryLabel} on the Vineyard`)
-          : 'People have spoken'
+          : hasAnyVotes ? 'People have spoken' : 'Dishes near you'
         }
       </p>
 

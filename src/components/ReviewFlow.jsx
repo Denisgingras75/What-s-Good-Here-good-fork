@@ -501,7 +501,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         disabled={submitting || reviewText.length > MAX_REVIEW_LENGTH}
         className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ease-out focus-ring
           ${submitting || reviewText.length > MAX_REVIEW_LENGTH ? 'opacity-50 cursor-not-allowed' : 'active:scale-98 hover:shadow-xl'}`}
-        style={{ background: 'linear-gradient(to right, var(--color-emerald), #14B8A6)', color: 'white', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)' }}
+        style={{ background: 'var(--color-primary)', color: 'white', boxShadow: '0 10px 15px -3px rgba(200, 90, 84, 0.3)' }}
       >
         {submitting ? 'Saving...' : 'Submit Review'}
       </button>

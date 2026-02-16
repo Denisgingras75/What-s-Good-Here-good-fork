@@ -120,12 +120,7 @@ export function Home() {
           <div className="max-w-lg mx-auto">
             {/* Radius badge — contextual with the Top 10 list */}
             <div className="flex items-center justify-between mb-2">
-              <span
-                className="text-xs font-medium"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
-                within {radius} mi
-              </span>
+              <span className="sr-only">Search radius: {radius} miles</span>
               <button
                 onClick={() => setShowRadiusSheet(true)}
                 aria-label={`Search radius: ${radius} miles. Tap to change`}
@@ -171,7 +166,7 @@ export function Home() {
             />
           </div>
         ) : (
-          <EmptyState onBrowse={() => navigate('/browse')} />
+          <EmptyState onBrowse={(path) => navigate(path || '/restaurants')} />
         )}
 
         {/* Browse all restaurants link */}
@@ -330,14 +325,14 @@ function EmptyState({ onBrowse }) {
         No dishes found
       </p>
       <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-        Try selecting a different town
+        Try selecting a different town or expanding your radius
       </p>
       <button
-        onClick={onBrowse}
+        onClick={() => onBrowse('/restaurants')}
         className="mt-4 px-6 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
         style={{ background: 'var(--color-primary)', color: 'white' }}
       >
-        Browse All Dishes
+        Browse Restaurants
       </button>
     </div>
   )

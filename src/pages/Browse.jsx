@@ -94,8 +94,10 @@ export function Browse() {
       setDebouncedSearchQuery(queryFromUrl)
       setSelectedCategory(null)
     } else {
-      // No category or search - redirect to Home
-      navigate('/', { replace: true })
+      // No category or search - show category grid
+      setSelectedCategory(null)
+      setSearchQuery('')
+      setDebouncedSearchQuery('')
     }
   }, [searchParams, navigate])
 

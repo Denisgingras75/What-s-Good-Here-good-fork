@@ -188,7 +188,7 @@ export function RestaurantDetail() {
       >
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/restaurants')}
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/restaurants')}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
             style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)' }}
           >
@@ -217,7 +217,7 @@ export function RestaurantDetail() {
           <button
             onClick={async () => {
               const result = await shareOrCopy({
-                url: `${window.location.origin}/restaurant/${restaurantId}`,
+                url: `${window.location.origin}/restaurants/${restaurantId}`,
                 title: restaurant.name,
                 text: `Check out ${restaurant.name} on What's Good Here!`,
               })

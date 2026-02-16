@@ -353,7 +353,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                     </p>
                   ) : (
                     <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                      Log in to add new restaurants from Google
+                      Try a different spelling or browse restaurants instead
                     </p>
                   )}
                 </div>
