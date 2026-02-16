@@ -12,6 +12,7 @@ import { useFavorites } from '../hooks/useFavorites'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { AddDishModal } from '../components/AddDishModal'
 import { RestaurantDishes, RestaurantMenu } from '../components/restaurants'
+import { useNearbyRestaurant } from '../hooks/useNearbyRestaurant'
 import { useRestaurantSpecials } from '../hooks/useSpecials'
 import { useRestaurantEvents } from '../hooks/useEvents'
 import { SpecialCard } from '../components/SpecialCard'
@@ -79,6 +80,10 @@ export function RestaurantDetail() {
   }, [dishes, dishesLoading, activeTab])
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id)
+
+  // Check if user is physically near this restaurant
+  const { nearbyRestaurant } = useNearbyRestaurant()
+  const isHere = nearbyRestaurant?.id === restaurantId
 
   // Fetch specials and events for this restaurant
   const { specials } = useRestaurantSpecials(restaurantId)
@@ -323,7 +328,27 @@ export function RestaurantDetail() {
             </div>
           )}
 
-          {user && (
+          {isHere && (
+            <button
+              onClick={() => {
+                if (!user) { setLoginModalOpen(true); return }
+                setAddDishModalOpen(true)
+              }}
+              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
+              style={{
+                background: 'var(--color-accent-gold)',
+                color: 'var(--color-bg)',
+              }}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              I&apos;m Here — Rate a Dish
+            </button>
+          )}
+
+          {user && !isHere && (
             <button
               onClick={() => setAddDishModalOpen(true)}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all active:scale-[0.98]"

@@ -10,6 +10,7 @@ import { SearchHero, Top10Compact } from '../components/home'
 import { TownPicker } from '../components/TownPicker'
 import { RadiusSheet } from '../components/LocationPicker'
 import { LocationBanner } from '../components/LocationBanner'
+import { NearbyNudge } from '../components/NearbyNudge'
 
 export function Home() {
   const navigate = useNavigate()
@@ -92,6 +93,9 @@ export function Home() {
         className="mx-4"
         style={{ borderTop: '1px solid var(--color-divider)' }}
       />
+
+      {/* Nearby nudge — passive check-in */}
+      <NearbyNudge />
 
       {/* Section 2: Top 10 */}
       <section className="px-4 py-6">
