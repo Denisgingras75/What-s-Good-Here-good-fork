@@ -10,7 +10,7 @@ import { useFavorites } from '../hooks/useFavorites'
 import { restaurantsApi } from '../api/restaurantsApi'
 import { dishesApi } from '../api/dishesApi'
 import { getStorageItem, setStorageItem } from '../lib/storage'
-import { BROWSE_CATEGORIES, CATEGORY_INFO } from '../constants/categories'
+import { BROWSE_CATEGORIES, CATEGORY_INFO, getCategoryEmoji } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { getRelatedSuggestions } from '../constants/searchSuggestions'
 import { RankedDishRow } from '../components/home/RankedDishRow'
@@ -18,8 +18,7 @@ import { getPendingVoteFromStorage } from '../lib/storage'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { DishCardSkeleton } from '../components/Skeleton'
 import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
-import { SortDropdown, CategoryGrid } from '../components/browse'
-import { CategoryImageCard } from '../components/CategoryImageCard'
+import { SortDropdown } from '../components/browse'
 import { RadiusSheet } from '../components/LocationPicker'
 import { LocationBanner } from '../components/LocationBanner'
 
@@ -460,123 +459,91 @@ export function Browse() {
 
       {/* Main Content */}
       {!showingDishes ? (
-        /* Category Grid - Plates on a dining table */
+        /* Category Grid - Emoji-first, search on top */
         <div
-          className="px-6 pt-5 pb-6 relative"
+          className="px-4 pt-4 pb-6"
           style={{
-            background: 'linear-gradient(180deg, var(--color-card) 0%, var(--color-surface) 50%, var(--color-bg) 100%)',
+            background: 'var(--color-surface)',
             minHeight: 'calc(100vh - 80px)',
           }}
         >
-          {/* Table edge - top bevel/rim catching light */}
-          <div
-            className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(217, 167, 101, 0.08) 20%, rgba(217, 167, 101, 0.12) 50%, rgba(217, 167, 101, 0.08) 80%, transparent 100%)',
-            }}
-          />
-
-          {/* Section title - anchors the grid */}
-          <div className="flex justify-center pt-4 pb-10">
-            <span
-              className="text-[11px] font-semibold tracking-[0.2em] uppercase"
-              style={{ color: 'rgba(255, 255, 255, 0.45)' }}
+          {/* Search bar - top of page */}
+          <div className="relative mb-6">
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
+              style={{
+                background: 'var(--color-bg)',
+                border: `2px solid ${searchFocused ? 'var(--color-accent-gold)' : 'var(--color-divider)'}`,
+                boxShadow: searchFocused ? '0 0 20px rgba(217, 167, 101, 0.15)' : 'none',
+              }}
             >
-              Categories
-            </span>
-          </div>
-
-          {/* Category grid - 12 items, 4 rows of 3, shelf-like rhythm */}
-          <div className="grid grid-cols-3 gap-x-4 gap-y-7 justify-items-center">
-            {CATEGORIES.map((category) => (
-              <CategoryImageCard
-                key={category.id}
-                category={category}
-                isActive={selectedCategory === category.id}
-                onClick={() => handleCategoryChange(category.id)}
-                size={72}
-              />
-            ))}
-          </div>
-
-          {/* Search bar - escape hatch, visually separate from categories */}
-          <div className="mt-auto pt-10">
-            <div className="relative">
-              <div
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
-                style={{
-                  background: 'var(--color-bg)',
-                  border: `2px solid ${searchFocused ? 'var(--color-accent-gold)' : 'var(--color-divider)'}`,
-                  boxShadow: searchFocused ? '0 0 20px rgba(217, 167, 101, 0.15)' : 'none',
-                }}
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                style={{ color: 'var(--color-text-tertiary)' }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
               >
-                <svg
-                  className="w-5 h-5 flex-shrink-0"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={searchInputRef}
+                id="browse-search"
+                name="browse-search"
+                type="text"
+                autoComplete="off"
+                placeholder="Find the best ___ near you"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  if (e.target.value.length >= 2) {
+                    setAutocompleteOpen(true)
+                  } else {
+                    setAutocompleteOpen(false)
+                  }
+                  setAutocompleteIndex(-1)
+                }}
+                onFocus={() => {
+                  setSearchFocused(true)
+                  if (searchQuery.length >= 2 && autocompleteSuggestions.length > 0) {
+                    setAutocompleteOpen(true)
+                  }
+                }}
+                onBlur={() => setSearchFocused(false)}
+                onKeyDown={handleSearchKeyDown}
+                className="flex-1 bg-transparent outline-none border-none text-sm"
+                style={{ color: 'var(--color-text-primary)', outline: 'none', border: 'none', boxShadow: 'none' }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    clearSearch()
+                    searchInputRef.current?.focus()
+                  }}
+                  className="p-1 rounded-full transition-colors"
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  ref={searchInputRef}
-                  id="browse-search"
-                  name="browse-search"
-                  type="text"
-                  autoComplete="off"
-                  placeholder="Find the best ___ near you"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    if (e.target.value.length >= 2) {
-                      setAutocompleteOpen(true)
-                    } else {
-                      setAutocompleteOpen(false)
-                    }
-                    setAutocompleteIndex(-1)
-                  }}
-                  onFocus={() => {
-                    setSearchFocused(true)
-                    if (searchQuery.length >= 2 && autocompleteSuggestions.length > 0) {
-                      setAutocompleteOpen(true)
-                    }
-                  }}
-                  onBlur={() => setSearchFocused(false)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="flex-1 bg-transparent outline-none border-none text-sm"
-                  style={{ color: 'var(--color-text-primary)', outline: 'none', border: 'none', boxShadow: 'none' }}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => {
-                      clearSearch()
-                      searchInputRef.current?.focus()
-                    }}
-                    className="p-1 rounded-full transition-colors"
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  <svg
+                    className="w-4 h-4"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
                   >
-                    <svg
-                      className="w-4 h-4"
-                      style={{ color: 'var(--color-text-tertiary)' }}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
-            {/* Autocomplete dropdown */}
+            {/* Autocomplete dropdown - below search */}
             {autocompleteOpen && autocompleteSuggestions.length > 0 && (
               <div
                 ref={autocompleteRef}
-                className="absolute bottom-full left-0 right-0 mb-1 rounded-lg shadow-lg border overflow-hidden z-50"
+                className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-lg border overflow-hidden z-50"
                 style={{ background: 'var(--color-surface)', borderColor: 'var(--color-divider)' }}
               >
                 {autocompleteSuggestions.map((suggestion, index) => (
@@ -590,7 +557,6 @@ export function Browse() {
                     onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = index === autocompleteIndex ? 'var(--color-primary-muted)' : 'transparent'}
                   >
-                    {/* Text */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
                         {suggestion.name}
@@ -599,8 +565,6 @@ export function Browse() {
                         {suggestion.type === 'dish' ? `at ${suggestion.subtitle}` : suggestion.subtitle}
                       </p>
                     </div>
-
-                    {/* Type badge */}
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style={{
@@ -615,6 +579,46 @@ export function Browse() {
               </div>
             )}
           </div>
+
+          {/* Section title */}
+          <div className="flex justify-center mb-5">
+            <span
+              className="text-[11px] font-semibold tracking-[0.2em] uppercase"
+              style={{ color: 'rgba(255, 255, 255, 0.45)' }}
+            >
+              Categories
+            </span>
+          </div>
+
+          {/* 4-column emoji grid */}
+          <div className="grid grid-cols-4 gap-x-2 gap-y-5 justify-items-center">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className="flex flex-col items-center gap-1.5 transition-all duration-200 active:scale-[0.95]"
+              >
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200"
+                  style={{
+                    background: selectedCategory === category.id ? 'rgba(217, 167, 101, 0.15)' : 'var(--color-bg)',
+                    border: selectedCategory === category.id
+                      ? '2px solid var(--color-accent-gold)'
+                      : '1px solid var(--color-divider)',
+                  }}
+                >
+                  <span style={{ fontSize: '24px', lineHeight: 1 }}>{category.emoji}</span>
+                </div>
+                <span
+                  className="text-[11px] font-medium text-center leading-tight"
+                  style={{
+                    color: selectedCategory === category.id ? 'var(--color-accent-gold)' : 'var(--color-text-secondary)',
+                  }}
+                >
+                  {category.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       ) : (
@@ -627,7 +631,7 @@ export function Browse() {
                 <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                   {debouncedSearchQuery
                     ? `Best ${formatSearchQuery(debouncedSearchQuery)} ${town ? `in ${town}` : 'near you'}`
-                    : `The Best ${CATEGORIES.find(c => c.id === selectedCategory)?.label || 'Dishes'}${town ? ` in ${town}` : ''}`
+                    : `${getCategoryEmoji(selectedCategory)} The Best ${CATEGORIES.find(c => c.id === selectedCategory)?.label || 'Dishes'}${town ? ` in ${town}` : ''}`
                   }
                 </h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>

@@ -2,6 +2,7 @@ import { useState, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MIN_VOTES_FOR_RANKING } from '../../constants/app'
 import { getRatingColor } from '../../utils/ranking'
+import { getCategoryEmoji } from '../../constants/categories'
 
 /**
  * Top10Compact - Ranked dish list for the homepage
@@ -139,9 +140,9 @@ export function Top10Compact({
 }
 
 const PODIUM_STYLE = {
-  1: { color: 'var(--color-medal-gold)', glow: '#D9A765', rankSize: '25px', nameSize: '16px', ratingSize: '16px', bgTint: 'rgba(217, 167, 101, 0.06)' },
-  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '22px', nameSize: '15px', ratingSize: '15px', bgTint: 'rgba(168, 181, 191, 0.05)' },
-  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '20px', nameSize: '14px', ratingSize: '14px', bgTint: 'rgba(196, 133, 92, 0.05)' },
+  1: { color: 'var(--color-medal-gold)', glow: '#D9A765', rankSize: '22px', nameSize: '16px', ratingSize: '16px', bgTint: 'rgba(217, 167, 101, 0.06)' },
+  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '20px', nameSize: '15px', ratingSize: '15px', bgTint: 'rgba(168, 181, 191, 0.05)' },
+  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '18px', nameSize: '14px', ratingSize: '14px', bgTint: 'rgba(196, 133, 92, 0.05)' },
 }
 
 // Top 10 row — podium layout for 1-3, compact for 4+
@@ -163,10 +164,9 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
         style={{
           background: podium.bgTint,
           borderLeft: `2px solid ${podium.glow}`,
-          boxShadow: `inset 0 0 20px ${podium.glow}08`,
         }}
       >
-        {/* Large rank number with glow */}
+        {/* Rank number */}
         <span
           className="font-bold flex-shrink-0"
           style={{
@@ -175,7 +175,6 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
             lineHeight: 1,
             minWidth: '24px',
             textAlign: 'center',
-            textShadow: `0 0 8px ${podium.glow}30, 0 0 16px ${podium.glow}15`,
           }}
         >
           {rank}
@@ -192,6 +191,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
               letterSpacing: '-0.01em',
             }}
           >
+            <span style={{ fontSize: '14px', marginRight: '4px' }}>{getCategoryEmoji(dish.category)}</span>
             {dish_name}
           </p>
           <p
@@ -236,7 +236,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
       onClick={onClick}
       aria-label={accessibleLabel}
       className="w-full flex items-center gap-3 py-2.5 px-2 rounded-lg transition-all text-left hover:bg-[var(--color-surface-elevated)]"
-      style={{ opacity: 0.8 }}
+      style={{ opacity: 0.9 }}
     >
       <span
         className="w-6 text-center text-sm font-bold flex-shrink-0"
@@ -247,6 +247,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick }) {
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+          <span style={{ fontSize: '12px', marginRight: '3px' }}>{getCategoryEmoji(dish.category)}</span>
           {dish_name}
         </p>
         <p className="text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>

@@ -13,7 +13,7 @@ export function SearchHero({ town, loading, categoryScroll }) {
           className="font-bold mb-1 text-shadow-warm"
           style={{
             color: 'var(--color-text-primary)',
-            fontSize: '26px',
+            fontSize: '30px',
             letterSpacing: '-0.02em',
           }}
         >
@@ -22,10 +22,10 @@ export function SearchHero({ town, loading, categoryScroll }) {
         <p
           style={{
             color: 'var(--color-text-tertiary)',
-            fontSize: '13px',
+            fontSize: '14px',
           }}
         >
-          The best dishes, ranked by locals
+          Find what's actually good
         </p>
       </div>
 

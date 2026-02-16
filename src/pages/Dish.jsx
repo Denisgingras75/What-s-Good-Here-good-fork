@@ -16,8 +16,7 @@ import { PhotoUploadButton } from '../components/PhotoUploadButton'
 import { PhotoUploadConfirmation } from '../components/PhotoUploadConfirmation'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
-import { getCategoryImage } from '../constants/categoryImages'
-import { CATEGORY_INFO } from '../constants/categories'
+import { CATEGORY_INFO, getCategoryEmoji } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { getRatingColor, formatScore10 } from '../utils/ranking'
 import { formatRelativeTime } from '../utils/formatters'
@@ -340,9 +339,6 @@ export function Dish() {
   const displayPhotos = showAllPhotos ? allPhotos : communityPhotos.slice(0, 4)
   const hasMorePhotos = allPhotos.length > 4 && !showAllPhotos
 
-  // Hero image
-  const heroImage = featuredPhoto?.photo_url || dish?.photo_url || getCategoryImage(dish?.category)
-
   if (loading) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
@@ -453,56 +449,14 @@ export function Dish() {
         </div>
       ) : (
         <>
-          {/* Hero Image */}
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <img
-              src={heroImage}
-              alt={dish.dish_name}
-              loading="eager"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fall back to category image if photo_url fails to load
-                const fallback = getCategoryImage(dish?.category)
-                if (e.target.src !== fallback) {
-                  e.target.src = fallback
-                }
-              }}
-            />
-
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-            {/* Rating badge */}
-            {isRanked && (
-              <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
-                <span className={`text-lg font-bold${dish.avg_rating >= 8.0 ? ' glow-rating-high' : ''}`} style={{ color: dish.avg_rating ? getRatingColor(dish.avg_rating) : 'white' }}>
-                  {dish.avg_rating || `${dish.percent_worth_it}%`}
-                </span>
-                <span className="text-xs text-white/80 ml-1">
-                  {dish.avg_rating ? 'rating' : 'would order again'}
-                </span>
-              </div>
-            )}
-
-            {/* Official badge if featured from restaurant */}
-            {featuredPhoto?.source_type === 'restaurant' && (
-              <div className="absolute top-4 right-4 px-2 py-1 rounded-lg bg-white/90 backdrop-blur-sm">
-                <span className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
-                  Official Photo
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
+          {/* Rating-First Header */}
           <div className="p-4">
-            {/* Dish Info */}
             <div className="mb-6">
               {/* Parent dish breadcrumb if this is a variant */}
               {isVariant && parentDish && (
                 <button
                   onClick={() => navigate(`/dish/${parentDish.id}`)}
-                  className="flex items-center gap-1 text-xs font-medium mb-2 hover:underline"
+                  className="flex items-center gap-1 text-xs font-medium mb-3 hover:underline"
                   style={{ color: 'var(--color-primary)' }}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -512,52 +466,106 @@ export function Dish() {
                 </button>
               )}
 
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                  {dish.dish_name}
-                </h1>
-                {isRanked && dish.percent_worth_it >= 90 && (
-                  <span
-                    className="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide"
-                    style={{ background: 'var(--color-accent-gold-muted)', color: 'var(--color-accent-gold)' }}
-                  >
-                    GREAT
-                  </span>
-                )}
-                {isRanked && dish.percent_worth_it >= 80 && dish.percent_worth_it < 90 && (
-                  <span
-                    className="px-2 py-0.5 rounded text-xs font-bold tracking-wide"
-                    style={{ background: 'rgba(107, 179, 132, 0.15)', color: 'var(--color-rating)' }}
-                  >
-                    Good Here
-                  </span>
-                )}
-                <ValueBadge valuePercentile={dish.value_percentile} />
-              </div>
-              <button
-                onClick={() => navigate(`/restaurants/${dish.restaurant_id}`)}
-                className="text-base hover:underline"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                {dish.restaurant_name}
-              </button>
-              {dish.price && (
-                <span className="ml-2 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  · ${Number(dish.price).toFixed(0)}
+              {/* Emoji + Name + Featured thumbnail */}
+              <div className="flex items-start gap-3">
+                <span style={{ fontSize: '44px', lineHeight: 1 }}>
+                  {getCategoryEmoji(dish.category)}
                 </span>
-              )}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                    {dish.dish_name}
+                  </h1>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <button
+                      onClick={() => navigate(`/restaurants/${dish.restaurant_id}`)}
+                      className="text-sm hover:underline"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      {dish.restaurant_name}
+                    </button>
+                    {dish.price && (
+                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        · ${Number(dish.price).toFixed(0)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* Small featured photo thumbnail if exists */}
+                {featuredPhoto?.photo_url && (
+                  <button
+                    onClick={() => setLightboxPhoto(featuredPhoto.photo_url)}
+                    className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden"
+                    aria-label="View featured photo"
+                  >
+                    <img
+                      src={featuredPhoto.photo_url}
+                      alt={dish.dish_name}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                )}
+              </div>
 
-              {/* Vote info */}
-              <p className="text-sm mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                {dish.total_votes === 0
-                  ? 'Start the ranking'
-                  : isRanked
-                    ? `${dish.total_votes} votes · ${dish.percent_worth_it}% would order again`
-                    : `Early · ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
-                }
-              </p>
+              {/* Rating Hero Block */}
+              <div
+                className="mt-4 p-4 rounded-xl flex items-center gap-4"
+                style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}
+              >
+                {isRanked ? (
+                  <>
+                    <div className="text-center">
+                      <span
+                        className="text-4xl font-bold"
+                        style={{ color: getRatingColor(dish.avg_rating) }}
+                      >
+                        {dish.avg_rating}
+                      </span>
+                      <span className="text-lg" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                        {dish.percent_worth_it}% would order again
+                      </p>
+                      <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {dish.total_votes} votes
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {dish.percent_worth_it >= 90 && (
+                        <span
+                          className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+                          style={{ background: 'var(--color-accent-gold-muted)', color: 'var(--color-accent-gold)' }}
+                        >
+                          GREAT
+                        </span>
+                      )}
+                      {dish.percent_worth_it >= 80 && dish.percent_worth_it < 90 && (
+                        <span
+                          className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide"
+                          style={{ background: 'rgba(107, 179, 132, 0.15)', color: 'var(--color-rating)' }}
+                        >
+                          Good Here
+                        </span>
+                      )}
+                      <ValueBadge valuePercentile={dish.value_percentile} />
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 text-center py-2">
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      {dish.total_votes === 0
+                        ? 'Be the first to rate this dish'
+                        : `Early · ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
+                      }
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                      {MIN_VOTES_FOR_RANKING - dish.total_votes} more vote{MIN_VOTES_FOR_RANKING - dish.total_votes === 1 ? '' : 's'} to rank
+                    </p>
+                  </div>
+                )}
+              </div>
 
-              {/* Variant Selector - show for parents with variants or variants with siblings */}
+              {/* Variant Selector */}
               {variants.length > 0 && (
                 <div className="mt-4">
                   <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>

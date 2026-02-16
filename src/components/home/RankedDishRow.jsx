@@ -2,8 +2,8 @@ import { memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MIN_VOTES_FOR_RANKING } from '../../constants/app'
 import { getRatingColor } from '../../utils/ranking'
-import { RestaurantAvatar } from '../RestaurantAvatar'
 import { ValueBadge } from '../browse/ValueBadge'
+import { getCategoryEmoji } from '../../constants/categories'
 
 // Compact dish row for homepage rankings
 export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy }) {
@@ -12,7 +12,7 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy })
     dish_id,
     dish_name,
     restaurant_name,
-    restaurant_town,
+    category,
     avg_rating,
     total_votes,
     distance_miles,
@@ -63,16 +63,10 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy })
         )}
       </div>
 
-      {/* Restaurant Avatar */}
-      <RestaurantAvatar
-        name={restaurant_name}
-        town={restaurant_town}
-        size={48}
-      />
-
       {/* Dish Info */}
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: '16px', lineHeight: 1 }}>{getCategoryEmoji(category)}</span>
           <h3 className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
             {dish_name}
           </h3>
