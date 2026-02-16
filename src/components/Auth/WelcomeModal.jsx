@@ -119,7 +119,7 @@ export function WelcomeModal() {
           {/* Brand name */}
           <h1
             style={{
-              fontFamily: "'Sora', sans-serif",
+              fontFamily: "'bryant-web-condensed', sans-serif",
               fontSize: '42px',
               fontWeight: 700,
               color: 'var(--color-primary)',

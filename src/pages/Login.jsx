@@ -199,7 +199,7 @@ export function Login() {
               </div>
               <h1
                 style={{
-                  fontFamily: "'Sora', sans-serif",
+                  fontFamily: "'bryant-web-condensed', sans-serif",
                   fontSize: '32px',
                   fontWeight: 700,
                   color: 'var(--color-primary)',
