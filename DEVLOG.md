@@ -7,6 +7,34 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ## 2026-02-16 - Daniel + Claude
 
+### Contender Row Reading Flow + Expandable Category Lists
+- **Reading flow fix:** Moved rating + vote count below restaurant name in all contender rows (ranks 2-10), matching the hero card's top-to-bottom scan pattern. Removes eye zigzag to far-right rating column.
+- **Podium rows (2-3):** Rating line now reads `8.3 · 10 votes` below restaurant name, green rating color preserved
+- **Finalist rows (4-10):** Same rating placement, chevron removed (stacked layout already feels tappable)
+- **Expandable category lists:** When clicking a category shortcut (e.g. Burgers), shows first 10 dishes with "Show all N [Category]" button to expand the full list. Collapses back with "Show less". Resets on category switch (component remounts via `key` prop).
+- Removed unused `onSeeAll` prop from Top10Compact
+
+### Files changed
+- `src/components/home/Top10Compact.jsx` — Stacked rating layout, expand/collapse state, removed chevron
+- `src/pages/Home.jsx` — Removed `.slice(0, 10)` cap on category-filtered dishes
+
+---
+
+### Theme-Aware Category Icons
+- **Light mode icons:** Generated all 19 category icons with copper peach `#F2CDBC` (30% card color) circular backgrounds using Zach Roszczewski flat vector style — rich saturated mid-tones that pop against the warm stone `#F0ECE8` background
+- **Dark mode icons:** Added missing icons for fish, clams, chicken, pork with `#1B2837` backgrounds to match existing dark icons
+- **Seafood swap:** Old seafood icon (was a fish) → renamed to fish. New seafood icon is a seafood boil (shrimp, corn, shellfish) to differentiate
+- **Theme-aware switching:** `getCategoryNeonImage()` now reads `data-theme` attribute to serve the correct icon set. Falls back to dark icons if light variant is missing
+- **Prompt templates saved** to NOTES.md for both dark (`#1B2837` bg) and light (`#F2CDBC` bg) with all 19 category-specific color palettes
+- Images stored in `public/categories/` with `-light.png` suffix for light variants
+- Mapping in `CATEGORY_IMAGES_DARK` / `CATEGORY_IMAGES_LIGHT` in `src/constants/categories.js`
+
+### Files changed
+- `src/constants/categories.js` — Theme-aware image maps and `getCategoryNeonImage()` logic
+- `public/categories/*-light.png` — 19 new light mode icons
+- `public/categories/{fish,clams,chicken,pork,seafood}.png` — New/updated dark mode icons
+- `NOTES.md` — Prompt templates for both themes
+
 ### 60/30/10 Color Ratio (Light Mode)
 - Applied food psychology 60/30/10 ratio to light theme — proper layer separation
 - **60% (The Table):** Warm stone backdrop `#F0ECE8`, surface `#E8D4C8`

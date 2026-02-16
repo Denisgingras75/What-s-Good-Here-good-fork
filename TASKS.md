@@ -343,6 +343,11 @@
 - Category nav: compact 44px photo circles with labels in horizontal scroll
 - CSP fix for Adobe Fonts on deployed versions
 
+**What's done (Feb 16):**
+- Contender rows (2-10) aligned to top-to-bottom reading flow matching hero card — rating moved below restaurant name
+- Chevron removed from finalist rows (4-10)
+- Expandable category lists — "Show all N [Category]" / "Show less" toggle when >10 dishes
+
 **What's remaining:**
 - Trust signal: deferred until vote counts are more impressive (live stats looked empty)
 - Logo animation: creative brief written (`docs/plans/2026-02-15-logo-creative-brief.md`), needs external designer
