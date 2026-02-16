@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLocationContext } from '../context/LocationContext'
@@ -186,14 +186,22 @@ const scrollStyle = {
 
 function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange }) {
   const [townPickerOpen, setTownPickerOpen] = useState(false)
+  const scrollRef = useRef(null)
+
+  const handleTownToggle = useCallback((open) => {
+    setTownPickerOpen(open)
+    if (!open && scrollRef.current) {
+      scrollRef.current.scrollLeft = 0
+    }
+  }, [])
 
   return (
-    <div className="flex items-center gap-1 pl-2 pr-4 pb-1 overflow-x-auto" style={scrollStyle}>
+    <div ref={scrollRef} className="flex items-center gap-1 pl-2 pr-4 pb-1 overflow-x-auto" style={scrollStyle}>
       <TownPicker
         town={town}
         onTownChange={onTownChange}
         isOpen={townPickerOpen}
-        onToggle={setTownPickerOpen}
+        onToggle={handleTownToggle}
       />
       {!townPickerOpen && (
         <div className="flex items-center gap-2">
