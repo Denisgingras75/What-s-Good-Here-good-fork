@@ -11,11 +11,25 @@ A shared log of what each contributor worked on. Add your entries at the top.
 - Applied food psychology 60/30/10 ratio to light theme — proper layer separation
 - **60% (The Table):** Warm stone backdrop `#F0ECE8`, surface `#E8D4C8`
 - **30% (The Room):** Orange-red appetite atmosphere — cards `#F2CDBC`, hover `#EBC2AE`, elevated `#EFCFBE`. Like sitting in a restaurant with terracotta walls and warm lighting
-- **10% (The Dish):** Deep warm crimson `#9E2B1E` replaces orange-red for primary accent. Pops against warm orange surfaces without competing. Burgundy CTAs, headers, active states
-- **Text:** Neutral slate grays replaced with warm taupe (`#7A6E62`, `#A89888`) so text recedes into warm atmosphere
+- **10% (The Dish):** Deep warm crimson `#9E2B1E` replaces orange-red for primary accent. Pops against warm orange surfaces without competing. Crimson CTAs, headers, active states
+- **Text:** Neutral slate grays replaced with warm taupe (`#7A6E62`, `#A89888`) so text recedes into warm atmosphere. Primary text `#3A2818` (warm dark brown) for outdoor readability on MV
 - **Danger color** aligned to new primary crimson
 - Glow/focus tokens updated to match new primary
 - Dark mode untouched — was already hitting the ratio
+
+### #1 Hero Card Color Hierarchy
+- **"#1 IN {TOWN} RIGHT NOW"** label: gold → crimson `var(--color-primary)`, bumped from 10px to 16px — the #1 announcement should command attention, not whisper
+- **Dish name:** text-primary → gold `var(--color-medal-gold)` — completes the medal hierarchy (gold #1, silver #2, bronze #3)
+- Tightened letter-spacing on label from 0.16em to 0.10em at larger size
+
+### Docs Updated
+- Updated light mode design tokens in `CLAUDE.md` and `NOTES.md` to reflect 60/30/10 ratio with layer annotations (60% backdrop, 30% atmosphere, 10% accent)
+
+### Files changed
+- `src/index.css` — All light mode token values (primary, cards, text, surfaces, glow, focus)
+- `src/pages/Home.jsx` — NumberOneHero color hierarchy (crimson label, gold dish name, larger label)
+- `CLAUDE.md` — Light mode design tokens table
+- `NOTES.md` — Light mode design tokens table
 
 ---
 
