@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLocationContext } from '../context/LocationContext'
 import { useDishes } from '../hooks/useDishes'
+import { useDishSearch } from '../hooks/useDishSearch'
 import { useProfile } from '../hooks/useProfile'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
-import { BROWSE_CATEGORIES } from '../constants/categories'
+import { BROWSE_CATEGORIES, getCategoryNeonImage } from '../constants/categories'
 import { SearchHero, Top10Compact } from '../components/home'
 import { TownPicker } from '../components/TownPicker'
 
@@ -18,6 +19,17 @@ export function Home() {
 
   // Inline category filtering
   const [selectedCategory, setSelectedCategory] = useState(null)
+
+  // Inline search
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchLimit, setSearchLimit] = useState(10)
+  const handleSearchChange = useCallback((q) => {
+    setSearchQuery(q)
+    setSearchLimit(10)
+    if (q) setSelectedCategory(null)
+  }, [])
+  const { results: searchResults, loading: searchLoading } = useDishSearch(searchQuery, searchLimit, town)
+  const hasMoreResults = searchResults.length === searchLimit
 
   // Fetch dishes with town filter
   const { dishes, loading, error } = useDishes(location, radius, null, null, town)
@@ -35,6 +47,7 @@ export function Home() {
     if (!dishes?.length) return []
     return dishes.slice().sort(rankSort).slice(0, 10)
   }, [dishes])
+
 
   // Category-filtered dishes
   const categoryDishes = useMemo(() => {
@@ -75,19 +88,56 @@ export function Home() {
       <SearchHero
         town={town}
         loading={loading}
+        onSearchChange={handleSearchChange}
         categoryScroll={
-          <CategoryScroll
+          <CategoryNav
             town={town}
             onTownChange={setTown}
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={(cat) => {
+              setSelectedCategory(cat)
+              if (cat) setSearchQuery('')
+            }}
           />
         }
       />
 
-      {/* Section 2: Top 10 */}
+      {/* Section 2: Top 10 / Search Results */}
       <section className="px-4 pt-8 pb-6" style={{ background: 'var(--color-surface)' }}>
-        {loading ? (
+        {searchQuery ? (
+          <div className="max-w-lg mx-auto">
+            {searchLoading ? (
+              <Top10Skeleton />
+            ) : searchResults.length > 0 ? (
+              <>
+                <Top10Compact
+                  key={`search-${searchQuery}`}
+                  dishes={searchResults}
+                  town={town}
+                  categoryLabel={`"${searchQuery}"`}
+                />
+                {hasMoreResults && (
+                  <button
+                    onClick={() => setSearchLimit(prev => prev + 10)}
+                    className="w-full mt-3 py-3 text-sm font-medium rounded-xl transition-opacity hover:opacity-70"
+                    style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-accent-gold)' }}
+                  >
+                    Show more
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="py-8 text-center">
+                <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  No dishes found for "{searchQuery}"
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                  Try a different search
+                </p>
+              </div>
+            )}
+          </div>
+        ) : loading ? (
           <Top10Skeleton />
         ) : error ? (
           <div className="py-8 text-center">
@@ -104,14 +154,18 @@ export function Home() {
           </div>
         ) : top10Dishes.length > 0 ? (
           <div className="max-w-lg mx-auto">
+            {/* #1 Hero — only for the main Top 10, not category filtered */}
+            {!selectedCategory && top10Dishes[0] && (
+              <NumberOneHero dish={top10Dishes[0]} town={town} onClick={() => navigate(`/dish/${top10Dishes[0].dish_id}`)} />
+            )}
             <Top10Compact
               key={selectedCategory || 'top10'}
-              dishes={selectedCategory ? categoryDishes : top10Dishes}
+              dishes={selectedCategory ? categoryDishes : (top10Dishes.slice(1))}
               personalDishes={personalTop10Dishes}
               showToggle={showPersonalToggle}
               town={town}
               categoryLabel={selectedCategoryLabel}
-              onSeeAll={selectedCategory ? () => navigate(`/browse?category=${encodeURIComponent(selectedCategory)}`) : undefined}
+              startRank={selectedCategory ? 1 : 2}
             />
           </div>
         ) : (
@@ -128,56 +182,140 @@ const scrollStyle = {
   WebkitOverflowScrolling: 'touch',
 }
 
-function CategoryScroll({ town, onTownChange, selectedCategory, onCategoryChange }) {
+function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange }) {
   const [townPickerOpen, setTownPickerOpen] = useState(false)
-
-  if (townPickerOpen) {
-    return (
-      <div className="flex items-center gap-1 overflow-x-auto pl-2 pr-4 pb-1" style={scrollStyle}>
-        <TownPicker
-          town={town}
-          onTownChange={onTownChange}
-          isOpen
-          onToggle={setTownPickerOpen}
-        />
-      </div>
-    )
-  }
 
   return (
     <div className="flex items-center gap-1 pl-2 pr-4 pb-1">
       <TownPicker
         town={town}
         onTownChange={onTownChange}
-        isOpen={false}
+        isOpen={townPickerOpen}
         onToggle={setTownPickerOpen}
       />
-      <div className="flex items-center gap-1 overflow-x-auto" style={scrollStyle}>
-        {BROWSE_CATEGORIES.map((category) => (
-          <CategoryPill
-            key={category.id}
-            category={category}
-            isActive={selectedCategory === category.id}
-            onClick={() => onCategoryChange(selectedCategory === category.id ? null : category.id)}
-          />
-        ))}
-      </div>
+      {!townPickerOpen && (
+        <div className="flex items-center gap-2 overflow-x-auto" style={scrollStyle}>
+          {BROWSE_CATEGORIES.map((cat) => {
+            const isActive = selectedCategory === cat.id
+            const imageSrc = getCategoryNeonImage(cat.id)
+            return (
+              <button
+                key={cat.id}
+                onClick={() => onCategoryChange(isActive ? null : cat.id)}
+                className="flex-shrink-0 flex flex-col items-center gap-1 py-1 transition-all active:scale-[0.97]"
+                style={{
+                  minWidth: '48px',
+                  color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                }}
+              >
+                <div
+                  className="rounded-full overflow-hidden flex items-center justify-center"
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    background: 'var(--color-surface-elevated)',
+                    boxShadow: isActive ? '0 0 0 2px var(--color-primary)' : 'none',
+                  }}
+                >
+                  {imageSrc ? (
+                    <img
+                      src={imageSrc}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      style={{
+                        filter: isActive ? 'brightness(1.2) saturate(0.8)' : 'brightness(1.0) saturate(0.7)',
+                      }}
+                    />
+                  ) : (
+                    <span className="text-base">{cat.emoji}</span>
+                  )}
+                </div>
+                <span style={{ fontSize: '10.5px', fontWeight: isActive ? 600 : 500, letterSpacing: '0.01em' }}>
+                  {cat.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
 
-function CategoryPill({ category, isActive, onClick }) {
+// #1 Dish — typographic hero announcement
+function NumberOneHero({ dish, town, onClick }) {
+  const { dish_name, restaurant_name, avg_rating, total_votes } = dish
+  const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
+
   return (
     <button
       onClick={onClick}
-      className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-[0.97]"
+      className="w-full text-left mb-6 py-5 px-4 rounded-2xl transition-all active:scale-[0.99]"
       style={{
-        background: isActive ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
-        color: isActive ? '#FFFFFF' : 'var(--color-text-secondary)',
-        letterSpacing: '0.02em',
+        background: 'var(--color-surface-elevated)',
+        borderLeft: '3px solid var(--color-medal-gold)',
       }}
     >
-      {category.label}
+      <p
+        style={{
+          fontSize: '10px',
+          fontWeight: 700,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: 'var(--color-medal-gold)',
+          marginBottom: '8px',
+        }}
+      >
+        #1 {town ? `in ${town}` : 'on the Vineyard'} right now
+      </p>
+      <h2
+        style={{
+          fontFamily: "'aglet-sans', sans-serif",
+          fontWeight: 700,
+          fontSize: '24px',
+          color: 'var(--color-text-primary)',
+          lineHeight: 1.15,
+          letterSpacing: '-0.02em',
+        }}
+      >
+        {dish_name}
+      </h2>
+      <p
+        style={{
+          fontSize: '12px',
+          fontWeight: 500,
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase',
+          color: 'var(--color-text-secondary)',
+          marginTop: '4px',
+        }}
+      >
+        {restaurant_name}
+      </p>
+      <div className="flex items-center gap-3 mt-4">
+        {isRanked && (
+          <span
+            style={{
+              fontFamily: "'aglet-sans', sans-serif",
+              fontWeight: 700,
+              fontSize: '28px',
+              color: 'var(--color-rating)',
+              lineHeight: 1,
+            }}
+          >
+            {avg_rating}
+          </span>
+        )}
+        <span
+          style={{
+            fontSize: '11px',
+            color: 'var(--color-text-tertiary)',
+          }}
+        >
+          {total_votes} vote{total_votes === 1 ? '' : 's'}
+        </span>
+      </div>
     </button>
   )
 }

@@ -3,7 +3,7 @@ import { DishSearch } from '../DishSearch'
 /**
  * SearchHero - Hero section with value proposition, search, and category scroll
  */
-export function SearchHero({ town, loading, categoryScroll }) {
+export function SearchHero({ town, loading, categoryScroll, onSearchChange }) {
   return (
     <section
       className="pt-8 pb-5"
@@ -39,7 +39,7 @@ export function SearchHero({ town, loading, categoryScroll }) {
       </div>
 
       <div className="px-4">
-        <DishSearch loading={loading} placeholder="What are you craving?" town={town} />
+        <DishSearch loading={loading} placeholder="What are you craving?" town={town} onSearchChange={onSearchChange} />
       </div>
 
       {categoryScroll && (

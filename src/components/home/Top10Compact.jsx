@@ -16,6 +16,7 @@ export function Top10Compact({
   town,
   categoryLabel,
   onSeeAll,
+  startRank = 1,
 }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('mv')
@@ -75,7 +76,7 @@ export function Top10Compact({
             letterSpacing: '-0.02em',
           }}
         >
-          {town ? `${town} Top 10 Right Now` : 'MV Top 10 Right Now'}
+          The Contenders
         </h3>
       ) : null}
 
@@ -83,29 +84,29 @@ export function Top10Compact({
       <div>
         {activeDishes.length > 0 ? (
           <>
-            {/* Podium rows 1-3 */}
-            {activeDishes.slice(0, 3).map((dish, index) => (
+            {/* Podium rows — up to 3 with medal styling */}
+            {activeDishes.slice(0, Math.max(0, 4 - startRank)).map((dish, index) => (
               <div key={dish.dish_id} style={{ marginBottom: '6px' }}>
                 <Top10Row
                   dish={dish}
-                  rank={index + 1}
+                  rank={index + startRank}
                   onClick={() => navigate(`/dish/${dish.dish_id}`)}
                 />
               </div>
             ))}
 
-            {/* Finalists 4+ — grouped Apple-style list */}
-            {activeDishes.length > 3 && (
+            {/* Finalists — grouped Apple-style list */}
+            {activeDishes.length > Math.max(0, 4 - startRank) && (
               <div
                 className="mt-3 rounded-xl overflow-hidden"
               >
-                {activeDishes.slice(3).map((dish, index) => (
+                {activeDishes.slice(Math.max(0, 4 - startRank)).map((dish, index) => (
                   <Top10Row
                     key={dish.dish_id}
                     dish={dish}
-                    rank={index + 4}
+                    rank={index + startRank + Math.max(0, 4 - startRank)}
                     onClick={() => navigate(`/dish/${dish.dish_id}`)}
-                    isLast={index === activeDishes.length - 4}
+                    isLast={index === activeDishes.length - Math.max(0, 4 - startRank) - 1}
                   />
                 ))}
               </div>

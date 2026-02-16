@@ -29,7 +29,7 @@ const BROWSE_CATEGORIES = [
   { id: 'tendys', label: 'Tenders' },
 ]
 
-export function DishSearch({ loading = false, placeholder = "Find What's Good near you", town = null }) {
+export function DishSearch({ loading = false, placeholder = "Find What's Good near you", town = null, onSearchChange = null }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [isFocused, setIsFocused] = useState(false)
@@ -62,8 +62,20 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Fetch search results from API (respects town filter if set)
+  // Pass query to parent for inline results (homepage mode)
   useEffect(() => {
+    if (onSearchChange) {
+      const trimmed = query.trim()
+      const timer = setTimeout(() => {
+        onSearchChange(trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '')
+      }, 150)
+      return () => clearTimeout(timer)
+    }
+  }, [query, onSearchChange])
+
+  // Fetch search results from API (dropdown mode only)
+  useEffect(() => {
+    if (onSearchChange) return // Skip dropdown fetch in inline mode
     if (query.length < MIN_SEARCH_LENGTH) {
       setSearchResults([])
       return
@@ -92,7 +104,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
     // Debounce the search
     const timer = setTimeout(fetchResults, 150)
     return () => clearTimeout(timer)
-  }, [query, town])
+  }, [query, town, onSearchChange])
 
   // Find matching categories (client-side since it's a small constant array)
   const matchingCategories = useMemo(() => {
@@ -111,7 +123,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
   }
 
   const hasResults = results.dishes.length > 0 || results.categories.length > 0
-  const showDropdown = isFocused && query.length >= MIN_SEARCH_LENGTH
+  const showDropdown = !onSearchChange && isFocused && query.length >= MIN_SEARCH_LENGTH
   const isLoading = loading || searching
 
   // Handle dish selection
@@ -145,8 +157,9 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
     navigate(`/browse?category=${encodeURIComponent(category.id)}`)
   }
 
-  // Handle Enter key - go to full search results page
+  // Handle Enter key - go to full search results page (dropdown mode only)
   const handleKeyDown = (e) => {
+    if (onSearchChange) return // Inline mode handles results in parent
     if (e.key === 'Enter' && query.trim().length >= MIN_SEARCH_LENGTH) {
       // Track search submission
       capture('search_performed', {
