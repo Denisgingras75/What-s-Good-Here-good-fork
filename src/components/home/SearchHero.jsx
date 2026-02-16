@@ -12,7 +12,7 @@ export function SearchHero({ town, loading, categoryScroll }) {
       <div className="mb-3 text-center px-4">
         <h1
           style={{
-            fontFamily: "'bryant-web-condensed', sans-serif",
+            fontFamily: "'aglet-sans', sans-serif",
             fontWeight: 700,
             color: 'var(--color-primary)',
             fontSize: '34px',

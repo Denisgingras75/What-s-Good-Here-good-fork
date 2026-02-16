@@ -77,7 +77,7 @@ export function WelcomeSplash({ onComplete }) {
         </div>
         <h1
           style={{
-            fontFamily: "'bryant-web-condensed', sans-serif",
+            fontFamily: "'aglet-sans', sans-serif",
             fontSize: '42px',
             fontWeight: 700,
             color: 'var(--color-primary)',
