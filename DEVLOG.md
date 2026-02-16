@@ -18,9 +18,15 @@ A shared log of what each contributor worked on. Add your entries at the top.
 - **Next:** Once Resend is back up, create new API key, update Supabase SMTP password, test magic link delivery
 - Note: Earlier test failures were due to using `user_repeated_signup` (existing account) which Supabase silently no-ops — need to test with magic link login or fresh email
 
+### T28 Rescoped
+- `react-helmet-async` doesn't support React 19 (peer dep conflict)
+- Client-side meta tags don't help anyway — social crawlers (Facebook, iMessage, Twitter) don't execute JS
+- Rescoped T28 to Vercel edge middleware approach, deferred to pre-launch
+- Middleware will detect crawler user agents, fetch data from Supabase, return HTML with correct og tags
+
 ### Next Up
-- **T28:** Dynamic meta tags for dish/restaurant sharing (react-helmet-async)
 - Resend API key recreation + email delivery verification
+- T26 (homepage polish), T27 (OG image), T29 (apple-touch-icon)
 
 ---
 

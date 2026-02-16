@@ -244,7 +244,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
       aria-label={accessibleLabel}
       className="w-full flex items-center gap-3 py-3.5 px-3 transition-colors text-left active:scale-[0.99]"
       style={{
-        background: `linear-gradient(to right, var(--color-surface-elevated) ${(avg_rating || 0) * 10}%, var(--color-surface) ${(avg_rating || 0) * 10}%)`,
+        background: 'var(--color-surface)',
         borderBottom: isLast ? 'none' : '1px solid var(--color-divider)',
       }}
     >

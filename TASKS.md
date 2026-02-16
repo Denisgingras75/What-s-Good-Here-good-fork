@@ -372,20 +372,22 @@ If you cover the logo, nothing identifies this as What's Good Here. No visual or
 
 ---
 
-## T28: Add dynamic meta tags for dish/restaurant sharing
+## T28: Dynamic OG meta tags via Vercel edge middleware (pre-launch)
 
-**Why:** Every shared link shows the same generic preview: "What's Good Here — Find the best dishes..." When someone shares a specific dish like `/dish/abc123`, the preview should say "Lobster Roll at Larsen's Fish Market" with the dish photo. Without this, shared links have no context and get fewer clicks.
+**Why:** Every shared link shows the same generic preview: "What's Good Here — Find the best dishes..." When someone shares a specific dish like `/dish/abc123`, the preview should say "Lobster Roll at Larsen's Fish Market" with the dish photo. Without this, shared links have no context and get fewer clicks. Client-side solutions (`react-helmet-async`) don't work because social crawlers (Facebook, iMessage, Twitter) don't execute JavaScript.
+
+**Approach:** Vercel edge middleware that detects crawler user agents, fetches dish/restaurant data from Supabase, and returns a minimal HTML page with correct og:title, og:description, og:image. Normal users get the regular SPA.
 
 **Acceptance criteria:**
-- Install `react-helmet-async`
-- Dish detail page sets og:title to `{dish_name} at {restaurant_name}`, og:description to rating/votes summary, og:image to dish photo
-- Restaurant page sets og:title to restaurant name
-- Fallback to default meta tags on pages without dynamic data
+- Vercel middleware intercepts crawler requests to `/dish/:id` and `/restaurants/:id`
+- Dish links preview as `{dish_name} at {restaurant_name}` with dish photo and rating summary
+- Restaurant links preview with restaurant name
+- Non-crawler requests pass through to SPA unchanged
 - `npm run build` passes
 
-**Status:** Ready
+**Status:** Deferred to pre-launch
 
-**Files:** `src/pages/Dish.jsx`, `src/pages/Restaurants.jsx`, `src/App.jsx`, `index.html`
+**Files:** `middleware.js` (new), `vercel.json`
 
 ---
 
