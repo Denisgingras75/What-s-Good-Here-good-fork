@@ -90,18 +90,11 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
             opacity="0.25"
           />
         </svg>
-        {/* MV island silhouette */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-6px' }}>
-          <img
-            src="/mv-outline.png"
-            alt=""
-            style={{
-              width: '38px',
-              height: 'auto',
-              opacity: 0.9,
-            }}
-            draggable={false}
-          />
+        {/* Red location pin */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-4px' }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--color-primary)" opacity="0.85">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
+          </svg>
         </div>
       </div>
       <span className="font-medium" style={{ letterSpacing: '0.01em' }}>{currentTown?.label || 'All Island'}</span>
