@@ -419,7 +419,7 @@ If you cover the logo, nothing identifies this as What's Good Here. No visual or
 
 ---
 
-## T31: Add error handling to Profile page async operations
+## ~~T31: Add error handling to Profile page async operations~~ DONE
 
 **Why:** `handleSaveName`, `handleVote`, and `adminApi.isAdmin()` call in Profile.jsx have no try-catch. Failed saves leave the UI in a broken state with no feedback. `handleToggleFavorite` in Browse.jsx also unhandled.
 
@@ -429,19 +429,15 @@ If you cover the logo, nothing identifies this as What's Good Here. No visual or
 - `adminApi.isAdmin()` has `.catch()` handler
 - `handleToggleFavorite` in Browse.jsx wrapped in try-catch
 
-**Status:** Ready
-
-**Files:** `src/pages/Profile.jsx:87,204-215,248-251`, `src/pages/Browse.jsx:237-243`
+**Files:** `src/pages/Profile.jsx`, `src/pages/Browse.jsx`
 
 ---
 
-## T32: Fix DishSearch inputRef null check
+## ~~T32: Fix DishSearch inputRef null check~~ DONE
 
 **Why:** `inputRef.current.contains(e.target)` in the click-outside handler lacks optional chaining. Race condition during unmount can crash. Browse.jsx already does this correctly with `?.`.
 
 **Acceptance criteria:**
 - `!inputRef.current?.contains(e.target)` with optional chaining
-
-**Status:** Ready
 
 **Files:** `src/components/DishSearch.jsx:56`

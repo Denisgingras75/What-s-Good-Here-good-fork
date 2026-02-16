@@ -81,7 +81,9 @@ export function Profile() {
       setIsAdmin(false)
       return
     }
-    adminApi.isAdmin().then(setIsAdmin)
+    adminApi.isAdmin().then(setIsAdmin).catch((error) => {
+      logger.error('Failed to check admin status:', error)
+    })
   }, [user])
 
   // Fetch follow counts
@@ -204,11 +206,16 @@ export function Profile() {
       return
     }
 
-    if (newName.trim()) {
-      await updateProfile({ display_name: newName.trim() })
+    try {
+      if (newName.trim()) {
+        await updateProfile({ display_name: newName.trim() })
+      }
+      setEditingName(false)
+      setNameStatus(null)
+    } catch (error) {
+      logger.error('Failed to save name:', error)
+      setMessage({ type: 'error', text: 'Failed to save name. Please try again.' })
     }
-    setEditingName(false)
-    setNameStatus(null)
   }
 
   // Get dishes for current tab
@@ -244,7 +251,11 @@ export function Profile() {
   // Handle vote from unrated dish
   const handleVote = async () => {
     setSelectedDish(null)
-    await Promise.all([refetchUnrated(), refetchVotes()])
+    try {
+      await Promise.all([refetchUnrated(), refetchVotes()])
+    } catch (error) {
+      logger.error('Failed to refresh after vote:', error)
+    }
   }
 
   // Handle clicking an unrated dish to rate it

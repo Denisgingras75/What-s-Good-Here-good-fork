@@ -239,7 +239,11 @@ export function Browse() {
       setLoginModalOpen(true)
       return
     }
-    await toggleFavorite(dishId)
+    try {
+      await toggleFavorite(dishId)
+    } catch (error) {
+      logger.error('Failed to toggle favorite:', error)
+    }
   }
 
   const handleCategoryChange = (categoryId) => {

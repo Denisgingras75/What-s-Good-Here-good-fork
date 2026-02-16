@@ -5,6 +5,25 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ---
 
+## 2026-02-15 - Daniel + Claude
+
+### Bug Fixes
+- **T32:** Fixed DishSearch inputRef null check — added optional chaining to `inputRef.current?.contains()` in click-outside handler
+- **T31:** Added error handling to Profile/Browse async operations — `handleSaveName` try-catch with user error message, `handleVote` refetch try-catch, `adminApi.isAdmin()` catch handler, `handleToggleFavorite` try-catch in Browse.jsx
+
+### Resend Email Setup (In Progress)
+- Resend account created, domain `wghapp.com` purchased and verified
+- SMTP credentials configured in Supabase Auth settings (host: smtp.resend.com, port: 465, username: resend)
+- **Blocked:** Resend had a service outage during testing, and API key was accidentally deleted
+- **Next:** Once Resend is back up, create new API key, update Supabase SMTP password, test magic link delivery
+- Note: Earlier test failures were due to using `user_repeated_signup` (existing account) which Supabase silently no-ops — need to test with magic link login or fresh email
+
+### Next Up
+- **T28:** Dynamic meta tags for dish/restaurant sharing (react-helmet-async)
+- Resend API key recreation + email delivery verification
+
+---
+
 ## 2026-02-13 - Daniel + Claude
 
 ### Homepage Simplification

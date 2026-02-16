@@ -53,7 +53,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target) &&
-        !inputRef.current.contains(e.target)
+        !inputRef.current?.contains(e.target)
       ) {
         setIsFocused(false)
       }
