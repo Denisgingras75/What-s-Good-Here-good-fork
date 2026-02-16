@@ -1,11 +1,11 @@
-import { ALL_TOWNS, MV_TOWNS, NANTUCKET_TOWNS } from '../constants/towns'
+import { ALL_TOWNS, MV_TOWNS, NANTUCKET_TOWNS, CAPE_COD_TOWNS } from '../constants/towns'
 
 /**
  * TownPicker - Inline pill that expands town options into the scroll strip
  * Shows both MV and Nantucket towns with grouping headers
  */
 export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
-  const currentLabel = ALL_TOWNS.find(t => t.value === town)?.label || 'All Islands'
+  const currentLabel = ALL_TOWNS.find(t => t.value === town)?.label || 'All Areas'
 
   const handleSelect = (value) => {
     onTownChange(value)
@@ -16,6 +16,7 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
     // Build grouped town list: "All Islands" first, then MV towns, then Nantucket towns
     const mvTowns = MV_TOWNS.slice(1) // skip "All Island"
     const nackTowns = NANTUCKET_TOWNS.slice(1) // skip "All Nantucket"
+    const capeTowns = CAPE_COD_TOWNS.slice(1) // skip "All Cape"
 
     return (
       <>
@@ -33,7 +34,7 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
           <span>Close</span>
         </button>
 
-        {/* All Islands */}
+        {/* All Areas */}
         <button
           onClick={() => handleSelect(null)}
           className="flex-shrink-0 pl-3 pr-3 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
@@ -46,7 +47,7 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
               : 'var(--color-text-secondary)',
           }}
         >
-          All Islands
+          All Areas
         </button>
 
         {/* MV group label */}
@@ -84,6 +85,32 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
         </span>
 
         {nackTowns.map((option) => (
+          <button
+            key={option.label}
+            onClick={() => handleSelect(option.value)}
+            className="flex-shrink-0 pl-3 pr-3 py-1.5 rounded-full text-sm font-medium transition-all active:scale-[0.97]"
+            style={{
+              background: option.value === town
+                ? 'var(--color-primary)'
+                : 'var(--color-surface-elevated)',
+              color: option.value === town
+                ? 'white'
+                : 'var(--color-text-secondary)',
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+
+        {/* Cape Cod group label */}
+        <span
+          className="flex-shrink-0 pl-2 pr-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider self-center"
+          style={{ color: 'var(--color-text-tertiary)' }}
+        >
+          Cape
+        </span>
+
+        {capeTowns.map((option) => (
           <button
             key={option.label}
             onClick={() => handleSelect(option.value)}
