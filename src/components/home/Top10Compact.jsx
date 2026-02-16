@@ -68,8 +68,10 @@ export function Top10Compact({
         </div>
       ) : !categoryLabel ? (
         <h3
-          className="font-bold mb-4"
+          className="mb-4"
           style={{
+            fontFamily: "'fira-sans', sans-serif",
+            fontWeight: 600,
             color: 'var(--color-primary)',
             fontSize: '19px',
             letterSpacing: '-0.02em',
