@@ -153,7 +153,7 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
           aria-valuemax={max}
           aria-valuenow={value}
           aria-valuetext={`${value.toFixed(1)} out of 10: ${getRatingLabel(value)}`}
-          className="rating-slider w-full h-3 bg-gradient-to-r from-red-300 via-yellow-300 to-emerald-400 rounded-full appearance-none cursor-pointer
+          className="rating-slider w-full h-3 rounded-full appearance-none cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-9 [&::-webkit-slider-thumb]:h-9
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-xl
             [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:cursor-pointer
@@ -162,6 +162,7 @@ export function FoodRatingSlider({ value, onChange, min = 0, max = 10, step = 0.
             [&::-moz-range-thumb]:w-9 [&::-moz-range-thumb]:h-9 [&::-moz-range-thumb]:rounded-full
             [&::-moz-range-thumb]:shadow-xl [&::-moz-range-thumb]:border-4
             [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:cursor-pointer"
+          style={{ background: 'linear-gradient(to right, var(--color-primary), var(--color-accent-gold), var(--color-rating))' }}
         />
         {/* Anchor tick marks */}
         <div className="relative h-6 mt-1">

@@ -321,7 +321,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{r.name}</p>
                     <p className="text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {Math.round(r.distance_meters)}m away
+                      {(r.distance_meters / 1609).toFixed(1)} mi away
                     </p>
                   </div>
                   <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

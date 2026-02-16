@@ -458,7 +458,7 @@ export function Dish() {
             <img
               src={heroImage}
               alt={dish.dish_name}
-              loading="lazy"
+              loading="eager"
               className="w-full h-full object-cover"
               onError={(e) => {
                 // Fall back to category image if photo_url fails to load
