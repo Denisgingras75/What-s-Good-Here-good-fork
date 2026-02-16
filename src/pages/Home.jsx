@@ -204,17 +204,17 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
               <button
                 key={cat.id}
                 onClick={() => onCategoryChange(isActive ? null : cat.id)}
-                className="flex-shrink-0 flex flex-col items-center gap-1 py-1 transition-all active:scale-[0.97]"
+                className="flex-shrink-0 flex flex-col items-center gap-1.5 py-1 transition-all active:scale-[0.97]"
                 style={{
-                  minWidth: '48px',
+                  minWidth: '56px',
                   color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
                 }}
               >
                 <div
                   className="rounded-full overflow-hidden flex items-center justify-center"
                   style={{
-                    width: '44px',
-                    height: '44px',
+                    width: '56px',
+                    height: '56px',
                     background: 'var(--color-surface-elevated)',
                     boxShadow: isActive ? '0 0 0 2px var(--color-primary)' : 'none',
                   }}
@@ -233,7 +233,7 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
                     <span className="text-base">{cat.emoji}</span>
                   )}
                 </div>
-                <span style={{ fontSize: '10.5px', fontWeight: isActive ? 600 : 500, letterSpacing: '0.01em' }}>
+                <span style={{ fontSize: '11px', fontWeight: isActive ? 600 : 500, letterSpacing: '0.01em' }}>
                   {cat.label}
                 </span>
               </button>
