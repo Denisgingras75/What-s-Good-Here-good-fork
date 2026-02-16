@@ -9,7 +9,7 @@ const DISMISS_KEY = 'wgh_nearby_nudge_dismissed'
 
 /**
  * Non-intrusive banner that detects GPS proximity to restaurants.
- * - Near a known restaurant: "At [Name]? Rate a dish!"
+ * - Near a known restaurant: "At [Name]? Rate a dish!" + "Not here?" fallback
  * - Has location but no match: "Know this spot? Add it to WGH"
  * - No location permission: renders nothing
  */
@@ -60,69 +60,82 @@ export function NearbyNudge() {
   return (
     <>
       <div
-        className="mx-4 my-3 px-4 py-3 rounded-xl flex items-center gap-3"
+        className="mx-4 my-3 px-4 py-3 rounded-xl"
         style={{
           background: 'var(--color-card)',
           borderLeft: '3px solid var(--color-accent-gold)',
         }}
       >
-        <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            {nearbyRestaurant ? (
+              <>
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                  At {nearbyRestaurant.name}?
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                  Rate a dish and help others discover what&apos;s good
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  Know this spot?
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                  Add it to WGH so others can find it
+                </p>
+              </>
+            )}
+          </div>
+
           {nearbyRestaurant ? (
-            <>
-              <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                At {nearbyRestaurant.name}?
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                Rate a dish and help others discover what&apos;s good
-              </p>
-            </>
+            <button
+              onClick={handleRateDish}
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
+              style={{
+                background: 'var(--color-accent-gold)',
+                color: 'var(--color-bg)',
+              }}
+            >
+              Rate a dish
+            </button>
           ) : (
-            <>
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                Know this spot?
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                Add it to WGH so others can find it
-              </p>
-            </>
+            <button
+              onClick={handleAddRestaurant}
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
+              style={{
+                background: 'rgba(217, 167, 101, 0.15)',
+                color: 'var(--color-accent-gold)',
+                border: '1px solid rgba(217, 167, 101, 0.3)',
+              }}
+            >
+              Add it
+            </button>
           )}
+
+          <button
+            onClick={handleDismiss}
+            className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-text-tertiary)' }}
+            aria-label="Dismiss"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {nearbyRestaurant ? (
-          <button
-            onClick={handleRateDish}
-            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
-            style={{
-              background: 'var(--color-accent-gold)',
-              color: 'var(--color-bg)',
-            }}
-          >
-            Rate a dish
-          </button>
-        ) : (
+        {/* "Not here?" fallback — always gives a path to add a new restaurant */}
+        {nearbyRestaurant && (
           <button
             onClick={handleAddRestaurant}
-            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
-            style={{
-              background: 'rgba(217, 167, 101, 0.15)',
-              color: 'var(--color-accent-gold)',
-              border: '1px solid rgba(217, 167, 101, 0.3)',
-            }}
+            className="mt-2 text-xs transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-text-tertiary)' }}
           >
-            Add it
+            Not here? Add a different restaurant
           </button>
         )}
-
-        <button
-          onClick={handleDismiss}
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full transition-opacity hover:opacity-80"
-          style={{ color: 'var(--color-text-tertiary)' }}
-          aria-label="Dismiss"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
 
       {nearbyRestaurant && (
