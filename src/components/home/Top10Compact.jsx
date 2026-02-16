@@ -194,7 +194,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
             className="font-bold truncate"
             style={{
               fontFamily: "'informapro', sans-serif",
-              fontWeight: 400,
+              fontWeight: 700,
               color: podium.color,
               fontSize: podium.nameSize,
               lineHeight: 1.2,
@@ -265,7 +265,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
       <div className="flex-1 min-w-0">
         <p
           className="text-sm truncate"
-          style={{ fontFamily: "'informapro', sans-serif", fontWeight: 400, color: 'var(--color-text-primary)' }}
+          style={{ fontFamily: "'informapro', sans-serif", fontWeight: 700, color: 'var(--color-text-primary)' }}
         >
           {dish_name}
         </p>
