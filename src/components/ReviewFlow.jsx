@@ -265,7 +265,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   if (userVote !== null && userRating !== null && step === 1) {
     return (
       <div className="space-y-3">
-        <div className="p-4 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-success) 15%, var(--color-surface-elevated))', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'rgba(22, 163, 74, 0.1)', border: '1px solid rgba(22, 163, 74, 0.3)' }}>
           <p className="text-sm font-medium text-center mb-2" style={{ color: 'var(--color-success)' }}>Your review</p>
           <div className="flex items-center justify-center gap-4">
             {userVote ? <ThumbsUpIcon size={32} /> : <ThumbsDownIcon size={32} />}
@@ -456,7 +456,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
       {/* Photo upload — inline */}
       {photoAdded ? (
-        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-success) 10%, var(--color-surface-elevated))', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)' }}>
+        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'rgba(22, 163, 74, 0.1)', border: '1px solid rgba(22, 163, 74, 0.3)' }}>
           <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--color-success)' }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>

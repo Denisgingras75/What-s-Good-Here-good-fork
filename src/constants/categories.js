@@ -66,7 +66,6 @@ export const ALL_CATEGORIES = [
   { id: 'sides', label: 'Sides', emoji: '🥦' },
   { id: 'duck', label: 'Duck', emoji: '🦆' },
   { id: 'lamb', label: 'Lamb', emoji: '🍖' },
-  { id: 'clams', label: 'Clams', emoji: '🐚' },
 ]
 
 // Fuzzy match a search term to existing categories

@@ -7,6 +7,30 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ## 2026-02-17 - Daniel + Claude
 
+### Search Engine V2 — Tags, Ranking, Multi-Word Search
+
+**Multi-word search was broken.** "Lobster roll" only searched "lobster" — the tokenizer took the first word and dropped the rest. Fixed with a 4-level fallback ladder: exact phrase → AND tokens on name → cross-field (name/category/tags) → OR broadest fallback.
+
+**Ranking was naive.** Raw `avg_rating DESC` meant a dish with 1 vote at 10.0 beat a dish with 50 votes at 9.2. Replaced with Bayesian shrinkage: `score = (v/(v+m)) * R + (m/(v+m)) * C` where m=3 for early data. Low-vote dishes shrink toward the global mean (7.668). Distance bonus (+0.3 within 1mi) and trend bonus (log-scaled recent votes) as tiebreakers.
+
+**Tags populated.** Defined 32 intent-driven tags across 8 groups (texture, flavor, occasion, dietary, format, price, local, meta). Two migration rounds: regex pattern matching (53% coverage) + category-wide defaults (81.8% coverage). Tag synonyms expand at query time — searching "light" also matches fresh, healthy tags.
+
+**Prior strength schedule:** m=3 now (< 500 total votes), bump to m=5 at 500, m=10 at 1000+. Documented in NOTES.md.
+
+### Files changed
+- `src/constants/tags.js` — Complete rewrite: 32 intent tags, TAG_SYNONYMS, expandTagSynonyms()
+- `src/api/dishesApi.js` — search() rewritten with fallback ladder, stopwords, misspelling normalization
+- `src/api/dishesApi.test.js` — Added overlaps mock, updated assertions for new search behavior
+- `supabase/schema.sql` — dish_search_score() function, updated get_ranked_dishes with search_score
+- `supabase/migrations/add-search-score.sql` — Bayesian ranking migration
+- `supabase/migrations/populate-intent-tags.sql` — Round 1 tag population
+- `supabase/migrations/populate-intent-tags-round2.sql` — Round 2 gap-filler
+- `NOTES.md` — Bayesian prior strength schedule
+- `docs/plans/2026-02-17-search-engine-v2-design.md` — Design doc
+- `docs/plans/2026-02-17-search-engine-v2-implementation.md` — Implementation plan
+
+---
+
 ### Dish Detail Page Simplification
 
 **Philosophy:** The photo is the hero — let it be a photo. Below: information in clear hierarchy. Kill everything that doesn't earn its place.

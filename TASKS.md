@@ -348,6 +348,22 @@
 
 ---
 
+## ~~T35: Search Engine V2 — Tags, Ranking, Multi-Word Search~~ DONE
+
+**Why:** Search was broken (multi-word queries only used first word), ranking was naive (raw `avg_rating DESC` rewards low-vote dishes), and dishes had no semantic tags for discovery.
+
+**What was done:**
+- **32 intent-driven tags** defined in `src/constants/tags.js` across 8 groups (texture, flavor, occasion, dietary, format, price, local, meta)
+- **Tag synonym expansion** at query time — "light" also searches fresh, healthy
+- **Multi-word search rewrite** — 4-level fallback ladder: phrase match → AND tokens → cross-field (name/category/tags) → OR broadest
+- **Bayesian confidence-adjusted ranking** — `dish_search_score()` function with m=3 prior strength, distance bonus, trend bonus
+- **Tag population migrations** — round 1 (regex pattern matching) + round 2 (category-wide defaults) achieved 81.8% coverage (1,464/1,790 dishes with 3+ tags)
+- **Misspelling normalization** — common food cuisine typos auto-corrected
+
+**Files:** `src/constants/tags.js`, `src/api/dishesApi.js`, `src/api/dishesApi.test.js`, `supabase/schema.sql`, `supabase/migrations/add-search-score.sql`, `supabase/migrations/populate-intent-tags.sql`, `supabase/migrations/populate-intent-tags-round2.sql`, `NOTES.md`
+
+---
+
 ## T34: Dish placeholder photos
 
 **Why:** Dishes without user photos show a generic restaurant avatar or category neon icon. The placeholder situation needs a better solution — either better generated placeholders, a prompt to upload, or a different visual treatment.

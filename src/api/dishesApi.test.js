@@ -291,13 +291,11 @@ describe('dishesApi', () => {
       expect(result.length).toBeLessThanOrEqual(3)
     })
 
-    it('should return empty results when all queries return errors', async () => {
+    it('should throw classified error when all search levels fail', async () => {
       const mock = createMockSelect(null, { message: 'Query failed' })
       supabase.from.mockReturnValue(mock)
 
-      // New search handles errors per-level gracefully, returns empty on total failure
-      const result = await dishesApi.search('lobster', 5)
-      expect(result).toEqual([])
+      await expect(dishesApi.search('lobster', 5)).rejects.toThrow('Query failed')
     })
   })
 

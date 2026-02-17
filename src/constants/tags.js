@@ -60,6 +60,12 @@ export const LOCAL_TAGS = [
   { id: 'tourist-classic', label: 'Tourist Classic' },
 ]
 
+// Cuisine Origin (for dishes with strong cultural identity)
+export const CUISINE_TAGS = [
+  { id: 'brazilian', label: 'Brazilian' },
+  { id: 'jamaican', label: 'Jamaican' },
+]
+
 // Meta (overlapping intent — resolved via synonym expansion at query time)
 export const META_TAGS = [
   { id: 'healthy', label: 'Healthy' },
@@ -71,7 +77,7 @@ export const META_TAGS = [
 export const ALL_TAGS = [
   ...TEXTURE_TAGS, ...FLAVOR_TAGS, ...OCCASION_TAGS,
   ...DIETARY_TAGS, ...FORMAT_TAGS, ...PRICE_TAGS,
-  ...LOCAL_TAGS, ...META_TAGS,
+  ...LOCAL_TAGS, ...CUISINE_TAGS, ...META_TAGS,
 ]
 
 // Synonym expansion table (query-time)
@@ -99,6 +105,10 @@ export const TAG_SYNONYMS = {
   'vegetarian':  ['vegetarian', 'vegan'],
   'vegan':       ['vegan'],
   'gluten-free': ['gluten-free'],
+  'brazilian':   ['brazilian'],
+  'jamaican':    ['jamaican'],
+  'jerk':        ['jamaican', 'spicy', 'grilled'],
+  'caribbean':   ['jamaican'],
 }
 
 // Expand a search term to matching tag IDs

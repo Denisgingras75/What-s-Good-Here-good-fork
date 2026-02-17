@@ -171,6 +171,8 @@ export const dishesApi = {
     try {
       let results = []
       const existingIds = new Set()
+      let lastError = null
+      let anyLevelSucceeded = false
 
       // Level 1: Exact phrase match on dish name (highest precision)
       if (normalizedTokens.length > 1) {
@@ -180,7 +182,9 @@ export const dishesApi = {
           .limit(fetchLimit)
         if (error) {
           logger.error('Search phrase match error:', error)
+          lastError = error
         } else {
+          anyLevelSucceeded = true
           mergeInto(results, existingIds, data)
         }
       }
@@ -196,7 +200,9 @@ export const dishesApi = {
           .limit(fetchLimit)
         if (error) {
           logger.error('Search AND-name error:', error)
+          lastError = error
         } else {
+          anyLevelSucceeded = true
           mergeInto(results, existingIds, data)
         }
       }
@@ -204,7 +210,7 @@ export const dishesApi = {
       // Level 3: Cross-field search (name/category/cuisine + tag overlap)
       if (results.length < limit) {
         const orParts = normalizedTokens.map(t =>
-          `name.ilike.%${t}%,category.ilike.%${t}%`
+          `name.ilike.%${t}%,category.ilike.%${t}%,restaurants.cuisine.ilike.%${t}%`
         ).join(',')
 
         const [fieldResult, tagResult] = await Promise.all([
@@ -220,13 +226,17 @@ export const dishesApi = {
 
         if (fieldResult.error) {
           logger.error('Search cross-field error:', fieldResult.error)
+          lastError = fieldResult.error
         } else {
+          anyLevelSucceeded = true
           mergeInto(results, existingIds, fieldResult.data)
         }
 
         if (tagResult.error) {
           logger.error('Search tag overlap error:', tagResult.error)
+          lastError = tagResult.error
         } else {
+          anyLevelSucceeded = true
           mergeInto(results, existingIds, tagResult.data)
         }
       }
@@ -243,9 +253,16 @@ export const dishesApi = {
           .limit(fetchLimit)
         if (error) {
           logger.error('Search OR-fallback error:', error)
+          lastError = error
         } else {
+          anyLevelSucceeded = true
           mergeInto(results, existingIds, data)
         }
+      }
+
+      // If every level failed, throw so the caller sees an error (not "no results")
+      if (!anyLevelSucceeded && lastError) {
+        throw createClassifiedError(lastError)
       }
 
       // Sort by rating and limit
