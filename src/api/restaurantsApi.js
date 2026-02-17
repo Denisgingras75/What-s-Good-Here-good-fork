@@ -99,6 +99,7 @@ export const restaurantsApi = {
     const sanitized = sanitizeSearchQuery(query, 50)
     if (!sanitized) return []
 
+    // Search by name first
     const { data, error } = await supabase
       .from('restaurants')
       .select('id, name, address')
@@ -109,6 +110,28 @@ export const restaurantsApi = {
     if (error) {
       logger.error('Error searching restaurants:', error)
       throw createClassifiedError(error)
+    }
+
+    // If no name matches and query has multiple words, try matching
+    // individual words against name or address (e.g. "Anejo Falmouth")
+    if ((!data || data.length === 0) && sanitized.includes(' ')) {
+      const words = sanitized.split(/\s+/).filter(w => w.length >= 2)
+      if (words.length > 0) {
+        // Build an OR filter: name matches any word OR address matches any word
+        const orFilters = words
+          .map(w => `name.ilike.%${w}%,address.ilike.%${w}%`)
+          .join(',')
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('restaurants')
+          .select('id, name, address')
+          .eq('is_open', true)
+          .or(orFilters)
+          .limit(limit)
+
+        if (!fallbackError && fallbackData?.length > 0) {
+          return fallbackData
+        }
+      }
     }
 
     return data || []

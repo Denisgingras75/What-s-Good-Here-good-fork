@@ -221,8 +221,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
         className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
         style={{
           background: 'var(--color-bg)',
-          border: `1.5px solid ${isFocused ? 'var(--color-accent-gold)' : 'var(--color-divider)'}`,
-          boxShadow: isFocused ? '0 0 0 3px rgba(217, 167, 101, 0.25), 0 0 24px rgba(217, 167, 101, 0.15)' : 'none',
+          border: `2px solid ${isFocused ? 'var(--color-primary)' : 'var(--color-card-border, var(--color-divider))'}`,
           minHeight: '48px',
         }}
       >
@@ -292,8 +291,8 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
           className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50"
           style={{
             background: 'var(--color-surface)',
-            border: '1.5px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            border: '2px solid var(--color-card-border, var(--color-divider))',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
           }}
         >
           {/* Nearby restaurants (shown on focus before typing) */}
@@ -313,7 +312,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-surface-elevated)' }}>
-                    <svg className="w-4 h-4" style={{ color: 'var(--color-accent-gold)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <svg className="w-4 h-4" style={{ color: 'var(--color-primary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                     </svg>
@@ -345,22 +344,32 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
               ) : !hasResults ? (
                 <div className="px-4 py-6 text-center">
                   <p className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                    No results for "{query}"
+                    No results for &quot;{query}&quot;
                   </p>
                   <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                    Try a different spelling
+                    {!user ? 'Sign in to search Google Places for more restaurants' : 'Try a different spelling'}
                   </p>
-                  {user && (
+                  {user ? (
                     <button
                       onClick={handleAddRestaurant}
                       className="mt-3 px-4 py-2 rounded-full font-semibold text-xs transition-all active:scale-[0.97]"
                       style={{
-                        background: 'rgba(217, 167, 101, 0.12)',
-                        color: 'var(--color-accent-gold)',
-                        border: '1px solid rgba(217, 167, 101, 0.25)',
+                        background: 'var(--color-primary)',
+                        color: 'white',
                       }}
                     >
-                      Can't find it? Add a restaurant
+                      Add a restaurant
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setIsFocused(false); navigate('/login') }}
+                      className="mt-3 px-4 py-2 rounded-full font-semibold text-xs transition-all active:scale-[0.97]"
+                      style={{
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                      }}
+                    >
+                      Sign in to search more
                     </button>
                   )}
                 </div>
@@ -418,8 +427,8 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                   {results.places.length > 0 && (
                     <div>
                       <div className="px-4 py-2 border-b" style={{ borderColor: 'var(--color-divider)' }}>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
-                          Not on WGH yet
+                        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
+                          From Google Places
                         </span>
                       </div>
                       {results.places.slice(0, 5).map((p) => (
@@ -434,7 +443,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
                           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                         >
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(107, 179, 132, 0.15)', color: 'var(--color-rating)' }}>
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-primary)', color: 'white' }}>
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
@@ -443,7 +452,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                             <p className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{p.name}</p>
                             <p className="text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>{p.address}</p>
                           </div>
-                          <span className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(107, 179, 132, 0.12)', color: 'var(--color-rating)' }}>
+                          <span className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--color-primary)', color: 'white' }}>
                             + Add
                           </span>
                         </button>
@@ -483,16 +492,16 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                   onClick={handleAddRestaurant}
                   className="w-full flex items-center gap-3 px-4 py-3 border-t transition-colors text-left"
                   style={{ borderColor: 'var(--color-divider)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(217, 167, 101, 0.08)'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-elevated)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-accent-gold)', color: 'white' }}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-primary)', color: 'white' }}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <span className="text-sm font-semibold" style={{ color: 'var(--color-accent-gold)' }}>
-                    Don't see it? Add a restaurant
+                  <span className="text-sm font-semibold" style={{ color: 'var(--color-primary)' }}>
+                    Don&apos;t see it? Add a restaurant
                   </span>
                 </button>
               )}
