@@ -7,6 +7,43 @@ A shared log of what each contributor worked on. Add your entries at the top.
 
 ## 2026-02-17 - Daniel + Claude
 
+### Dish Detail Page Simplification
+
+**Philosophy:** The photo is the hero — let it be a photo. Below: information in clear hierarchy. Kill everything that doesn't earn its place.
+
+**Photo section:**
+- Removed gradient overlay, text overlay (dish name + restaurant), and floating photo CTA from hero image
+- Photo is now pure: just the image, full bleed, no text
+- Official Photo badge kept (top-right, unobtrusive)
+
+**Stats card below photo:**
+- Dish name (bold, 22px) + price on one line
+- Restaurant name as tappable link with chevron
+- Rating + vote count on their own row below
+- Clean hierarchy: name → restaurant → stats
+
+**Vote flow — from 5 screens to 2:**
+- Was: Yes/No → Rating → Review prompt → Write review → Photo prompt → Share prompt
+- Now: Yes/No → Rate + extras (review + photo) → Done
+- Review field is tap-to-expand: shows "What stood out?" as a tappable prompt, expands to textarea on tap with auto-focus
+- Photo upload inline on same screen, shows green "Photo added" confirmation
+- Submit button label adapts: "Submit Rating" when empty, "Submit" when extras added
+- Share prompt killed entirely — premature for current stage, felt needy
+- "No written reviews yet" empty state removed — the vote flow's "What stood out?" already invites contributions
+
+**DishPlaceholder cleanup:**
+- Removed `showCTA` prop and floating "Be first to snap this dish" overlay
+- Component simplified to just the visual placeholder
+
+**Net result:** ReviewFlow went from 583 lines to ~465 lines. Dish page lost ~20 lines. The app's friend who said it was "so simple to use" would still say that.
+
+### Files changed
+- `src/pages/Dish.jsx` — Hero section, stats card, removed PhotoUploadButton + empty reviews state
+- `src/components/ReviewFlow.jsx` — Two-screen flow, tap-to-expand review, inline photo, no share prompt
+- `src/components/DishPlaceholder.jsx` — Removed showCTA logic
+
+---
+
 ### Light Mode Default + V1 Theme + Hero Card Redesign
 
 **Theme overhaul:**

@@ -330,6 +330,34 @@
 
 ---
 
+## ~~T33: Simplify Dish Detail Page + Vote Flow~~ DONE
+
+**Why:** Dish page had too much competing for attention — text overlaid the photo, stats bar overlapped, floating CTAs. Vote flow was 5 screens (yes/no → rating → review prompt → write review → photo → share) causing momentum loss.
+
+**What was done:**
+- Photo is now pure — no gradient overlay, no text, no CTA
+- Dish name, price, restaurant link, and rating live in stats card below photo
+- Vote flow collapsed to 2 screens: Yes/No → Rate + optional review + optional photo
+- Review field is tap-to-expand ("What stood out?") — doesn't clutter until wanted
+- Photo upload moved into vote flow, always tied to a vote
+- Share prompt killed (will revisit when app has traction)
+- Empty "No reviews yet" placeholder removed
+- DishPlaceholder cleaned up (showCTA removed)
+
+**Files:** `src/pages/Dish.jsx`, `src/components/ReviewFlow.jsx`, `src/components/DishPlaceholder.jsx`
+
+---
+
+## T34: Dish placeholder photos
+
+**Why:** Dishes without user photos show a generic restaurant avatar or category neon icon. The placeholder situation needs a better solution — either better generated placeholders, a prompt to upload, or a different visual treatment.
+
+**Status:** Needs design thinking
+
+**Files:** `src/components/DishPlaceholder.jsx`, `src/components/RestaurantAvatar.jsx`
+
+---
+
 ## T26: Homepage — trust signal, emotional hook, brand signature — IN PROGRESS
 
 **Why:** After the layout simplification (Feb 13), the homepage is clean and functional but lacks magnetism.
