@@ -29,7 +29,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [localTotalVotes, setLocalTotalVotes] = useState(totalVotes)
   const [localYesVotes, setLocalYesVotes] = useState(yesVotes)
 
-  // Flow: 1 = yes/no, 2 = rating, 3 = review prompt, 4 = write review
+  // Flow: 1 = yes/no, 2 = rating, 3 = extras (review + photo)
   // Initialize from localStorage if there's a pending vote for this dish (survives page reload after magic link)
   const [step, setStep] = useState(() => {
     const stored = getPendingVoteFromStorage()
@@ -47,7 +47,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [confirmationType, setConfirmationType] = useState(null)
   const [awaitingLogin, setAwaitingLogin] = useState(false)
   const [announcement, setAnnouncement] = useState('') // For screen reader announcements
-  const [showPhotoPrompt, setShowPhotoPrompt] = useState(false)
+  const [photoAdded, setPhotoAdded] = useState(false)
   const [showSharePrompt, setShowSharePrompt] = useState(false)
   const [lastSubmission, setLastSubmission] = useState(null)
   const confirmationTimerRef = useRef(null)
@@ -110,7 +110,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
   // Auth guard: if on step 2+ without auth, kick back to step 1
   useEffect(() => {
-    if ((step === 2 || step === 3 || step === 4) && !user) {
+    if ((step === 2 || step === 3) && !user) {
       setStep(1)
       setAwaitingLogin(true)
       onLoginRequired?.()
@@ -151,20 +151,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   }
 
   const handleRatingNext = () => {
-    setStep(3) // Go to review prompt
+    setStep(3) // Go to extras (review + photo)
   }
 
-  const handleSkipReview = async () => {
-    // Submit without review
-    await doSubmit(null)
-  }
-
-  const handleWriteReview = () => {
-    setStep(4) // Go to review input
-  }
-
-  const handleSubmitWithReview = async () => {
-    // Validate review length
+  const handleExtrasSubmit = async () => {
+    // Validate review length if they wrote something
     if (reviewText.length > MAX_REVIEW_LENGTH) {
       setReviewError(`${reviewText.length - MAX_REVIEW_LENGTH} characters over limit`)
       return
@@ -231,12 +222,13 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setPendingVote(null)
     setReviewText('')
     setReviewError(null)
+    setPhotoAdded(false)
 
     // Haptic success feedback
     hapticSuccess()
 
-    // Show photo prompt (then share prompt after)
-    setShowPhotoPrompt(true)
+    // Show share prompt
+    setShowSharePrompt(true)
 
     // Announce for screen readers
     setAnnouncement('Vote submitted successfully')
@@ -259,7 +251,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   // fires first (AT_TARGET phase = registration order). It calls stopImmediatePropagation to
   // prevent React Router from processing the navigation, then pushes the dish URL back.
   useEffect(() => {
-    if (step <= 1 && !showPhotoPrompt && !showSharePrompt) {
+    if (step <= 1 && !showSharePrompt) {
       clearBackButtonInterceptor()
       return
     }
@@ -277,17 +269,13 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         setShowSharePrompt(false)
         setLastSubmission(null)
         onVote?.()
-      } else if (showPhotoPrompt) {
-        // Skip photo, go to share
-        setShowPhotoPrompt(false)
-        setShowSharePrompt(true)
       } else if (step > 1) {
         setStep(step - 1)
       }
     })
 
     return () => clearBackButtonInterceptor()
-  }, [step, showPhotoPrompt, showSharePrompt, onVote])
+  }, [step, showSharePrompt, onVote])
 
   const handleShareDish = async () => {
     if (!lastSubmission) return
@@ -321,43 +309,6 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setShowSharePrompt(false)
     setLastSubmission(null)
     onVote?.()
-  }
-
-  // Photo prompt after voting
-  if (showPhotoPrompt) {
-    return (
-      <div className="space-y-3 text-center animate-fadeIn">
-        <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {announcement}
-        </div>
-        <div>{lastSubmission?.wouldOrderAgain ? <ThumbsUpIcon size={40} /> : <ThumbsDownIcon size={40} />}</div>
-        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-          Vote saved!
-        </p>
-        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-          Got a photo of this dish?
-        </p>
-        <PhotoUploadButton
-          dishId={dishId}
-          onPhotoUploaded={(photo) => {
-            onPhotoUploaded?.(photo)
-            setShowPhotoPrompt(false)
-            setShowSharePrompt(true)
-          }}
-          onLoginRequired={onLoginRequired}
-        />
-        <button
-          onClick={() => {
-            setShowPhotoPrompt(false)
-            setShowSharePrompt(true)
-          }}
-          className="w-full py-2 text-sm transition-colors"
-          style={{ color: 'var(--color-text-tertiary)' }}
-        >
-          Skip
-        </button>
-      </div>
-    )
   }
 
   // Share prompt after voting
@@ -546,59 +497,21 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     )
   }
 
-  // Step 3: Review Prompt
-  if (step === 3) {
-    return (
-      <div className="space-y-4 animate-fadeIn">
-        <div className="flex items-center justify-between">
-          <button onClick={() => setStep(2)} className="text-sm transition-colors flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
-            <span>←</span> Back
-          </button>
-          <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Almost done!</p>
-          <div className="w-12" />
-        </div>
-
-        {/* Summary of vote */}
-        <div className="p-3 rounded-xl flex items-center justify-center gap-4" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
-          {pendingVote ? <ThumbsUpIcon size={28} /> : <ThumbsDownIcon size={28} />}
-          <span className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{sliderValue.toFixed(1)}</span>
-        </div>
-
-        <p className="text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          Add a quick review
-        </p>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={handleSkipReview}
-            disabled={submitting}
-            className="py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
-            style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '2px solid var(--color-divider)' }}
-          >
-            {submitting ? 'Saving...' : 'Skip'}
-          </button>
-          <button
-            onClick={handleWriteReview}
-            disabled={submitting}
-            className="py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
-            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
-          >
-            Write Review
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // Step 4: Write Review
+  // Step 3: Extras — review + photo on one screen
   return (
     <div className="space-y-4 animate-fadeIn">
       <div className="flex items-center justify-between">
-        <button onClick={() => setStep(3)} className="text-sm transition-colors flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
+        <button onClick={() => setStep(2)} className="text-sm transition-colors flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
           <span>←</span> Back
         </button>
-        <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Write your review</p>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Anything to add?</p>
         <div className="w-12" />
+      </div>
+
+      {/* Summary of vote */}
+      <div className="p-3 rounded-xl flex items-center justify-center gap-4" style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-divider)' }}>
+        {pendingVote ? <ThumbsUpIcon size={28} /> : <ThumbsDownIcon size={28} />}
+        <span className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{sliderValue.toFixed(1)}</span>
       </div>
 
       {/* Review text input */}
@@ -615,7 +528,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
           aria-label="Write your review"
           aria-describedby={reviewError ? 'review-error' : 'review-char-count'}
           aria-invalid={!!reviewError}
-          maxLength={MAX_REVIEW_LENGTH + 50} // Allow typing over to show error
+          maxLength={MAX_REVIEW_LENGTH + 50}
           rows={3}
           className="w-full p-4 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           style={{
@@ -636,25 +549,44 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         </p>
       )}
 
+      {/* Photo upload — inline */}
+      {photoAdded ? (
+        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-success) 10%, var(--color-surface-elevated))', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)' }}>
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--color-success)' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>Photo added</span>
+        </div>
+      ) : (
+        <PhotoUploadButton
+          dishId={dishId}
+          onPhotoUploaded={(photo) => {
+            setPhotoAdded(true)
+            onPhotoUploaded?.(photo)
+          }}
+          onLoginRequired={onLoginRequired}
+        />
+      )}
+
       {/* Submit button */}
       <button
-        onClick={handleSubmitWithReview}
+        onClick={handleExtrasSubmit}
         disabled={submitting || reviewText.length > MAX_REVIEW_LENGTH}
         className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ease-out focus-ring
           ${submitting || reviewText.length > MAX_REVIEW_LENGTH ? 'opacity-50 cursor-not-allowed' : 'active:scale-98 hover:shadow-xl'}`}
-        style={{ background: 'linear-gradient(to right, var(--color-emerald), #14B8A6)', color: 'var(--color-text-on-primary)', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.2)' }}
+        style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
       >
-        {submitting ? 'Saving...' : 'Submit Review'}
+        {submitting ? 'Saving...' : 'Submit'}
       </button>
 
       {/* Skip option */}
       <button
-        onClick={handleSkipReview}
+        onClick={() => doSubmit(null)}
         disabled={submitting}
         className="w-full py-2 text-sm transition-colors"
         style={{ color: 'var(--color-text-tertiary)' }}
       >
-        Skip and submit without review
+        Just save my rating
       </button>
     </div>
   )
