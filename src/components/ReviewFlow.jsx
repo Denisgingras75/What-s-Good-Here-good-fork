@@ -576,17 +576,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
           ${submitting || reviewText.length > MAX_REVIEW_LENGTH ? 'opacity-50 cursor-not-allowed' : 'active:scale-98 hover:shadow-xl'}`}
         style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
       >
-        {submitting ? 'Saving...' : 'Submit'}
-      </button>
-
-      {/* Skip option */}
-      <button
-        onClick={() => doSubmit(null)}
-        disabled={submitting}
-        className="w-full py-2 text-sm transition-colors"
-        style={{ color: 'var(--color-text-tertiary)' }}
-      >
-        Just save my rating
+        {submitting ? 'Saving...' : (reviewText.trim() || photoAdded) ? 'Submit' : 'Submit Rating'}
       </button>
     </div>
   )
