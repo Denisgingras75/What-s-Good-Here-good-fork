@@ -172,7 +172,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
       <button
         onClick={onClick}
         aria-label={accessibleLabel}
-        className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-colors text-left"
+        className="w-full flex items-center gap-3 py-3.5 px-3 rounded-lg transition-colors text-left"
         style={{
           background: `linear-gradient(to right, var(--color-surface-elevated) ${(avg_rating || 0) * 10}%, var(--color-surface) ${(avg_rating || 0) * 10}%)`,
           borderLeft: `2px solid ${podium.glow}`,
@@ -240,8 +240,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
             src={photo_url}
             alt=""
             loading="lazy"
-            className="flex-shrink-0 rounded-lg object-cover"
-            style={{ width: '52px', height: '52px' }}
+            className="flex-shrink-0 rounded-full object-cover"
+            style={{ width: '64px', height: '64px' }}
           />
         )}
       </button>
@@ -253,7 +253,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
     <button
       onClick={onClick}
       aria-label={accessibleLabel}
-      className="w-full flex items-center gap-3 py-3.5 px-3 transition-colors text-left active:scale-[0.99]"
+      className="w-full flex items-center gap-3 py-4 px-3 transition-colors text-left active:scale-[0.99]"
       style={{
         background: 'var(--color-surface)',
         borderBottom: isLast ? 'none' : '1px solid var(--color-divider)',
@@ -312,8 +312,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
           src={photo_url}
           alt=""
           loading="lazy"
-          className="flex-shrink-0 rounded-lg object-cover"
-          style={{ width: '44px', height: '44px' }}
+          className="flex-shrink-0 rounded-full object-cover"
+          style={{ width: '56px', height: '56px' }}
         />
       )}
     </button>

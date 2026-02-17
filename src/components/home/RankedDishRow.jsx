@@ -120,8 +120,8 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
             src={photo_url}
             alt=""
             loading="lazy"
-            className="flex-shrink-0 rounded-lg object-cover"
-            style={{ width: '52px', height: '52px' }}
+            className="flex-shrink-0 rounded-full object-cover"
+            style={{ width: '64px', height: '64px' }}
           />
         )}
       </button>
@@ -196,8 +196,8 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
           src={photo_url}
           alt=""
           loading="lazy"
-          className="flex-shrink-0 rounded-lg object-cover"
-          style={{ width: '44px', height: '44px' }}
+          className="flex-shrink-0 rounded-full object-cover"
+          style={{ width: '56px', height: '56px' }}
         />
       )}
 
