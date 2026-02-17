@@ -65,6 +65,7 @@ These rules are absolute. Violating any of them is a bug.
 - **Optimistic updates must have rollback.** Revert to previous state on error, never leave stale data.
 - **`ROUND()` needs `::NUMERIC` cast on float expressions.** `ROUND(expression::NUMERIC, 2)`.
 - **New RPC functions must be run in Supabase SQL Editor.** Adding to `schema.sql` does NOT deploy. Run the CREATE FUNCTION, then verify with a test call.
+- **Always qualify column references in PL/pgSQL functions.** `RETURNS TABLE` column names become variables inside the function body. Bare `dish_id` is ambiguous if a joined table also has `dish_id`. Always use `tablename.column` (e.g., `votes.dish_id`, not `dish_id`). This caused a production outage on 2026-02-17.
 
 ### 1.6 Auth Gates
 - **Voting, favorites, and photo uploads require login.** Check `user` from `useAuth()` first, show `<LoginModal>` if null. Pattern: `Browse.jsx`.
