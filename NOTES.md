@@ -180,11 +180,47 @@ Why each item belongs in its week. Reference for next project.
 
 ---
 
+## Ranking: Bayesian Prior Strength (m)
+
+The `dish_search_score()` function uses Bayesian shrinkage to adjust ratings by vote confidence. The `m` parameter controls how many votes a dish needs before its score reflects its actual rating vs the global mean.
+
+**Current value: m=3** (early stage, few votes per dish)
+
+| Total app votes | Set m to | Why |
+|----------------|----------|-----|
+| 0-500 | **3** | Early data. Need rankings to feel responsive. |
+| 500-1000 | **5** | Moderate data. Can afford more skepticism. |
+| 1000+ | **10** | Mature data. 10 is the ceiling — don't go higher. |
+
+**How to change:** Update the single `v_prior_strength` constant in `dish_search_score()` in Supabase SQL Editor. One line, 30 seconds.
+
+**How to check current vote count:** `SELECT COUNT(*) FROM votes;`
+
+---
+
 ## Design Tokens (Dual Theme)
 
-Defined in `src/index.css`. Dark "Island Depths" is the default; light "Appetite" toggled via `[data-theme="light"]` on `<html>`. Controlled by `ThemeContext` + `wgh_theme` localStorage key.
+Defined in `src/index.css`. Light "Appetite" is the default (`:root`); dark "Island Depths" toggled via `[data-theme="dark"]` on `<html>`. Controlled by `ThemeContext` + `wgh_theme` localStorage key.
 
-### Default — Island Depths (Dark)
+### Default — Appetite (Light)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--color-primary` | `#E45A35` (Warm Coral) | CTAs, primary actions |
+| `--color-accent-gold` | `#E9A115` (Warm Yellow) | Links, secondary accents |
+| `--color-accent-orange` | `#E07856` (Warm Orange) | Hover states |
+| `--color-rating` | `#16A34A` (Bright Green) | Rating displays |
+| `--color-text-primary` | `#1A1A1A` (Near Black) | Main text |
+| `--color-text-secondary` | `#6B7280` (Cool Gray) | Secondary text |
+| `--color-text-tertiary` | `#9CA3AF` (Light Gray) | Tertiary text |
+| `--color-text-on-primary` | `#FFFFFF` (White) | Text on primary-colored backgrounds |
+| `--color-bg` | `#F0ECE8` (Warm Stone) | Page background |
+| `--color-surface` | `#F7F4F1` (Near White) | Surface areas |
+| `--color-surface-elevated` | `#FFFFFF` (White) | Cards, modals |
+| `--color-card` | `#FFFFFF` (White) | Card backgrounds |
+| `--color-medal-gold` | `#C48A12` (Warm Amber) | #1 rank, gold medal |
+| `--color-category-strip` | `#FADCC8` (Warm Orange) | Category icon area |
+
+### Toggle — Island Depths (Dark)
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--color-primary` | `#C85A54` (Deep Rust) | CTAs, primary actions, danger |
@@ -198,23 +234,6 @@ Defined in `src/index.css`. Dark "Island Depths" is the default; light "Appetite
 | `--color-bg` | `#0D1B22` (Deep Charcoal-Navy) | Page background |
 | `--color-surface` | `#0F1F2B` | Slightly lighter surface |
 | `--color-card` | `#1A3A42` (Navy-Teal) | Card backgrounds |
-
-### Toggle — Appetite (Light) — 60/30/10 Food Psychology Ratio
-| Token | Value | Usage | Layer |
-|-------|-------|-------|-------|
-| `--color-primary` | `#9E2B1E` (Deep Warm Crimson) | CTAs, primary actions, danger | 10% accent |
-| `--color-accent-gold` | `#E9A115` (Warm Yellow) | Links, secondary accents | 10% accent |
-| `--color-accent-orange` | `#E07856` (Warm Orange) | Hover states | 10% accent |
-| `--color-rating` | `#16A34A` (Bright Green) | Rating displays | Functional |
-| `--color-text-primary` | `#3A2818` (Warm Dark Brown) | Main text | Text |
-| `--color-text-secondary` | `#7A6E62` (Warm Taupe) | Secondary text | Text |
-| `--color-text-tertiary` | `#A89888` (Warm Sand) | Tertiary text | Text |
-| `--color-text-on-primary` | `#FFFFFF` (White) | Text on primary-colored backgrounds | Text |
-| `--color-bg` | `#F0ECE8` (Warm Stone) | Page background | 60% backdrop |
-| `--color-surface` | `#E8D4C8` (Warm Peach Stone) | Surface areas | 60% backdrop |
-| `--color-card` | `#F2CDBC` (Copper Peach) | Card backgrounds | 30% atmosphere |
-| `--color-card-hover` | `#EBC2AE` (Deeper Copper) | Card hover states | 30% atmosphere |
-| `--color-surface-elevated` | `#EFCFBE` (Warm Elevated) | Modals, panels | 30% atmosphere |
 
 ---
 

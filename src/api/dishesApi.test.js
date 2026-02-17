@@ -157,6 +157,7 @@ describe('dishesApi', () => {
         or: vi.fn().mockReturnThis(),
         ilike: vi.fn().mockReturnThis(),
         contains: vi.fn().mockReturnThis(),
+        overlaps: vi.fn().mockReturnThis(),
         order: vi.fn().mockReturnThis(),
         limit: vi.fn().mockResolvedValue({ data, error }),
       }
@@ -209,11 +210,15 @@ describe('dishesApi', () => {
         category: 'seafood',
         tags: ['fresh', 'popular'],
         photo_url: 'https://example.com/lobster.jpg',
+        price: undefined,
+        value_score: undefined,
+        value_percentile: undefined,
         total_votes: 42,
         avg_rating: 9.2,
         restaurant_id: 'rest-1',
         restaurant_name: "Nancy's",
         restaurant_cuisine: 'Seafood',
+        restaurant_town: undefined,
       })
     })
 
@@ -286,11 +291,13 @@ describe('dishesApi', () => {
       expect(result.length).toBeLessThanOrEqual(3)
     })
 
-    it('should throw classified error on database failure', async () => {
+    it('should return empty results when all queries return errors', async () => {
       const mock = createMockSelect(null, { message: 'Query failed' })
       supabase.from.mockReturnValue(mock)
 
-      await expect(dishesApi.search('lobster', 5)).rejects.toThrow('Query failed')
+      // New search handles errors per-level gracefully, returns empty on total failure
+      const result = await dishesApi.search('lobster', 5)
+      expect(result).toEqual([])
     })
   })
 

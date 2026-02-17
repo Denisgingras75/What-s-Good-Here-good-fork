@@ -487,6 +487,54 @@ $$ LANGUAGE plpgsql IMMUTABLE SET search_path = public;
 -- 5. CORE FUNCTIONS
 -- =============================================
 
+-- Bayesian confidence-adjusted ranking score
+-- Used by get_ranked_dishes and search results. One brain everywhere.
+-- Prior strength (m): start at 3 for early data. See NOTES.md for schedule.
+CREATE OR REPLACE FUNCTION dish_search_score(
+  p_avg_rating DECIMAL,
+  p_total_votes BIGINT,
+  p_distance_miles DECIMAL DEFAULT NULL,
+  p_recent_votes_14d INT DEFAULT 0
+)
+RETURNS DECIMAL AS $$
+DECLARE
+  v_global_mean DECIMAL;
+  v_prior_strength DECIMAL := 3;
+  v_base_score DECIMAL;
+  v_distance_bonus DECIMAL := 0;
+  v_trend_bonus DECIMAL := 0;
+  v_votes DECIMAL;
+BEGIN
+  SELECT COALESCE(AVG(avg_rating), 7.0)
+  INTO v_global_mean
+  FROM dishes
+  WHERE total_votes > 0 AND avg_rating IS NOT NULL;
+
+  v_votes := COALESCE(p_total_votes, 0);
+
+  IF v_votes = 0 OR p_avg_rating IS NULL THEN
+    v_base_score := v_global_mean;
+  ELSE
+    v_base_score := (v_votes / (v_votes + v_prior_strength)) * p_avg_rating
+                  + (v_prior_strength / (v_votes + v_prior_strength)) * v_global_mean;
+  END IF;
+
+  IF p_distance_miles IS NOT NULL THEN
+    IF p_distance_miles < 1 THEN
+      v_distance_bonus := 0.3;
+    ELSIF p_distance_miles < 3 THEN
+      v_distance_bonus := 0.15;
+    END IF;
+  END IF;
+
+  IF COALESCE(p_recent_votes_14d, 0) > 0 THEN
+    v_trend_bonus := LEAST(0.05 * LN(1 + p_recent_votes_14d), 0.25);
+  END IF;
+
+  RETURN ROUND((v_base_score + v_distance_bonus + v_trend_bonus)::NUMERIC, 3);
+END;
+$$ LANGUAGE plpgsql STABLE SET search_path = public;
+
 -- Get ranked dishes with bounding box optimization, town filter, variant aggregation
 -- Intentionally NOT SECURITY DEFINER: all referenced tables (restaurants, dishes, votes) have public SELECT
 CREATE OR REPLACE FUNCTION get_ranked_dishes(
@@ -517,7 +565,8 @@ RETURNS TABLE (
   best_variant_name TEXT,
   best_variant_rating DECIMAL,
   value_score DECIMAL,
-  value_percentile DECIMAL
+  value_percentile DECIMAL,
+  search_score DECIMAL
 ) AS $$
 DECLARE
   lat_delta DECIMAL := radius_miles / 69.0;
@@ -575,6 +624,12 @@ BEGIN
     GROUP BY d.parent_dish_id, d.id, d.name
     HAVING COUNT(v.id) >= 1
     ORDER BY d.parent_dish_id, AVG(v.rating_10) DESC NULLS LAST, COUNT(v.id) DESC
+  ),
+  recent_vote_counts AS (
+    SELECT dish_id, COUNT(*)::INT AS recent_votes
+    FROM votes
+    WHERE created_at > NOW() - INTERVAL '14 days'
+    GROUP BY dish_id
   )
   SELECT
     d.id AS dish_id,
@@ -601,20 +656,28 @@ BEGIN
     bv.best_name AS best_variant_name,
     bv.best_rating AS best_variant_rating,
     d.value_score,
-    d.value_percentile
+    d.value_percentile,
+    dish_search_score(
+      COALESCE(ROUND(AVG(v.rating_10), 1), 0),
+      COALESCE(vs.total_child_votes, COUNT(v.id)),
+      fr.distance,
+      COALESCE(rvc.recent_votes, 0)
+    ) AS search_score
   FROM dishes d
   INNER JOIN filtered_restaurants fr ON d.restaurant_id = fr.id
   LEFT JOIN votes v ON d.id = v.dish_id
   LEFT JOIN variant_stats vs ON vs.parent_dish_id = d.id
   LEFT JOIN best_variants bv ON bv.parent_dish_id = d.id
+  LEFT JOIN recent_vote_counts rvc ON rvc.dish_id = d.id
   WHERE (filter_category IS NULL OR d.category = filter_category)
     AND d.parent_dish_id IS NULL
   GROUP BY d.id, d.name, fr.id, fr.name, fr.town, d.category, d.tags, fr.cuisine,
            d.price, d.photo_url, fr.distance,
            vs.total_child_votes, vs.total_child_yes, vs.child_count,
            bv.best_name, bv.best_rating,
-           d.value_score, d.value_percentile
-  ORDER BY avg_rating DESC NULLS LAST, total_votes DESC;
+           d.value_score, d.value_percentile,
+           rvc.recent_votes
+  ORDER BY search_score DESC NULLS LAST, total_votes DESC;
 END;
 $$ LANGUAGE plpgsql STABLE SET search_path = public;
 

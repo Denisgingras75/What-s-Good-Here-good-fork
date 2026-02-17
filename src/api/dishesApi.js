@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { createClassifiedError } from '../utils/errorHandler'
 import { sanitizeSearchQuery } from '../utils/sanitize'
 import { logger } from '../utils/logger'
+import { TAG_SYNONYMS } from '../constants/tags'
 
 /**
  * Dishes API - Centralized data fetching for dishes
@@ -69,9 +70,9 @@ export const dishesApi = {
 
   /**
    * Search dishes by name, category, tags, or cuisine
-   * Searches ALL dishes regardless of category - categories are shortcuts, not containers
-   * Results sorted by avg_rating (highest first) so best matches rise to top
-   * For multi-word queries like "Mexican food", extracts the meaningful word
+   * Multi-word aware: "lobster roll" searches as phrase first, then AND tokens
+   * Fallback ladder: phrase → AND name → cross-field → OR (broadest)
+   * Tag synonym expansion: "light" also searches fresh, healthy tags
    * @param {string} query - Search query
    * @param {number} limit - Max results
    * @param {string|null} town - Optional town filter (e.g., 'Oak Bluffs')
@@ -81,146 +82,184 @@ export const dishesApi = {
   async search(query, limit = 5, town = null) {
     if (!query?.trim()) return []
 
-    // Sanitize query to prevent SQL injection via LIKE patterns
     const sanitized = sanitizeSearchQuery(query, 50)
     if (!sanitized) return []
 
-    // Extract meaningful search term by filtering out common filler words
-    // "Mexican food" -> "Mexican", "best pizza near me" -> "pizza"
-    const stopWords = new Set(['food', 'foods', 'the', 'a', 'an', 'and', 'or', 'for', 'of', 'at', 'to', 'on', 'best', 'good', 'great', 'near', 'me', 'find', 'get', 'want', 'looking'])
-    const words = sanitized.split(/\s+/).filter(w => w.length >= 2 && !stopWords.has(w.toLowerCase()))
+    // --- Tokenize ---
+    const stopWords = new Set([
+      'food', 'foods', 'the', 'a', 'an', 'and', 'or', 'for', 'of', 'at',
+      'to', 'on', 'best', 'good', 'great', 'near', 'me', 'find', 'get',
+      'want', 'looking', 'something', 'whats', "what's", 'is', 'some',
+    ])
+    const allWords = sanitized.toLowerCase().split(/\s+/).filter(w => w.length >= 2)
+    const tokens = allWords.filter(w => !stopWords.has(w))
 
-    // Use the first meaningful word, or fall back to full sanitized query
-    let searchTerm = words.length > 0 ? words[0] : sanitized
+    if (tokens.length === 0) return []
 
-    // Normalize common misspellings and variations to match stored cuisine values
-    const synonyms = {
-      'indiana': 'indian',
-      'indain': 'indian',
-      'italien': 'italian',
-      'italain': 'italian',
-      'mexcian': 'mexican',
-      'maxican': 'mexican',
-      'chineese': 'chinese',
-      'chinease': 'chinese',
-      'japaneese': 'japanese',
-      'japenese': 'japanese',
-      'thia': 'thai',
-      'tai': 'thai',
+    // --- Normalize misspellings ---
+    const misspellings = {
+      'indiana': 'indian', 'indain': 'indian',
+      'italien': 'italian', 'italain': 'italian',
+      'mexcian': 'mexican', 'maxican': 'mexican',
+      'chineese': 'chinese', 'chinease': 'chinese',
+      'japaneese': 'japanese', 'japenese': 'japanese',
+      'thia': 'thai', 'tai': 'thai',
     }
-    const normalized = synonyms[searchTerm.toLowerCase()]
-    if (normalized) {
-      searchTerm = normalized
+    const normalizedTokens = tokens.map(t => misspellings[t] || t)
+    const phrase = normalizedTokens.join(' ')
+
+    // --- Expand tag synonyms ---
+    const expandedTags = []
+    for (const token of normalizedTokens) {
+      const synonyms = TAG_SYNONYMS[token]
+      if (synonyms) {
+        expandedTags.push(...synonyms)
+      } else {
+        expandedTags.push(token)
+      }
     }
+    const uniqueTags = [...new Set(expandedTags)]
 
     const selectFields = `
-      id,
-      name,
-      category,
-      tags,
-      photo_url,
-      price,
-      value_score,
-      value_percentile,
-      total_votes,
-      avg_rating,
-      restaurants!inner (
-        id,
-        name,
-        is_open,
-        cuisine,
-        town
-      )
+      id, name, category, tags, photo_url, price,
+      value_score, value_percentile, total_votes, avg_rating,
+      restaurants!inner ( id, name, is_open, cuisine, town )
     `
 
-    // Build query helper that applies common filters
-    // For Supabase foreign table filtering, we filter the results after fetching
-    // since PostgREST foreign table filters can be unreliable
-    const runSearchQuery = async (additionalFilter) => {
-      let query = supabase
+    const fetchLimit = town ? limit * 4 : limit
+
+    const buildQuery = () => {
+      return supabase
         .from('dishes')
         .select(selectFields)
         .eq('restaurants.is_open', true)
-
-      // Apply the additional search-specific filter
-      query = additionalFilter(query)
-
-      // Apply ordering and limit
-      const result = await query
-        .order('avg_rating', { ascending: false, nullsFirst: false })
-        .limit(town ? limit * 3 : limit) // Fetch more if we need to filter by town
-
-      // If town filter is specified, filter results client-side
-      // This is more reliable than PostgREST foreign table filtering
-      if (town && result.data) {
-        result.data = result.data.filter(dish => dish.restaurants?.town === town).slice(0, limit)
-      }
-
-      return result
     }
 
-    // Run all 3 search queries in parallel for better performance
-    const [nameResult, cuisineResult, tagResult] = await Promise.all([
-      // Query 1: Search by dish name and category
-      runSearchQuery((q) => q.or(`name.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`)),
-      // Query 2: Search by restaurant cuisine
-      runSearchQuery((q) => q.ilike('restaurants.cuisine', `%${searchTerm}%`)),
-      // Query 3: Search by dish tags
-      runSearchQuery((q) => q.contains('tags', [searchTerm.toLowerCase()])),
-    ])
-
-    // Check for errors
-    if (nameResult.error) {
-      logger.error('Error searching dishes by name:', nameResult.error)
-      throw createClassifiedError(nameResult.error)
-    }
-    if (cuisineResult.error) {
-      logger.error('Error searching dishes by cuisine:', cuisineResult.error)
-      throw createClassifiedError(cuisineResult.error)
-    }
-    if (tagResult.error) {
-      logger.error('Error searching dishes by tags:', tagResult.error)
-      throw createClassifiedError(tagResult.error)
+    const applyTownFilter = (data) => {
+      if (!town || !data) return data || []
+      return data.filter(d => d.restaurants?.town === town)
     }
 
-    const nameData = nameResult.data
-    const cuisineData = cuisineResult.data
-    const tagData = tagResult.data
+    const transformResult = (dish) => ({
+      dish_id: dish.id,
+      dish_name: dish.name,
+      category: dish.category,
+      tags: dish.tags || [],
+      photo_url: dish.photo_url,
+      price: dish.price,
+      value_score: dish.value_score,
+      value_percentile: dish.value_percentile,
+      total_votes: dish.total_votes || 0,
+      avg_rating: dish.avg_rating,
+      restaurant_id: dish.restaurants?.id,
+      restaurant_name: dish.restaurants?.name,
+      restaurant_cuisine: dish.restaurants?.cuisine,
+      restaurant_town: dish.restaurants?.town,
+    })
 
-    // Merge all results, removing duplicates
-    const allResults = [...(nameData || [])]
-    const existingIds = new Set(allResults.map(d => d.id))
-
-    for (const dish of [...(cuisineData || []), ...(tagData || [])]) {
-      if (!existingIds.has(dish.id)) {
-        allResults.push(dish)
-        existingIds.add(dish.id)
+    // Merge helper: adds new dishes to results, skipping duplicates
+    const mergeInto = (results, existingIds, newData) => {
+      const filtered = applyTownFilter(newData)
+      for (const d of filtered) {
+        if (!existingIds.has(d.id)) {
+          results.push(d)
+          existingIds.add(d.id)
+        }
       }
     }
 
-    // Sort merged results by rating and limit
-    allResults.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0))
-    const limited = allResults.slice(0, limit)
+    try {
+      let results = []
+      const existingIds = new Set()
 
-    // Transform to match expected format, filtering out any without valid restaurant data
-    return limited
-      .filter(dish => dish.restaurants) // Defensive: skip dishes without restaurant data
-      .map(dish => ({
-        dish_id: dish.id,
-        dish_name: dish.name,
-        category: dish.category,
-        tags: dish.tags || [],
-        photo_url: dish.photo_url,
-        price: dish.price,
-        value_score: dish.value_score,
-        value_percentile: dish.value_percentile,
-        total_votes: dish.total_votes || 0,
-        avg_rating: dish.avg_rating,
-        restaurant_id: dish.restaurants?.id,
-        restaurant_name: dish.restaurants?.name,
-        restaurant_cuisine: dish.restaurants?.cuisine,
-        restaurant_town: dish.restaurants?.town,
-      }))
+      // Level 1: Exact phrase match on dish name (highest precision)
+      if (normalizedTokens.length > 1) {
+        const { data, error } = await buildQuery()
+          .ilike('name', `%${phrase}%`)
+          .order('avg_rating', { ascending: false, nullsFirst: false })
+          .limit(fetchLimit)
+        if (error) {
+          logger.error('Search phrase match error:', error)
+        } else {
+          mergeInto(results, existingIds, data)
+        }
+      }
+
+      // Level 2: AND tokens on dish name (e.g. "fried" AND "chicken" both in name)
+      if (results.length < limit && normalizedTokens.length > 1) {
+        let q = buildQuery()
+        for (const token of normalizedTokens) {
+          q = q.ilike('name', `%${token}%`)
+        }
+        const { data, error } = await q
+          .order('avg_rating', { ascending: false, nullsFirst: false })
+          .limit(fetchLimit)
+        if (error) {
+          logger.error('Search AND-name error:', error)
+        } else {
+          mergeInto(results, existingIds, data)
+        }
+      }
+
+      // Level 3: Cross-field search (name/category/cuisine + tag overlap)
+      if (results.length < limit) {
+        const orParts = normalizedTokens.map(t =>
+          `name.ilike.%${t}%,category.ilike.%${t}%`
+        ).join(',')
+
+        const [fieldResult, tagResult] = await Promise.all([
+          buildQuery()
+            .or(orParts)
+            .order('avg_rating', { ascending: false, nullsFirst: false })
+            .limit(fetchLimit),
+          buildQuery()
+            .overlaps('tags', uniqueTags)
+            .order('avg_rating', { ascending: false, nullsFirst: false })
+            .limit(fetchLimit),
+        ])
+
+        if (fieldResult.error) {
+          logger.error('Search cross-field error:', fieldResult.error)
+        } else {
+          mergeInto(results, existingIds, fieldResult.data)
+        }
+
+        if (tagResult.error) {
+          logger.error('Search tag overlap error:', tagResult.error)
+        } else {
+          mergeInto(results, existingIds, tagResult.data)
+        }
+      }
+
+      // Level 4: OR-token broadest fallback (if still under 3 results)
+      if (results.length < 3) {
+        const orParts = normalizedTokens.map(t =>
+          `name.ilike.%${t}%`
+        ).join(',')
+
+        const { data, error } = await buildQuery()
+          .or(orParts)
+          .order('avg_rating', { ascending: false, nullsFirst: false })
+          .limit(fetchLimit)
+        if (error) {
+          logger.error('Search OR-fallback error:', error)
+        } else {
+          mergeInto(results, existingIds, data)
+        }
+      }
+
+      // Sort by rating and limit
+      results.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0))
+
+      return results
+        .slice(0, limit)
+        .filter(dish => dish.restaurants)
+        .map(transformResult)
+
+    } catch (error) {
+      logger.error('Error searching dishes:', error)
+      throw error.type ? error : createClassifiedError(error)
+    }
   },
 
   /**
