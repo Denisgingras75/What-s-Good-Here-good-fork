@@ -344,12 +344,19 @@ export function Dish() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
-        <div className="animate-pulse p-4">
-          <div className="h-8 w-24 rounded mb-4" style={{ background: 'var(--color-divider)' }} />
-          <div className="h-64 rounded-2xl mb-4" style={{ background: 'var(--color-divider)' }} />
-          <div className="h-6 w-48 rounded mb-2" style={{ background: 'var(--color-divider)' }} />
-          <div className="h-4 w-32 rounded" style={{ background: 'var(--color-divider)' }} />
+      <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+        <div className="animate-pulse">
+          <div className="aspect-[4/3] w-full" style={{ background: 'var(--color-divider)' }} />
+          <div className="mx-4 -mt-5 rounded-xl p-5" style={{ background: 'var(--color-surface-elevated)' }}>
+            <div className="flex items-start justify-between">
+              <div className="h-12 w-16 rounded" style={{ background: 'var(--color-divider)' }} />
+              <div className="h-4 w-40 rounded" style={{ background: 'var(--color-divider)' }} />
+            </div>
+          </div>
+          <div className="p-4 mt-4 space-y-3">
+            <div className="h-4 w-48 rounded" style={{ background: 'var(--color-divider)' }} />
+            <div className="h-4 w-32 rounded" style={{ background: 'var(--color-divider)' }} />
+          </div>
         </div>
       </div>
     )
@@ -357,7 +364,7 @@ export function Dish() {
 
   if (error || !dish) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-surface)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div className="text-center p-4">
           <img
             src="/empty-plate.png"
@@ -382,7 +389,7 @@ export function Dish() {
   const isRanked = dish.total_votes >= MIN_VOTES_FOR_RANKING
 
   return (
-    <div className="min-h-screen pb-20" style={{ background: 'var(--color-surface)' }}>
+    <div className="min-h-screen pb-20" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
       <header
         className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3"
@@ -452,7 +459,7 @@ export function Dish() {
         </div>
       ) : (
         <>
-          {/* Hero Image */}
+          {/* Hero Image — Editorial overlay */}
           <div className="relative aspect-[4/3] overflow-hidden">
             {heroImage ? (
               <img
@@ -465,20 +472,47 @@ export function Dish() {
               <DishPlaceholder restaurantName={dish.restaurant_name} restaurantTown={dish.restaurant_town} category={dish.category} showCTA />
             )}
 
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            {/* Gradient overlay — stronger for text readability */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)' }}
+            />
 
-            {/* Rating badge */}
-            {isRanked && (
-              <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
-                <span className="text-lg font-bold" style={{ color: dish.avg_rating ? getRatingColor(dish.avg_rating) : 'var(--color-text-on-primary)' }}>
-                  {dish.avg_rating || `${dish.percent_worth_it}%`}
-                </span>
-                <span className="text-xs text-white/80 ml-1">
-                  {dish.avg_rating ? 'rating' : 'would order again'}
-                </span>
-              </div>
-            )}
+            {/* Editorial text overlay */}
+            <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+              <h1
+                style={{
+                  fontFamily: "'aglet-sans', sans-serif",
+                  fontWeight: 800,
+                  fontSize: '24px',
+                  letterSpacing: '-0.02em',
+                  color: '#FFFFFF',
+                  lineHeight: 1.1,
+                  margin: 0,
+                  textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                }}
+              >
+                {dish.dish_name}
+              </h1>
+              <button
+                onClick={() => navigate(`/restaurants/${dish.restaurant_id}`)}
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.7)',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  marginTop: '4px',
+                  cursor: 'pointer',
+                  display: 'block',
+                }}
+              >
+                {dish.restaurant_name}
+              </button>
+            </div>
 
             {/* Official badge if featured from restaurant */}
             {featuredPhoto?.source_type === 'restaurant' && (
@@ -490,69 +524,89 @@ export function Dish() {
             )}
           </div>
 
+          {/* Stats Bar — overlapping hero */}
+          <div
+            className="mx-4 rounded-xl px-5 py-4"
+            style={{
+              background: 'var(--color-surface-elevated)',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+              marginTop: '-20px',
+              position: 'relative',
+              zIndex: 5,
+            }}
+          >
+            {/* Parent dish breadcrumb if this is a variant */}
+            {isVariant && parentDish && (
+              <button
+                onClick={() => navigate(`/dish/${parentDish.id}`)}
+                className="flex items-center gap-1 text-xs font-medium mb-3 hover:underline"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                {parentDish.name}
+              </button>
+            )}
+
+            <div className="flex items-start justify-between">
+              {/* Rating — left side */}
+              {isRanked && dish.avg_rating ? (
+                <div className="flex-shrink-0">
+                  <span
+                    style={{
+                      fontFamily: "'aglet-sans', sans-serif",
+                      fontWeight: 800,
+                      fontSize: '40px',
+                      lineHeight: 1,
+                      color: getRatingColor(dish.avg_rating),
+                    }}
+                  >
+                    {formatScore10(dish.avg_rating)}
+                  </span>
+                </div>
+              ) : null}
+
+              {/* Stats — right side */}
+              <div className={`text-right ${isRanked && dish.avg_rating ? '' : 'w-full'}`}>
+                <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  {dish.price ? (
+                    <span className="font-bold">${Number(dish.price).toFixed(0)}</span>
+                  ) : null}
+                  {dish.price && dish.total_votes > 0 ? ' · ' : ''}
+                  {dish.total_votes > 0 ? `${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'}` : ''}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  {dish.total_votes === 0
+                    ? 'Start the ranking'
+                    : isRanked
+                      ? `${dish.percent_worth_it}% would order again`
+                      : `Early · ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Content */}
           <div className="p-4">
-            {/* Dish Info */}
-            <div className="mb-6">
-              {/* Parent dish breadcrumb if this is a variant */}
-              {isVariant && parentDish && (
-                <button
-                  onClick={() => navigate(`/dish/${parentDish.id}`)}
-                  className="flex items-center gap-1 text-xs font-medium mb-2 hover:underline"
-                  style={{ color: 'var(--color-primary)' }}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  {parentDish.name}
-                </button>
-              )}
-
-              <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
-                <button
-                  onClick={() => navigate(`/restaurants/${dish.restaurant_id}`)}
-                  className="hover:underline"
-                >
-                  {dish.restaurant_name}
-                </button>
-              </h1>
-              <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
-                {dish.dish_name}
-              </p>
-              {dish.price && (
-                <span className="ml-2 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  · ${Number(dish.price).toFixed(0)}
-                </span>
-              )}
-
-              {/* Vote info */}
-              <p className="text-sm mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                {dish.total_votes === 0
-                  ? 'Start the ranking'
-                  : isRanked
-                    ? `${dish.total_votes} votes · ${dish.percent_worth_it}% would order again`
-                    : `Early · ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
-                }
-              </p>
-
-              {/* Variant Selector - show for parents with variants or variants with siblings */}
-              {variants.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {isVariant ? 'Other flavors' : 'Available flavors'}
-                  </p>
-                  <VariantSelector
-                    variants={variants}
-                    currentDishId={dish.dish_id}
-                    onSelect={(variant) => navigate(`/dish/${variant.dish_id}`)}
-                  />
-                </div>
-              )}
-            </div>
+            {/* Variant Selector */}
+            {variants.length > 0 && (
+              <div className="mb-6">
+                <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {isVariant ? 'Other flavors' : 'Available flavors'}
+                </p>
+                <VariantSelector
+                  variants={variants}
+                  currentDishId={dish.dish_id}
+                  onSelect={(variant) => navigate(`/dish/${variant.dish_id}`)}
+                />
+              </div>
+            )}
 
             {/* Friends who rated this */}
             {friendsVotes.length > 0 && (
-              <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}>
+              <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--color-surface-elevated)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
                 <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
                   Friends who rated this
                 </h3>
@@ -612,7 +666,6 @@ export function Dish() {
                           <span className="text-lg font-bold" style={{ color: getRatingColor(vote.rating_10) }}>
                             {formatScore10(vote.rating_10)}
                           </span>
-                          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>/10</span>
                         </div>
                       </Link>
                     )
@@ -625,7 +678,7 @@ export function Dish() {
             {displayPhotos.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-                  {showAllPhotos ? 'All Photos' : 'Community Photos'} ({displayPhotos.length})
+                  Photos ({displayPhotos.length})
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
                   {displayPhotos.map((photo) => (
@@ -663,7 +716,7 @@ export function Dish() {
             {/* Review Flow */}
             <div
               className="p-4 rounded-2xl mb-4"
-              style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}
+              style={{ background: 'var(--color-surface-elevated)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
             >
               <ReviewFlow
                 dishId={dish.dish_id}
@@ -679,18 +732,18 @@ export function Dish() {
               />
             </div>
 
-            {/* Reviews Section */}
+            {/* Reviews Section — flowing list with dividers */}
             {reviews.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
                   Reviews ({reviews.length})
                 </h3>
-                <div className="space-y-3">
-                  {reviews.map((review) => (
+                <div>
+                  {reviews.map((review, index) => (
                     <div
                       key={review.id}
-                      className="p-4 rounded-xl"
-                      style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}
+                      className="py-4"
+                      style={index < reviews.length - 1 ? { borderBottom: '1px solid var(--color-divider)' } : undefined}
                     >
                       {/* Header: User info and rating */}
                       <div className="flex items-center justify-between mb-2">
@@ -738,7 +791,7 @@ export function Dish() {
             {!reviewsLoading && reviews.length === 0 && dish.total_votes > 0 && (
               <div
                 className="mb-6 p-4 rounded-xl text-center"
-                style={{ background: 'var(--color-bg)', border: '1px solid var(--color-divider)' }}
+                style={{ background: 'var(--color-surface-elevated)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
               >
                 <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                   No written reviews yet — be the first to share your thoughts!
