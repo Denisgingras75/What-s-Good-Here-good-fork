@@ -46,6 +46,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [awaitingLogin, setAwaitingLogin] = useState(false)
   const [announcement, setAnnouncement] = useState('') // For screen reader announcements
   const [photoAdded, setPhotoAdded] = useState(false)
+  const [reviewExpanded, setReviewExpanded] = useState(false)
+  const reviewTextareaRef = useRef(null)
   const confirmationTimerRef = useRef(null)
 
   const noVotes = localTotalVotes - localYesVotes
@@ -211,6 +213,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setReviewText('')
     setReviewError(null)
     setPhotoAdded(false)
+    setReviewExpanded(false)
 
     // Haptic success feedback
     hapticSuccess()
@@ -287,7 +290,10 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
           onClick={() => {
             setPendingVote(userVote)
             setSliderValue(userRating)
-            if (userReviewText) setReviewText(userReviewText)
+            if (userReviewText) {
+              setReviewText(userReviewText)
+              setReviewExpanded(true)
+            }
             setUserVote(null)
             setUserRating(null)
             setUserReviewText(null)
@@ -394,41 +400,58 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         category={category}
       />
 
-      {/* Review text input */}
-      <div className="relative">
-        <label htmlFor="review-text" className="sr-only">Your review</label>
-        <textarea
-          id="review-text"
-          value={reviewText}
-          onChange={(e) => {
-            setReviewText(e.target.value)
-            if (reviewError) setReviewError(null)
+      {/* Review — tap to expand */}
+      {reviewExpanded ? (
+        <div className="relative">
+          <label htmlFor="review-text" className="sr-only">Your review</label>
+          <textarea
+            ref={reviewTextareaRef}
+            id="review-text"
+            value={reviewText}
+            onChange={(e) => {
+              setReviewText(e.target.value)
+              if (reviewError) setReviewError(null)
+            }}
+            placeholder="What stood out?"
+            aria-label="Write your review"
+            aria-describedby={reviewError ? 'review-error' : 'review-char-count'}
+            aria-invalid={!!reviewError}
+            maxLength={MAX_REVIEW_LENGTH + 50}
+            rows={3}
+            className="w-full p-4 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            style={{
+              background: 'var(--color-surface-elevated)',
+              border: reviewError ? '2px solid var(--color-danger)' : '1px solid var(--color-divider)',
+              color: 'var(--color-text-primary)',
+            }}
+          />
+          {reviewText.length > 0 && (
+            <div id="review-char-count" className="absolute bottom-2 right-3 text-xs" style={{ color: reviewText.length > MAX_REVIEW_LENGTH ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
+              {reviewText.length}/{MAX_REVIEW_LENGTH}
+            </div>
+          )}
+          {reviewError && (
+            <p id="review-error" role="alert" className="text-sm text-center mt-1" style={{ color: 'var(--color-danger)' }}>
+              {reviewError}
+            </p>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={() => {
+            setReviewExpanded(true)
+            // Focus the textarea after it renders
+            setTimeout(() => reviewTextareaRef.current?.focus(), 50)
           }}
-          placeholder="Quick review (optional)"
-          aria-label="Write your review"
-          aria-describedby={reviewError ? 'review-error' : 'review-char-count'}
-          aria-invalid={!!reviewError}
-          maxLength={MAX_REVIEW_LENGTH + 50}
-          rows={2}
-          className="w-full p-4 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          className="w-full p-4 rounded-xl text-sm text-left transition-colors"
           style={{
             background: 'var(--color-surface-elevated)',
-            border: reviewError ? '2px solid var(--color-danger)' : '1px solid var(--color-divider)',
-            color: 'var(--color-text-primary)',
+            border: '1px solid var(--color-divider)',
+            color: 'var(--color-text-tertiary)',
           }}
-        />
-        {reviewText.length > 0 && (
-          <div id="review-char-count" className="absolute bottom-2 right-3 text-xs" style={{ color: reviewText.length > MAX_REVIEW_LENGTH ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
-            {reviewText.length}/{MAX_REVIEW_LENGTH}
-          </div>
-        )}
-      </div>
-
-      {/* Error message */}
-      {reviewError && (
-        <p id="review-error" role="alert" className="text-sm text-center" style={{ color: 'var(--color-danger)' }}>
-          {reviewError}
-        </p>
+        >
+          What stood out?
+        </button>
       )}
 
       {/* Photo upload — inline */}
