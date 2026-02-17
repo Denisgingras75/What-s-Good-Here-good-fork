@@ -7,6 +7,7 @@ import { useDishSearch } from '../hooks/useDishSearch'
 import { useProfile } from '../hooks/useProfile'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { BROWSE_CATEGORIES, getCategoryNeonImage } from '../constants/categories'
+import { useTheme } from '../context/ThemeContext'
 import { SearchHero, Top10Compact } from '../components/home'
 import { TownPicker } from '../components/TownPicker'
 
@@ -184,6 +185,8 @@ const scrollStyle = {
 }
 
 function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [townPickerOpen, setTownPickerOpen] = useState(false)
   const scrollRef = useRef(null)
 
@@ -218,12 +221,15 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
                 }}
               >
                 <div
-                  className="rounded-full overflow-hidden flex items-center justify-center"
+                  className="rounded-full overflow-hidden flex items-center justify-center transition-transform"
                   style={{
                     width: '56px',
                     height: '56px',
-                    background: 'var(--color-surface-elevated)',
-                    boxShadow: isActive ? '0 0 0 2px var(--color-primary)' : 'none',
+                    background: isDark ? 'var(--color-surface-elevated)' : '#F2CDBC',
+                    boxShadow: isActive
+                      ? '0 0 0 2px var(--color-primary), 0 4px 12px rgba(0,0,0,0.12)'
+                      : '0 2px 8px rgba(0,0,0,0.08)',
+                    transform: isActive ? 'scale(1.05)' : 'scale(1)',
                   }}
                 >
                   {imageSrc ? (
@@ -233,7 +239,9 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
                       className="w-full h-full object-cover"
                       loading="lazy"
                       style={{
-                        filter: isActive ? 'brightness(1.2) saturate(0.8)' : 'brightness(1.0) saturate(0.7)',
+                        filter: isDark
+                          ? (isActive ? 'brightness(1.2) saturate(0.9)' : 'brightness(1.0) saturate(0.8)')
+                          : (isActive ? 'brightness(1.2) saturate(0.8)' : 'brightness(1.0) saturate(0.7)'),
                       }}
                     />
                   ) : (
@@ -260,20 +268,21 @@ function NumberOneHero({ dish, town, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left mb-6 py-5 px-4 rounded-2xl transition-all active:scale-[0.99]"
+      className="w-full text-left mb-6 py-6 px-5 rounded-2xl transition-all active:scale-[0.98]"
       style={{
         background: 'var(--color-surface-elevated)',
-        borderLeft: '3px solid var(--color-medal-gold)',
+        borderLeft: '4px solid var(--color-medal-gold)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04), -4px 0 16px -2px rgba(184,134,11,0.15)',
       }}
     >
       <p
         style={{
-          fontSize: '16px',
+          fontSize: '13px',
           fontWeight: 700,
-          letterSpacing: '0.10em',
+          letterSpacing: '0.06em',
           textTransform: 'uppercase',
           color: 'var(--color-primary)',
-          marginBottom: '8px',
+          marginBottom: '10px',
         }}
       >
         #1 {town ? `in ${town}` : 'on the Vineyard'} right now
@@ -281,11 +290,11 @@ function NumberOneHero({ dish, town, onClick }) {
       <h2
         style={{
           fontFamily: "'aglet-sans', sans-serif",
-          fontWeight: 700,
-          fontSize: '24px',
-          color: 'var(--color-medal-gold)',
-          lineHeight: 1.15,
-          letterSpacing: '-0.02em',
+          fontWeight: 800,
+          fontSize: '28px',
+          color: 'var(--color-text-primary)',
+          lineHeight: 1.1,
+          letterSpacing: '-0.03em',
         }}
       >
         {dish_name}
@@ -294,21 +303,21 @@ function NumberOneHero({ dish, town, onClick }) {
         style={{
           fontSize: '12px',
           fontWeight: 500,
-          letterSpacing: '0.05em',
+          letterSpacing: '0.04em',
           textTransform: 'uppercase',
           color: 'var(--color-text-secondary)',
-          marginTop: '4px',
+          marginTop: '5px',
         }}
       >
         {restaurant_name}
       </p>
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex items-baseline gap-2 mt-5">
         {isRanked && (
           <span
             style={{
               fontFamily: "'aglet-sans', sans-serif",
-              fontWeight: 700,
-              fontSize: '28px',
+              fontWeight: 800,
+              fontSize: '36px',
               color: 'var(--color-rating)',
               lineHeight: 1,
             }}
@@ -318,8 +327,9 @@ function NumberOneHero({ dish, town, onClick }) {
         )}
         <span
           style={{
-            fontSize: '11px',
+            fontSize: '12px',
             color: 'var(--color-text-tertiary)',
+            fontWeight: 500,
           }}
         >
           {total_votes} vote{total_votes === 1 ? '' : 's'}

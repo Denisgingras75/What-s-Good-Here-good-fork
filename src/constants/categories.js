@@ -172,11 +172,11 @@ const CATEGORY_IMAGES_LIGHT = {
 export function getCategoryNeonImage(id) {
   if (!id) return null
   const key = id.toLowerCase()
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light'
-  if (isLight && CATEGORY_IMAGES_LIGHT[key]) {
-    return CATEGORY_IMAGES_LIGHT[key]
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+  if (isDark && CATEGORY_IMAGES_DARK[key]) {
+    return CATEGORY_IMAGES_DARK[key]
   }
-  return CATEGORY_IMAGES_DARK[key] || null
+  return CATEGORY_IMAGES_LIGHT[key] || CATEGORY_IMAGES_DARK[key] || null
 }
 
 // Category display info - used for profile stats and tier display

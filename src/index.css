@@ -33,8 +33,8 @@
    White + orange, food psychology colors
    =========================== */
 :root {
-  /* Primary: Orange-Red — appetite trigger, energy, action */
-  --color-primary: #E8663C;
+  /* Primary: Warm Coral — appetite trigger, energy, action */
+  --color-primary: #E45A35;
   --color-primary-muted: rgba(232, 102, 60, 0.10);
   --color-primary-glow: rgba(232, 102, 60, 0.20);
   --color-rating: #16A34A;

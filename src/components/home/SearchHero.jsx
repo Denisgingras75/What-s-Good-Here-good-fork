@@ -6,30 +6,29 @@ import { DishSearch } from '../DishSearch'
 export function SearchHero({ town, loading, categoryScroll, onSearchChange }) {
   return (
     <section
-      className="pt-8 pb-5"
+      className="pt-8 pb-0"
       style={{ background: 'var(--color-surface)' }}
     >
       <div className="mb-3 text-center px-4">
         <h1
           style={{
             fontFamily: "'aglet-sans', sans-serif",
-            fontWeight: 700,
+            fontWeight: 800,
             color: 'var(--color-primary)',
-            fontSize: '30px',
-            letterSpacing: '-0.02em',
-            marginBottom: '16px',
-            lineHeight: 1.2,
+            fontSize: '32px',
+            letterSpacing: '-0.03em',
+            marginBottom: '14px',
+            lineHeight: 1.15,
           }}
         >
           What's Good Here
         </h1>
         <p
           style={{
-            color: 'var(--color-text-secondary)',
-            opacity: 0.7,
-            fontSize: '12.5px',
-            fontWeight: 500,
-            letterSpacing: '0.08em',
+            color: 'var(--color-text-tertiary)',
+            fontSize: '11.5px',
+            fontWeight: 400,
+            letterSpacing: '0.10em',
             textTransform: 'uppercase',
             marginTop: '4px',
           }}
@@ -43,11 +42,10 @@ export function SearchHero({ town, loading, categoryScroll, onSearchChange }) {
       </div>
 
       {categoryScroll && (
-        <div
-          className="mt-4 -mx-0 py-3"
-          style={{ background: 'var(--color-category-strip)' }}
-        >
-          {categoryScroll}
+        <div className="mt-4" style={{ position: 'relative' }}>
+          <div className="py-3">
+            {categoryScroll}
+          </div>
         </div>
       )}
     </section>

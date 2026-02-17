@@ -153,8 +153,8 @@ export function Top10Compact({
 
 const PODIUM_STYLE = {
   1: { color: 'var(--color-medal-gold)', glow: '#E9A115', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
-  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '22px', nameSize: '15px', ratingSize: '15px' },
-  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '20px', nameSize: '14px', ratingSize: '14px' },
+  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '24px', nameSize: '17px', ratingSize: '16px' },
+  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '22px', nameSize: '16px', ratingSize: '15px' },
 }
 
 // Top 10 row — podium layout for 1-3, compact for 4+
