@@ -198,6 +198,7 @@ export const restaurantsApi = {
   async searchNearby(lat, lng, radiusMeters = 150) {
     try {
       const { data, error } = await supabase.rpc('find_nearby_restaurants', {
+        p_name: null,
         p_lat: lat,
         p_lng: lng,
         p_radius_meters: radiusMeters,

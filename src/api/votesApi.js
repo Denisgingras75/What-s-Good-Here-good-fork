@@ -248,6 +248,7 @@ export const votesApi = {
    */
   async getReviewsForDish(dishId, { limit = 10, offset = 0 } = {}) {
     try {
+      // Fetch reviews (votes.user_id → auth.users, not profiles, so no direct join)
       const { data, error } = await supabase
         .from('votes')
         .select(`
@@ -256,11 +257,7 @@ export const votesApi = {
           rating_10,
           would_order_again,
           review_created_at,
-          user_id,
-          profiles (
-            id,
-            display_name
-          )
+          user_id
         `)
         .eq('dish_id', dishId)
         .not('review_text', 'is', null)
@@ -273,7 +270,19 @@ export const votesApi = {
         return [] // Graceful degradation
       }
 
-      return data || []
+      if (!data?.length) return []
+
+      // Enrich with profile display names
+      const userIds = [...new Set(data.map(v => v.user_id).filter(Boolean))]
+      const { data: profiles } = userIds.length
+        ? await supabase.from('profiles').select('id, display_name').in('id', userIds)
+        : { data: [] }
+      const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]))
+
+      return data.map(review => ({
+        ...review,
+        profiles: profileMap[review.user_id] || { id: review.user_id, display_name: null },
+      }))
     } catch (error) {
       logger.error('Error fetching reviews for dish:', error)
       return [] // Graceful degradation - don't break the UI
@@ -288,17 +297,14 @@ export const votesApi = {
    */
   async getSmartSnippetForDish(dishId) {
     try {
+      // Fetch best review (no direct FK from votes → profiles)
       const { data, error } = await supabase
         .from('votes')
         .select(`
           review_text,
           rating_10,
           review_created_at,
-          user_id,
-          profiles (
-            id,
-            display_name
-          )
+          user_id
         `)
         .eq('dish_id', dishId)
         .not('review_text', 'is', null)
@@ -312,8 +318,20 @@ export const votesApi = {
         return null // Graceful degradation
       }
 
-      // Return the best review or null
-      return data?.[0] || null
+      const review = data?.[0]
+      if (!review) return null
+
+      // Enrich with profile display name
+      if (review.user_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .eq('id', review.user_id)
+          .maybeSingle()
+        review.profiles = profile || { id: review.user_id, display_name: null }
+      }
+
+      return review
     } catch (error) {
       logger.error('Error fetching smart snippet:', error)
       return null // Graceful degradation - don't break the UI
