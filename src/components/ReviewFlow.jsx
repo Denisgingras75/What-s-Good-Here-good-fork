@@ -16,9 +16,10 @@ import {
 import { logger } from '../utils/logger'
 import { hapticLight, hapticSuccess } from '../utils/haptics'
 import { shareOrCopy, buildPostVoteShareData } from '../utils/share'
+import { PhotoUploadButton } from './PhotoUploadButton'
 import { setBackButtonInterceptor, clearBackButtonInterceptor } from '../utils/backButtonInterceptor'
 
-export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
+export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired, onPhotoUploaded }) {
   const { user } = useAuth()
   const { submitVote, submitting } = useVote()
   const [userVote, setUserVote] = useState(null)
@@ -46,6 +47,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [confirmationType, setConfirmationType] = useState(null)
   const [awaitingLogin, setAwaitingLogin] = useState(false)
   const [announcement, setAnnouncement] = useState('') // For screen reader announcements
+  const [showPhotoPrompt, setShowPhotoPrompt] = useState(false)
   const [showSharePrompt, setShowSharePrompt] = useState(false)
   const [lastSubmission, setLastSubmission] = useState(null)
   const confirmationTimerRef = useRef(null)
@@ -233,8 +235,8 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     // Haptic success feedback
     hapticSuccess()
 
-    // Show share prompt instead of toast
-    setShowSharePrompt(true)
+    // Show photo prompt (then share prompt after)
+    setShowPhotoPrompt(true)
 
     // Announce for screen readers
     setAnnouncement('Vote submitted successfully')
@@ -257,7 +259,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   // fires first (AT_TARGET phase = registration order). It calls stopImmediatePropagation to
   // prevent React Router from processing the navigation, then pushes the dish URL back.
   useEffect(() => {
-    if (step <= 1 && !showSharePrompt) {
+    if (step <= 1 && !showPhotoPrompt && !showSharePrompt) {
       clearBackButtonInterceptor()
       return
     }
@@ -275,13 +277,17 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         setShowSharePrompt(false)
         setLastSubmission(null)
         onVote?.()
+      } else if (showPhotoPrompt) {
+        // Skip photo, go to share
+        setShowPhotoPrompt(false)
+        setShowSharePrompt(true)
       } else if (step > 1) {
         setStep(step - 1)
       }
     })
 
     return () => clearBackButtonInterceptor()
-  }, [step, showSharePrompt, onVote])
+  }, [step, showPhotoPrompt, showSharePrompt, onVote])
 
   const handleShareDish = async () => {
     if (!lastSubmission) return
@@ -315,6 +321,43 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setShowSharePrompt(false)
     setLastSubmission(null)
     onVote?.()
+  }
+
+  // Photo prompt after voting
+  if (showPhotoPrompt) {
+    return (
+      <div className="space-y-3 text-center animate-fadeIn">
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {announcement}
+        </div>
+        <div>{lastSubmission?.wouldOrderAgain ? <ThumbsUpIcon size={40} /> : <ThumbsDownIcon size={40} />}</div>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+          Vote saved!
+        </p>
+        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+          Got a photo of this dish?
+        </p>
+        <PhotoUploadButton
+          dishId={dishId}
+          onPhotoUploaded={(photo) => {
+            onPhotoUploaded?.(photo)
+            setShowPhotoPrompt(false)
+            setShowSharePrompt(true)
+          }}
+          onLoginRequired={onLoginRequired}
+        />
+        <button
+          onClick={() => {
+            setShowPhotoPrompt(false)
+            setShowSharePrompt(true)
+          }}
+          className="w-full py-2 text-sm transition-colors"
+          style={{ color: 'var(--color-text-tertiary)' }}
+        >
+          Skip
+        </button>
+      </div>
+    )
   }
 
   // Share prompt after voting

@@ -10,10 +10,8 @@ import { dishesApi } from '../api/dishesApi'
 import { followsApi } from '../api/followsApi'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { votesApi } from '../api/votesApi'
-import { authApi } from '../api/authApi'
 import { useFavorites } from '../hooks/useFavorites'
 import { ReviewFlow } from '../components/ReviewFlow'
-import { PhotoUploadButton } from '../components/PhotoUploadButton'
 import { PhotoUploadConfirmation } from '../components/PhotoUploadConfirmation'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
@@ -67,7 +65,6 @@ export function Dish() {
   const [parentDish, setParentDish] = useState(null)
   const [isVariant, setIsVariant] = useState(false)
 
-  const [hasVoted, setHasVoted] = useState(false)
   const [photoUploaded, setPhotoUploaded] = useState(null)
   const [featuredPhoto, setFeaturedPhoto] = useState(null)
   const [communityPhotos, setCommunityPhotos] = useState([])
@@ -192,7 +189,7 @@ export function Dish() {
       setReviewsLoading(true)
 
       // Run all independent fetches in parallel
-      const [photosResult, reviewsResult, friendsResult, userVoteResult] = await Promise.allSettled([
+      const [photosResult, reviewsResult, friendsResult] = await Promise.allSettled([
         // Photos (3 calls, already parallelized internally)
         Promise.all([
           dishPhotosApi.getFeaturedPhoto(dishId),
@@ -203,8 +200,6 @@ export function Dish() {
         votesApi.getReviewsForDish(dishId, { limit: 20 }),
         // Friends' votes (only if user is logged in)
         user ? followsApi.getFriendsVotesForDish(dishId) : Promise.resolve([]),
-        // Check if user has voted (for showing photo upload)
-        user ? authApi.getUserVoteForDish(dishId, user.id) : Promise.resolve(null),
       ])
 
       // Handle photos result
@@ -234,10 +229,6 @@ export function Dish() {
         setFriendsVotes([])
       }
 
-      // Handle user vote check
-      if (userVoteResult.status === 'fulfilled' && userVoteResult.value) {
-        setHasVoted(true)
-      }
     }
 
     fetchSecondaryData()
@@ -289,7 +280,6 @@ export function Dish() {
   }
 
   const handleVote = async () => {
-    setHasVoted(true)
     // Refetch dish data and reviews after voting
     try {
       const [data, reviewsData] = await Promise.all([
@@ -741,6 +731,7 @@ export function Dish() {
                 yesVotes={dish.yes_votes}
                 onVote={handleVote}
                 onLoginRequired={handleLoginRequired}
+                onPhotoUploaded={handlePhotoUploaded}
               />
             </div>
 
@@ -811,14 +802,6 @@ export function Dish() {
               </div>
             )}
 
-            {/* Photo Upload — only after voting */}
-            {hasVoted && (
-              <PhotoUploadButton
-                dishId={dish.dish_id}
-                onPhotoUploaded={handlePhotoUploaded}
-                onLoginRequired={handleLoginRequired}
-              />
-            )}
           </div>
         </>
       )}
