@@ -930,6 +930,77 @@ git commit -m "Update docs: T35 search engine v2 progress"
 
 ---
 
+## Task 7: Convert Browse categories to tag-based filtering
+
+**Files:**
+- Modify: `src/constants/categories.js` (add `tags` array to each category)
+- Modify: `src/api/dishesApi.js` (update getRankedDishes call to pass tags instead of category)
+- Modify: `supabase/schema.sql` (update `get_ranked_dishes` to accept tag filter)
+- Create: `supabase/migrations/browse-by-tags.sql`
+
+**Why:** Today each dish has ONE category. A fish sandwich is either "sandwich" or "fish" — it can't appear in both Browse lists. With tags populated, Browse shortcuts should filter by tags so a fish sandwich shows up under Sandwiches AND Fish AND Seafood.
+
+**Step 1: Add tag mappings to BROWSE_CATEGORIES**
+
+Each Browse shortcut maps to one or more tags it should match:
+
+```js
+export const BROWSE_CATEGORIES = [
+  { id: 'pizza', label: 'Pizza', emoji: '🍕', filterTags: null },        // keep category filter (pizza is pizza)
+  { id: 'burger', label: 'Burgers', emoji: '🍔', filterTags: null },
+  { id: 'seafood', label: 'Seafood', emoji: '🦐', filterTags: ['local-catch'] },
+  { id: 'wings', label: 'Wings', emoji: '🍗', filterTags: null },
+  { id: 'sushi', label: 'Sushi', emoji: '🍣', filterTags: ['raw', 'fresh'] },
+  { id: 'breakfast', label: 'Breakfast', emoji: '🍳', filterTags: ['brunch'] },
+  { id: 'lobster roll', label: 'Lobster Rolls', emoji: '🦞', filterTags: ['local-catch', 'handheld'] },
+  { id: 'chowder', label: 'Chowder', emoji: '🍲', filterTags: ['comfort', 'local-catch'] },
+  { id: 'pasta', label: 'Pasta', emoji: '🍝', filterTags: null },
+  { id: 'steak', label: 'Steak', emoji: '🥩', filterTags: null },
+  { id: 'sandwich', label: 'Sandwiches', emoji: '🥪', filterTags: ['handheld'] },
+  { id: 'salad', label: 'Salads', emoji: '🥗', filterTags: ['light', 'fresh'] },
+  { id: 'taco', label: 'Tacos', emoji: '🌮', filterTags: null },
+  { id: 'tendys', label: 'Tenders', emoji: '🍗', filterTags: ['crispy', 'fried'] },
+  { id: 'dessert', label: 'Desserts', emoji: '🍰', filterTags: ['sweet'] },
+  { id: 'fish', label: 'Fish', emoji: '🐟', filterTags: ['local-catch'] },
+  { id: 'clams', label: 'Clams', emoji: '🐚', filterTags: ['local-catch'] },
+  { id: 'chicken', label: 'Chicken', emoji: '🐔', filterTags: null },
+  { id: 'pork', label: 'Pork', emoji: '🐷', filterTags: null },
+]
+```
+
+Categories with `filterTags: null` keep using `category = X` (pizza is always category pizza). Categories with `filterTags` use `tags && ARRAY[...]` (overlaps) so dishes appear in multiple lists.
+
+**Step 2: Update `get_ranked_dishes` to accept optional tag filter**
+
+Add parameter `filter_tags TEXT[] DEFAULT NULL` to the RPC.
+
+Add to WHERE clause:
+```sql
+AND (filter_tags IS NULL OR d.tags && filter_tags)
+```
+
+Keep `filter_category` working too — both filters can coexist.
+
+**Step 3: Update `dishesApi.getRankedDishes()` to pass tags**
+
+When a Browse category has `filterTags`, pass them to the RPC instead of (or alongside) the category string.
+
+**Step 4: Verify**
+
+- Fish sandwich shows up under both "Sandwiches" and "Fish"
+- Lobster roll shows up under "Lobster Rolls" AND "Seafood" AND "Sandwiches"
+- Categories without filterTags (pizza, burger) still work as before
+- `npm run build` passes
+
+**Step 5: Commit**
+
+```bash
+git add src/constants/categories.js src/api/dishesApi.js supabase/schema.sql supabase/migrations/browse-by-tags.sql
+git commit -m "Browse categories filter by tags: dishes appear in multiple lists"
+```
+
+---
+
 ## Verification Checklist (run before calling done)
 
 - [ ] `npm run build` passes
@@ -941,3 +1012,5 @@ git commit -m "Update docs: T35 search engine v2 progress"
 - [ ] Browse feed: 8.5/30 votes ranks above 9.0/2 votes
 - [ ] Browse feed: no crashes on dishes with 0 votes or null ratings
 - [ ] Tags populated: `SELECT COUNT(*) FROM dishes WHERE array_length(tags, 1) >= 3` > 90% of dishes
+- [ ] Fish sandwich appears in both "Sandwiches" and "Fish" Browse lists
+- [ ] Lobster roll appears in "Lobster Rolls", "Seafood", and "Sandwiches"
