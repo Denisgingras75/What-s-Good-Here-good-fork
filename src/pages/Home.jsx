@@ -225,10 +225,8 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
                   style={{
                     width: '56px',
                     height: '56px',
-                    background: isDark ? 'var(--color-surface-elevated)' : '#F2CDBC',
-                    boxShadow: isActive
-                      ? '0 0 0 2px var(--color-primary), 0 4px 12px rgba(0,0,0,0.12)'
-                      : '0 2px 8px rgba(0,0,0,0.08)',
+                    background: isDark ? 'var(--color-surface-elevated)' : '#FFFFFF',
+                    border: isActive ? '2px solid #E4440A' : '2px solid #1A1A1A',
                     transform: isActive ? 'scale(1.05)' : 'scale(1)',
                   }}
                 >
@@ -270,9 +268,8 @@ function NumberOneHero({ dish, town, onClick }) {
       onClick={onClick}
       className="w-full text-left mb-6 rounded-2xl overflow-hidden transition-all active:scale-[0.98]"
       style={{
-        background: 'var(--color-surface-elevated)',
-        borderLeft: '4px solid var(--color-medal-gold)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04), -4px 0 16px -2px rgba(184,134,11,0.15)',
+        background: '#FFFFFF',
+        border: '2px solid #1A1A1A',
       }}
     >
       <div className="flex">
@@ -284,7 +281,7 @@ function NumberOneHero({ dish, town, onClick }) {
               fontWeight: 700,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              color: 'var(--color-primary)',
+              color: '#E4440A',
               marginBottom: '10px',
             }}
           >
@@ -295,7 +292,7 @@ function NumberOneHero({ dish, town, onClick }) {
               fontFamily: "'aglet-sans', sans-serif",
               fontWeight: 800,
               fontSize: '28px',
-              color: 'var(--color-medal-gold)',
+              color: '#E4440A',
               lineHeight: 1.1,
               letterSpacing: '-0.03em',
             }}
@@ -305,10 +302,10 @@ function NumberOneHero({ dish, town, onClick }) {
           <p
             style={{
               fontSize: '12px',
-              fontWeight: 500,
+              fontWeight: 600,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              color: 'var(--color-text-secondary)',
+              color: '#555555',
               marginTop: '5px',
             }}
           >
@@ -321,7 +318,7 @@ function NumberOneHero({ dish, town, onClick }) {
                   fontFamily: "'aglet-sans', sans-serif",
                   fontWeight: 800,
                   fontSize: '36px',
-                  color: 'var(--color-rating)',
+                  color: '#E4440A',
                   lineHeight: 1,
                 }}
               >
@@ -331,7 +328,7 @@ function NumberOneHero({ dish, town, onClick }) {
             <span
               style={{
                 fontSize: '12px',
-                color: 'var(--color-text-tertiary)',
+                color: '#999999',
                 fontWeight: 500,
               }}
             >

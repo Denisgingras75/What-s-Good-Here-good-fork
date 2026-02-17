@@ -99,10 +99,11 @@ export function Top10Compact({
               </div>
             ))}
 
-            {/* Finalists — grouped Apple-style list */}
+            {/* Finalists — grouped list with border */}
             {activeDishes.length > Math.max(0, 4 - startRank) && (
               <div
                 className="mt-3 rounded-xl overflow-hidden"
+                style={{ border: '2px solid #1A1A1A' }}
               >
                 {activeDishes.slice(Math.max(0, 4 - startRank)).map((dish, index) => (
                   <Top10Row
@@ -152,9 +153,9 @@ export function Top10Compact({
 }
 
 const PODIUM_STYLE = {
-  1: { color: 'var(--color-medal-gold)', glow: '#E9A115', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
-  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '24px', nameSize: '17px', ratingSize: '16px' },
-  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '22px', nameSize: '16px', ratingSize: '15px' },
+  1: { color: '#E4440A', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
+  2: { color: '#1A1A1A', rankSize: '24px', nameSize: '17px', ratingSize: '16px' },
+  3: { color: '#1A1A1A', rankSize: '22px', nameSize: '16px', ratingSize: '15px' },
 }
 
 // Top 10 row — photo-left card when photo exists, compact text row when not
@@ -179,7 +180,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
         aria-label={accessibleLabel}
         className="w-full flex items-stretch rounded-xl overflow-hidden transition-all text-left active:scale-[0.98]"
         style={{
-          background: 'var(--color-surface-elevated)',
+          background: '#FFFFFF',
+          border: '2px solid #1A1A1A',
           marginBottom: '8px',
         }}
       >
@@ -221,7 +223,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
           <p
             className="truncate font-medium"
             style={{
-              color: 'var(--color-text-secondary)',
+              color: '#555555',
               fontSize: '11px',
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
@@ -233,13 +235,13 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
           <p style={{ marginTop: '6px', fontSize: '13px' }}>
             {isRanked ? (
               <>
-                <span className="font-bold" style={{ color: getRatingColor(avg_rating) }}>
+                <span className="font-bold" style={{ color: '#E4440A' }}>
                   {avg_rating}
                 </span>
-                <span style={{ color: 'var(--color-text-tertiary)' }}> · {total_votes} votes</span>
+                <span style={{ color: '#999999' }}> · {total_votes} votes</span>
               </>
             ) : (
-              <span style={{ color: 'var(--color-text-tertiary)' }}>
+              <span style={{ color: '#999999' }}>
                 {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
               </span>
             )}
@@ -255,10 +257,10 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
       <button
         onClick={onClick}
         aria-label={accessibleLabel}
-        className="w-full flex items-center gap-3 py-3.5 px-3 rounded-lg transition-colors text-left"
+        className="w-full flex items-center gap-3 py-3.5 px-3 rounded-xl transition-colors text-left"
         style={{
-          background: `linear-gradient(to right, var(--color-surface-elevated) ${(avg_rating || 0) * 10}%, var(--color-surface) ${(avg_rating || 0) * 10}%)`,
-          borderLeft: `2px solid ${podium.glow}`,
+          background: '#FFFFFF',
+          border: '2px solid #1A1A1A',
         }}
       >
         <span
@@ -269,7 +271,6 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
             lineHeight: 1,
             minWidth: '24px',
             textAlign: 'center',
-            textShadow: `0 0 6px ${podium.glow}20, 0 0 12px ${podium.glow}10`,
           }}
         >
           {rank}
@@ -301,13 +302,13 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
           <p style={{ marginTop: '3px', fontSize: '13px' }}>
             {isRanked ? (
               <>
-                <span className="font-bold" style={{ color: getRatingColor(avg_rating) }}>
+                <span className="font-bold" style={{ color: '#E4440A' }}>
                   {avg_rating}
                 </span>
-                <span style={{ color: 'var(--color-text-tertiary)' }}> · {total_votes} votes</span>
+                <span style={{ color: '#999999' }}> · {total_votes} votes</span>
               </>
             ) : (
-              <span style={{ color: 'var(--color-text-tertiary)' }}>
+              <span style={{ color: '#999999' }}>
                 {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
               </span>
             )}
@@ -324,14 +325,14 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
       aria-label={accessibleLabel}
       className="w-full flex items-center gap-3 py-4 px-3 transition-colors text-left active:scale-[0.99]"
       style={{
-        background: 'var(--color-surface)',
-        borderBottom: isLast ? 'none' : '1px solid var(--color-divider)',
+        background: '#FFFFFF',
+        borderBottom: isLast ? 'none' : '1px solid #1A1A1A',
       }}
     >
       <span
         className="font-bold flex-shrink-0"
         style={{
-          color: 'var(--color-text-secondary)',
+          color: '#1A1A1A',
           fontSize: '15px',
           minWidth: '24px',
           textAlign: 'center',
@@ -342,14 +343,14 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
       <div className="flex-1 min-w-0">
         <p
           className="font-semibold text-sm truncate"
-          style={{ color: 'var(--color-text-primary)' }}
+          style={{ color: '#1A1A1A' }}
         >
           {dish_name}
         </p>
         <p
           className="truncate font-medium"
           style={{
-            color: 'var(--color-text-tertiary)',
+            color: '#999999',
             fontSize: '11px',
             letterSpacing: '0.03em',
             textTransform: 'uppercase',
@@ -361,13 +362,13 @@ const Top10Row = memo(function Top10Row({ dish, rank, onClick, isLast }) {
         <p style={{ marginTop: '3px', fontSize: '13px' }}>
           {isRanked ? (
             <>
-              <span className="font-bold" style={{ color: getRatingColor(avg_rating) }}>
+              <span className="font-bold" style={{ color: '#E4440A' }}>
                 {avg_rating}
               </span>
-              <span style={{ color: 'var(--color-text-tertiary)' }}> · {total_votes} votes</span>
+              <span style={{ color: '#999999' }}> · {total_votes} votes</span>
             </>
           ) : (
-            <span style={{ color: 'var(--color-text-tertiary)' }}>
+            <span style={{ color: '#999999' }}>
               {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
             </span>
           )}

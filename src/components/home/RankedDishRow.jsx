@@ -5,9 +5,9 @@ import { getRatingColor } from '../../utils/ranking'
 import { ValueBadge } from '../browse/ValueBadge'
 
 const PODIUM_STYLE = {
-  1: { color: 'var(--color-medal-gold)', glow: '#E9A115', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
-  2: { color: 'var(--color-medal-silver)', glow: '#A8B5BF', rankSize: '22px', nameSize: '15px', ratingSize: '15px' },
-  3: { color: 'var(--color-medal-bronze)', glow: '#C4855C', rankSize: '20px', nameSize: '14px', ratingSize: '14px' },
+  1: { color: '#E4440A', rankSize: '25px', nameSize: '16px', ratingSize: '16px' },
+  2: { color: '#1A1A1A', rankSize: '22px', nameSize: '15px', ratingSize: '15px' },
+  3: { color: '#1A1A1A', rankSize: '20px', nameSize: '14px', ratingSize: '14px' },
 }
 
 // Compact dish row for browse/homepage rankings — photo-left card when photo exists
@@ -47,7 +47,8 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
         aria-label={accessibleLabel}
         className="w-full flex items-stretch rounded-xl overflow-hidden transition-all text-left active:scale-[0.98]"
         style={{
-          background: 'var(--color-surface-elevated)',
+          background: '#FFFFFF',
+          border: '2px solid #1A1A1A',
           marginBottom: '8px',
         }}
       >
@@ -124,10 +125,10 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
       <button
         onClick={handleClick}
         aria-label={accessibleLabel}
-        className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-colors text-left"
+        className="w-full flex items-center gap-3 py-3 px-3 rounded-xl transition-colors text-left"
         style={{
-          background: 'var(--color-surface-elevated)',
-          borderLeft: `2px solid ${podium.glow}`,
+          background: '#FFFFFF',
+          border: '2px solid #1A1A1A',
         }}
       >
         <span
@@ -138,7 +139,6 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
             lineHeight: 1,
             minWidth: '24px',
             textAlign: 'center',
-            textShadow: `0 0 6px ${podium.glow}20, 0 0 12px ${podium.glow}10`,
           }}
         >
           {rank}
@@ -159,7 +159,7 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
             <p
               className="truncate font-medium"
               style={{
-                color: 'var(--color-text-secondary)',
+                color: '#555555',
                 fontSize: '11px',
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
@@ -177,14 +177,14 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
             <span
               className="font-bold"
               style={{
-                color: getRatingColor(avg_rating),
+                color: '#E4440A',
                 fontSize: podium.ratingSize,
               }}
             >
               {avg_rating}
             </span>
           ) : (
-            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+            <span className="text-xs" style={{ color: '#999999' }}>
               {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
             </span>
           )}
@@ -200,14 +200,14 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
       aria-label={accessibleLabel}
       className="w-full flex items-center gap-3 py-3.5 px-3 transition-colors text-left active:scale-[0.99]"
       style={{
-        background: 'var(--color-surface)',
-        borderBottom: isLast ? 'none' : '1px solid var(--color-divider)',
+        background: '#FFFFFF',
+        borderBottom: isLast ? 'none' : '1px solid #1A1A1A',
       }}
     >
       <span
         className="font-bold flex-shrink-0"
         style={{
-          color: 'var(--color-text-secondary)',
+          color: '#1A1A1A',
           fontSize: '15px',
           minWidth: '24px',
           textAlign: 'center',
@@ -218,7 +218,7 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
       <div className="flex-1 min-w-0">
         <p
           className="font-semibold text-sm truncate"
-          style={{ color: 'var(--color-text-primary)' }}
+          style={{ color: '#1A1A1A' }}
         >
           {restaurant_name}
         </p>
@@ -226,7 +226,7 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
           <p
             className="truncate font-medium"
             style={{
-              color: 'var(--color-text-tertiary)',
+              color: '#999999',
               fontSize: '11px',
               letterSpacing: '0.03em',
               textTransform: 'uppercase',
@@ -241,18 +241,18 @@ export const RankedDishRow = memo(function RankedDishRow({ dish, rank, sortBy, i
       </div>
       <div className="flex-shrink-0 text-right">
         {isRanked ? (
-          <span className="text-sm font-bold" style={{ color: getRatingColor(avg_rating) }}>
+          <span className="text-sm font-bold" style={{ color: '#E4440A' }}>
             {avg_rating}
           </span>
         ) : (
-          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+          <span className="text-xs" style={{ color: '#999999' }}>
             {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
           </span>
         )}
       </div>
       <svg
         className="w-4 h-4 flex-shrink-0"
-        style={{ color: 'var(--color-text-tertiary)' }}
+        style={{ color: '#999999' }}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
