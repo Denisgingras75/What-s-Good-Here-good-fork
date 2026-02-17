@@ -29,57 +29,58 @@
 }
 
 /* ===========================
-   What's Good Here — Island Depths Theme
-   Dark mode with food psychology + ocean island vibes
+   What's Good Here — Bold Light Theme
+   Clean white, bold borders, orange accent
    =========================== */
 :root {
-  /* Primary: Deep Rust/Terracotta - appetite trigger, premium feel */
-  --color-primary: #C85A54;
-  --color-primary-muted: rgba(200, 90, 84, 0.15);
-  --color-primary-glow: rgba(200, 90, 84, 0.3);
+  /* Primary: Bold Orange-Red - appetite trigger, high energy */
+  --color-primary: #E8530E;
+  --color-primary-muted: rgba(232, 83, 14, 0.08);
+  --color-primary-glow: rgba(232, 83, 14, 0.15);
 
-  /* Rating: Muted natural green - softer, less techy */
-  --color-rating: #6BB384;
+  /* Rating: Orange (matches primary for bold consistency) */
+  --color-rating: #E8530E;
 
-  /* Secondary: Warm Gold - links, secondary buttons, accents */
+  /* Secondary: Warm Gold - secondary accents */
   --color-accent-gold: #D9A765;
-  --color-accent-gold-muted: rgba(217, 167, 101, 0.15);
-  --color-link-secondary: #D9A765;
+  --color-accent-gold-muted: rgba(217, 167, 101, 0.1);
+  --color-link-secondary: #E8530E;
 
-  /* Tertiary: Warm Orange - hover states, accent borders */
+  /* Tertiary: Warm Orange - hover states */
   --color-accent-orange: #E07856;
 
-  /* Text hierarchy - warm cream primary, warm-tinted grays */
-  --color-text-primary: #F5F1E8;      /* Soft cream */
-  --color-text-secondary: #B8A99A;    /* Warm taupe gray */
-  --color-text-tertiary: #7D7168;     /* Warm brown-gray */
+  /* Text hierarchy — dark on light */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #555555;
+  --color-text-tertiary: #999999;
 
-  /* Surfaces - deep charcoal-navy, ocean depth feel */
-  --color-bg: #0D1B22;                /* Deep charcoal-navy */
-  --color-surface: #0F1F2B;           /* Slightly lighter */
-  --color-surface-elevated: #162B35;
-  --color-divider: rgba(200, 90, 84, 0.18);  /* Rust tint dividers */
+  /* Surfaces — clean white */
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #F7F7F7;
+  --color-divider: #E5E5E5;
 
-  /* Cards - rich navy-teal, tropical water depth */
-  --color-card: #1A3A42;
-  --color-card-hover: #243A43;
+  /* Cards — white with bold dark borders */
+  --color-card: #FFFFFF;
+  --color-card-hover: #FAFAFA;
+  --color-card-border: #1A1A1A;
 
   /* Medal ranks — top 3 in lists */
-  --color-medal-gold: #D9A765;          /* Same as accent-gold */
-  --color-medal-silver: #A8B5BF;        /* Cool slate silver */
-  --color-medal-bronze: #C4855C;        /* Warm copper-bronze */
+  --color-medal-gold: #E8530E;
+  --color-medal-silver: #888888;
+  --color-medal-bronze: #C4855C;
 
   /* Feedback states */
-  --color-danger: #C85A54;            /* Same as primary */
-  --color-success: #6BB384;           /* Muted natural green */
+  --color-danger: #DC2626;
+  --color-success: #16A34A;
 
   /* "Avoid" action */
-  --color-muted: #6B7680;
+  --color-muted: #9CA3AF;
 
   /* Text on primary-colored backgrounds (buttons, banners) */
-  --color-text-on-primary: #1A1A1A;
+  --color-text-on-primary: #FFFFFF;
 
-  /* Semantic status colors — success/error/warning variants */
+  /* Semantic status colors */
   --color-emerald: #10B981;
   --color-emerald-light: #22C55E;
   --color-red: #EF4444;
@@ -101,12 +102,12 @@
   --color-tier-community: #3B82F6;
   --color-tier-hidden: #6B7280;
 
-  /* Glow effects */
-  --glow-primary: 0 0 20px rgba(200, 90, 84, 0.35), 0 0 40px rgba(200, 90, 84, 0.15);
-  --glow-gold: 0 0 15px rgba(217, 167, 101, 0.3), 0 0 30px rgba(217, 167, 101, 0.1);
+  /* Glow effects — subtle on light */
+  --glow-primary: 0 2px 12px rgba(232, 83, 14, 0.12);
+  --glow-gold: 0 2px 12px rgba(217, 167, 101, 0.12);
 
   /* Focus ring */
-  --focus-ring: 0 0 0 3px rgba(200, 90, 84, 0.25);
+  --focus-ring: 0 0 0 3px rgba(232, 83, 14, 0.2);
 }
 
 @tailwind base;
@@ -157,7 +158,7 @@
   }
 
   .glass-header {
-    background: rgba(13, 27, 34, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
   }
@@ -165,21 +166,21 @@
   .card-elevated {
     @apply rounded-2xl transition-all duration-300;
     background: var(--color-card);
-    border: 1px solid rgba(217, 167, 101, 0.1);
-    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--color-card-border, #1A1A1A);
+    box-shadow: none;
   }
 
   .card-elevated:hover {
     background: var(--color-card-hover);
-    border-color: rgba(224, 120, 86, 0.25);  /* Warm orange on hover */
-    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(217, 167, 101, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(232, 83, 14, 0.1);
     transform: translateY(-2px);
   }
 
   .card-subtle {
     @apply rounded-xl;
     background: var(--color-card);
-    border: 1px solid var(--color-divider);
+    border: 2px solid var(--color-card-border, #1A1A1A);
   }
 
   .image-zoom {
@@ -194,10 +195,10 @@
   .top-bar {
     position: relative;
     width: 100%;
-    background: color-mix(in srgb, var(--color-primary) 6%, var(--color-bg));
+    background: var(--color-bg);
     padding-top: env(safe-area-inset-top, 0px);
-    border-bottom: 1px solid rgba(217, 167, 101, 0.12);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid var(--color-card-border, #1A1A1A);
+    box-shadow: none;
   }
 
   .top-bar-content {
@@ -226,7 +227,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #162B35 0%, #0D1B22 50%, #080F14 100%);
+    background: #FFFFFF;
     opacity: 1;
     transition: opacity 0.4s ease-out;
   }
@@ -308,12 +309,12 @@
     width: 88px;
     height: 88px;
     border-radius: 50%;
-    background: linear-gradient(145deg, var(--color-primary), #f77f00);
+    background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1.75rem;
-    box-shadow: var(--glow-primary);
+    box-shadow: none;
   }
 
   .welcome-splash__emoji {
@@ -499,15 +500,13 @@
 
   /* Gradient hero background */
   .gradient-hero {
-    background: radial-gradient(ellipse at 50% 0%, rgba(200, 90, 84, 0.08) 0%, transparent 70%),
-                radial-gradient(ellipse at 80% 50%, rgba(217, 167, 101, 0.06) 0%, transparent 50%),
-                var(--color-bg);
+    background: var(--color-bg);
   }
 
-  /* Search input gold glow on focus */
+  /* Search input focus ring */
   .glow-search:focus-within {
-    box-shadow: 0 0 0 2px rgba(217, 167, 101, 0.3), 0 0 20px rgba(217, 167, 101, 0.15);
-    border-color: var(--color-accent-gold) !important;
+    box-shadow: 0 0 0 2px var(--color-primary);
+    border-color: var(--color-primary) !important;
   }
 
   /* Rating glow for high scores */
