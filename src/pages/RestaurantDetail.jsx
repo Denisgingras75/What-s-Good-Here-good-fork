@@ -334,13 +334,28 @@ export function RestaurantDetail() {
                 if (!user) { setLoginModalOpen(true); return }
                 setAddDishModalOpen(true)
               }}
-              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150"
               style={{
-                background: 'var(--color-accent-gold)',
-                color: 'var(--color-bg)',
+                background: '#F97316',
+                color: '#000000',
+                fontWeight: 800,
+                border: '3px solid #000000',
+                boxShadow: '4px 4px 0px 0px #000000',
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'translate(2px, 2px)'
+                e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000'
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'translate(0, 0)'
+                e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translate(0, 0)'
+                e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000000'
               }}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
               </svg>
@@ -351,14 +366,28 @@ export function RestaurantDetail() {
           {user && !isHere && (
             <button
               onClick={() => setAddDishModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all duration-150"
               style={{
-                background: 'rgba(217, 167, 101, 0.1)',
-                color: 'var(--color-accent-gold)',
-                border: '1px solid rgba(217, 167, 101, 0.2)',
+                background: '#FFFFFF',
+                color: '#000000',
+                fontWeight: 700,
+                border: '3px solid #000000',
+                boxShadow: '3px 3px 0px 0px #000000',
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'translate(2px, 2px)'
+                e.currentTarget.style.boxShadow = '1px 1px 0px 0px #000000'
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'translate(0, 0)'
+                e.currentTarget.style.boxShadow = '3px 3px 0px 0px #000000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translate(0, 0)'
+                e.currentTarget.style.boxShadow = '3px 3px 0px 0px #000000'
               }}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
               Add a dish
