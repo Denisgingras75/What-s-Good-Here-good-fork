@@ -333,7 +333,7 @@ function NumberOneHero({ dish, town, onClick }) {
             </span>
           </div>
         </div>
-        <CategoryIcon categoryId={category} size={96} color="#E4440A" />
+        <CategoryIcon categoryId={category} dishName={dish_name} size={96} color="#E4440A" />
       </div>
     </button>
   )

@@ -181,7 +181,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
               )}
             </div>
           </div>
-          <CategoryIcon categoryId={category} size={72} color="#E4440A" />
+          <CategoryIcon categoryId={category} dishName={dish_name} size={72} color="#E4440A" />
         </div>
       </button>
     )
@@ -261,7 +261,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
           )}
         </div>
       </div>
-      <CategoryIcon categoryId={category} size={56} color="#E4440A" />
+      <CategoryIcon categoryId={category} dishName={dish_name} size={56} color="#E4440A" />
     </button>
   )
 })

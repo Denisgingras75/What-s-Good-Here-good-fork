@@ -11,7 +11,17 @@ const posterIcons = {
   seafood: '/categories/poster/seafood.png',
   wings: '/categories/poster/wings.png',
   sushi: '/categories/poster/sushi.png',
+  breakfast: '/categories/poster/breakfast.png',
+  'lobster roll': '/categories/poster/lobster roll.png',
+  chowder: '/categories/poster/chowder.png',
 }
+
+// Dish-name overrides — specific icons for dishes matching keywords
+const dishNameIcons = [
+  { match: 'benedict', src: '/categories/poster/eggs-benedict.png' },
+  { match: 'cauliflower', src: '/categories/poster/veggies.png' },
+  { match: 'carrot', src: '/categories/poster/veggies.png' },
+]
 
 const icons = {
   pizza: (
@@ -168,9 +178,12 @@ const defaultIcon = (
  * @param {number} size - icon size in px (default 32)
  * @param {string} color - fill color (default 'currentColor')
  */
-export function CategoryIcon({ categoryId, size = 32, color = 'currentColor' }) {
+export function CategoryIcon({ categoryId, dishName, size = 32, color = 'currentColor' }) {
   const key = categoryId?.toLowerCase()
-  const posterSrc = posterIcons[key]
+
+  // Check dish-name overrides first
+  const nameMatch = dishName && dishNameIcons.find(d => dishName.toLowerCase().includes(d.match))
+  const posterSrc = nameMatch?.src || posterIcons[key]
 
   // Prefer poster PNG when available
   if (posterSrc) {
