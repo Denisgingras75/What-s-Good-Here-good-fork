@@ -199,7 +199,7 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
               <button
                 key={cat.id}
                 onClick={() => onCategoryChange(isActive ? null : cat.id)}
-                className="flex-shrink-0 flex flex-col items-center justify-center transition-all active:scale-[0.96]"
+                className="flex-shrink-0 flex flex-col items-center justify-center card-press"
                 style={{
                   width: '64px',
                   height: '84px',
@@ -244,7 +244,7 @@ function NumberOneHero({ dish, town, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left mb-6 rounded-2xl overflow-hidden transition-all active:scale-[0.98] stagger-item"
+      className="w-full text-left mb-6 rounded-2xl overflow-hidden card-press-hero stagger-item"
       style={{
         background: '#FFFFFF',
         border: '4px solid #1A1A1A',

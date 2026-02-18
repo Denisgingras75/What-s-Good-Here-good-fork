@@ -104,7 +104,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
       <button
         onClick={onClick}
         aria-label={accessibleLabel}
-        className="w-full text-left rounded-xl overflow-hidden transition-colors active:scale-[0.98]"
+        className="w-full text-left rounded-xl overflow-hidden card-press"
         style={{
           background: '#FFFFFF',
           border: '3px solid #1A1A1A',
@@ -185,7 +185,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
     <button
       onClick={onClick}
       aria-label={accessibleLabel}
-      className="w-full flex gap-3 py-3 px-4 rounded-xl transition-colors text-left active:scale-[0.98]"
+      className="w-full flex gap-3 py-3 px-4 rounded-xl text-left card-press"
       style={{
         background: '#FFFFFF',
         border: '3px solid #1A1A1A',

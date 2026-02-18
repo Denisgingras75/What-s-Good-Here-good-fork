@@ -531,6 +531,22 @@
   .stagger-item:nth-child(11) { animation-delay: 500ms; }
   .stagger-item:nth-child(12) { animation-delay: 550ms; }
 
+  /* Pop-out card press effect — shadow disappears, card pushed flat */
+  .card-press {
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .card-press:active {
+    transform: translate(3px, 3px) !important;
+    box-shadow: 0px 0px 0px #1A1A1A !important;
+  }
+  .card-press-hero {
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .card-press-hero:active {
+    transform: translate(6px, 6px) !important;
+    box-shadow: 0px 0px 0px #1A1A1A !important;
+  }
+
   .animate-shimmer {
     background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
     background-size: 200% 100%;
