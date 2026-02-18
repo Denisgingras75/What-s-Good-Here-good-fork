@@ -14,6 +14,17 @@ const posterIcons = {
   breakfast: '/categories/poster/breakfast.png',
   'lobster roll': '/categories/poster/lobster roll.png',
   chowder: '/categories/poster/chowder.png',
+  pasta: '/categories/poster/pasta.png',
+  steak: '/categories/poster/steak.png',
+  sandwich: '/categories/poster/sandwich.png',
+  salad: '/categories/poster/salad.png',
+  taco: '/categories/poster/taco.png',
+  tendys: '/categories/poster/tendys.png',
+  fish: '/categories/poster/fish.png',
+  clams: '/categories/poster/clams.png',
+  chicken: '/categories/poster/chicken.png',
+  pork: '/categories/poster/pork.png',
+  dessert: '/categories/poster/dessert.png',
 }
 
 // Dish-name overrides — specific icons for dishes matching keywords
