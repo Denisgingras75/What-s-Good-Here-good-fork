@@ -252,16 +252,16 @@ function NumberOneHero({ dish, town, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left mb-6 rounded-2xl overflow-hidden card-press-hero stagger-item"
+      className="w-full text-left mb-5 rounded-2xl overflow-hidden card-press-hero stagger-item"
       style={{
         background: '#FFFFFF',
-        border: '4px solid #1A1A1A',
-        boxShadow: '6px 6px 0px #1A1A1A',
+        border: '3px solid #1A1A1A',
+        boxShadow: '5px 5px 0px #1A1A1A',
       }}
     >
       {/* Top bar — rank label + icon */}
       <div
-        className="flex items-center justify-between px-5 py-3"
+        className="flex items-center justify-between px-4 py-2.5"
         style={{
           borderBottom: '3px solid #1A1A1A',
           background: '#E4440A',
@@ -269,7 +269,7 @@ function NumberOneHero({ dish, town, onClick }) {
       >
         <p
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
             fontWeight: 800,
             letterSpacing: '0.10em',
             textTransform: 'uppercase',
@@ -278,16 +278,16 @@ function NumberOneHero({ dish, town, onClick }) {
         >
           #1 {town ? `in ${town}` : 'on the Vineyard'}
         </p>
-        <CategoryIcon categoryId={category} size={32} color="#FFFFFF" />
+        <CategoryIcon categoryId={category} size={28} color="#FFFFFF" />
       </div>
 
       {/* Main content */}
-      <div className="py-6 px-5">
+      <div className="py-5 px-4">
         <h2
           style={{
             fontFamily: "'aglet-sans', sans-serif",
             fontWeight: 800,
-            fontSize: '38px',
+            fontSize: '34px',
             color: '#1A1A1A',
             lineHeight: 1.0,
             letterSpacing: '-0.03em',
@@ -297,23 +297,23 @@ function NumberOneHero({ dish, town, onClick }) {
         </h2>
         <p
           style={{
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: 600,
             color: '#999999',
-            marginTop: '8px',
+            marginTop: '7px',
             letterSpacing: '0.02em',
             textTransform: 'uppercase',
           }}
         >
           {restaurant_name}
         </p>
-        <div className="flex items-baseline gap-3 mt-5">
+        <div className="flex items-baseline gap-3 mt-4">
           {isRanked && (
             <span
               style={{
                 fontFamily: "'aglet-sans', sans-serif",
                 fontWeight: 800,
-                fontSize: '56px',
+                fontSize: '50px',
                 color: getRatingColor(avg_rating),
                 lineHeight: 1,
               }}
@@ -323,7 +323,7 @@ function NumberOneHero({ dish, town, onClick }) {
           )}
           <span
             style={{
-              fontSize: '13px',
+              fontSize: '12px',
               color: '#BBBBBB',
               fontWeight: 500,
             }}

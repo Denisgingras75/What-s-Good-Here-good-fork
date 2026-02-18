@@ -543,7 +543,7 @@
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
   .card-press-hero:active {
-    transform: translate(6px, 6px) !important;
+    transform: translate(5px, 5px) !important;
     box-shadow: 0px 0px 0px #1A1A1A !important;
   }
 

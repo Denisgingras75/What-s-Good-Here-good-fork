@@ -157,24 +157,29 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
           >
             {restaurant_name}
           </p>
-          {isRanked ? (
-            <span
-              className="font-bold"
-              style={{
-                fontFamily: "'aglet-sans', sans-serif",
-                fontSize: '20px',
-                color: getRatingColor(avg_rating),
-                display: 'block',
-                marginTop: '6px',
-              }}
-            >
-              {avg_rating}
-            </span>
-          ) : (
-            <span className="text-xs font-medium" style={{ color: '#999999', display: 'block', marginTop: '6px' }}>
-              {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
-            </span>
-          )}
+          <div className="flex items-baseline gap-2" style={{ marginTop: '6px' }}>
+            {isRanked ? (
+              <>
+                <span
+                  className="font-bold"
+                  style={{
+                    fontFamily: "'aglet-sans', sans-serif",
+                    fontSize: '20px',
+                    color: getRatingColor(avg_rating),
+                  }}
+                >
+                  {avg_rating}
+                </span>
+                <span style={{ fontSize: '11px', color: '#BBBBBB', fontWeight: 500 }}>
+                  {total_votes} vote{total_votes === 1 ? '' : 's'}
+                </span>
+              </>
+            ) : (
+              <span className="text-xs font-medium" style={{ color: '#999999' }}>
+                {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
+              </span>
+            )}
+          </div>
         </div>
       </button>
     )
@@ -230,24 +235,29 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
         >
           {restaurant_name}
         </p>
-        {isRanked ? (
-          <span
-            className="font-bold"
-            style={{
-              fontFamily: "'aglet-sans', sans-serif",
-              fontSize: '18px',
-              color: getRatingColor(avg_rating),
-              display: 'block',
-              marginTop: '4px',
-            }}
-          >
-            {avg_rating}
-          </span>
-        ) : (
-          <span className="text-xs font-medium" style={{ color: '#999999', display: 'block', marginTop: '4px' }}>
-            {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
-          </span>
-        )}
+        <div className="flex items-baseline gap-2" style={{ marginTop: '4px' }}>
+          {isRanked ? (
+            <>
+              <span
+                className="font-bold"
+                style={{
+                  fontFamily: "'aglet-sans', sans-serif",
+                  fontSize: '18px',
+                  color: getRatingColor(avg_rating),
+                }}
+              >
+                {avg_rating}
+              </span>
+              <span style={{ fontSize: '11px', color: '#BBBBBB', fontWeight: 500 }}>
+                {total_votes} vote{total_votes === 1 ? '' : 's'}
+              </span>
+            </>
+          ) : (
+            <span className="text-xs font-medium" style={{ color: '#999999' }}>
+              {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
+            </span>
+          )}
+        </div>
       </div>
       <CategoryIcon categoryId={category} size={22} color="#E4440A" />
     </button>
