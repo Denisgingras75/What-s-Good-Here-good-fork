@@ -4,7 +4,7 @@ import { DishSearch } from '../DishSearch'
  * SearchHero - Massive editorial title + compact search
  * Staggered entrance for premium feel
  */
-export function SearchHero({ town, loading, categoryScroll, onSearchChange }) {
+export function SearchHero({ town, loading, onSearchChange }) {
   return (
     <section
       className="pt-10 pb-0"
@@ -29,14 +29,6 @@ export function SearchHero({ town, loading, categoryScroll, onSearchChange }) {
       <div className="px-4 stagger-item">
         <DishSearch loading={loading} placeholder="What are you craving?" town={town} onSearchChange={onSearchChange} />
       </div>
-
-      {categoryScroll && (
-        <div className="mt-4 stagger-item">
-          <div className="py-2">
-            {categoryScroll}
-          </div>
-        </div>
-      )}
     </section>
   )
 }

@@ -65,25 +65,14 @@ export function Home() {
     <div className="min-h-screen" style={{ background: '#FFFFFF' }}>
       <h1 className="sr-only">What's Good Here - Top Ranked Dishes Near You</h1>
 
-      {/* Section 1: Hero with search + categories */}
+      {/* Section 1: Hero with search (no categories) */}
       <SearchHero
         town={town}
         loading={loading}
         onSearchChange={handleSearchChange}
-        categoryScroll={
-          <CategoryNav
-            town={town}
-            onTownChange={setTown}
-            selectedCategory={selectedCategory}
-            onCategoryChange={(cat) => {
-              setSelectedCategory(cat)
-              if (cat) setSearchQuery('')
-            }}
-          />
-        }
       />
 
-      {/* Section 2: Top 10 / Search Results */}
+      {/* Section 2: #1 Hero → Categories → Rest of Top 10 */}
       <section className="px-4 pt-6 pb-6" style={{ background: '#FFFFFF' }}>
         {searchQuery ? (
           <div className="max-w-lg mx-auto">
@@ -165,6 +154,20 @@ export function Home() {
                 onClick={() => navigate(`/dish/${(selectedCategory ? categoryDishes[0] : top10Dishes[0]).dish_id}`)}
               />
             )}
+
+            {/* Category scroll — between #1 and the rest */}
+            <div className="mb-5 -mx-4 stagger-item">
+              <CategoryNav
+                town={town}
+                onTownChange={setTown}
+                selectedCategory={selectedCategory}
+                onCategoryChange={(cat) => {
+                  setSelectedCategory(cat)
+                  if (cat) setSearchQuery('')
+                }}
+              />
+            </div>
+
             <Top10Compact
               key={selectedCategory || 'top10'}
               dishes={selectedCategory ? categoryDishes.slice(1) : top10Dishes.slice(1)}
