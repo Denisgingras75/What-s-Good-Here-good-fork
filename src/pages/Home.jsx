@@ -209,8 +209,8 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
                 onClick={() => onCategoryChange(isActive ? null : cat.id)}
                 className="flex-shrink-0 flex flex-col items-center justify-center card-press"
                 style={{
-                  width: '64px',
-                  height: '84px',
+                  width: '60px',
+                  height: '80px',
                   background: isActive ? '#E4440A' : '#FFFFFF',
                   border: '3px solid #1A1A1A',
                   borderRadius: '12px',
@@ -219,7 +219,7 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
               >
                 <CategoryIcon
                   categoryId={cat.id}
-                  size={42}
+                  size={48}
                   color={isActive ? '#FFFFFF' : '#E4440A'}
                 />
                 <span
