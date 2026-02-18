@@ -29,16 +29,17 @@ const posterIcons = {
 
 // Dish-name overrides — specific icons for dishes matching keywords
 // More specific matches first (e.g. "fried chicken" before "chicken" category)
+// `not` = categories where this override should NOT apply (the category icon is better)
 const dishNameIcons = [
   { match: 'benedict', src: '/categories/poster/eggs-benedict.png' },
   { match: 'cauliflower', src: '/categories/poster/veggies.png' },
   { match: 'carrot', src: '/categories/poster/veggies.png' },
   { match: 'fried chicken', src: '/categories/poster/fried-chicken.png' },
-  { match: 'shrimp', src: '/categories/poster/shrimp.png' },
-  { match: 'fries', src: '/categories/poster/fries.png' },
-  { match: 'french fry', src: '/categories/poster/fries.png' },
-  { match: 'soup', src: '/categories/poster/soup.png' },
-  { match: 'bisque', src: '/categories/poster/soup.png' },
+  { match: 'shrimp', src: '/categories/poster/shrimp.png', not: ['seafood'] },
+  { match: 'fries', src: '/categories/poster/fries.png', not: ['tendys', 'wings', 'burger'] },
+  { match: 'french fry', src: '/categories/poster/fries.png', not: ['tendys', 'wings', 'burger'] },
+  { match: 'soup', src: '/categories/poster/soup.png', not: ['chowder'] },
+  { match: 'bisque', src: '/categories/poster/soup.png', not: ['chowder'] },
   { match: 'wrap', src: '/categories/poster/wrap.png' },
   { match: 'rib', src: '/categories/poster/ribs.png' },
 ]
@@ -201,10 +202,11 @@ const defaultIcon = (
 export function CategoryIcon({ categoryId, dishName, size = 32, color = 'currentColor' }) {
   const key = categoryId?.toLowerCase()
 
-  // Category poster icon takes priority — dish-name overrides only for uncovered categories
-  const categoryPoster = posterIcons[key]
-  const nameMatch = !categoryPoster && dishName && dishNameIcons.find(d => dishName.toLowerCase().includes(d.match))
-  const posterSrc = categoryPoster || nameMatch?.src
+  // Dish-name overrides win (more specific), but back off for excluded categories
+  const nameMatch = dishName && dishNameIcons.find(d =>
+    dishName.toLowerCase().includes(d.match) && !(d.not && d.not.includes(key))
+  )
+  const posterSrc = nameMatch?.src || posterIcons[key]
 
   // Prefer poster PNG when available
   if (posterSrc) {
