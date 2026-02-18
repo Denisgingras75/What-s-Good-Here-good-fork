@@ -572,6 +572,107 @@ Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited 
 Flat vector icon in the style of Zach Roszczewski. Soft rounded shapes, limited color palette (3-4 colors max), subtle tonal shading within each color, no black outlines, smooth gradients for depth, friendly and approachable, polished emoji aesthetic, slightly dimensional but not fully 3D, clean geometric forms with organic warmth. Icon of pork ribs. Color palette: smoked meat burgundy #7A3A2A, BBQ glaze brown #9A5A32, char amber #6A4A28. Flat solid circular background #F2CDBC, no plate, no rim, no shadow — just the food icon on a plain colored circle. Use rich, saturated mid-tones — no pastels. Clean and editorial.
 ```
 
+### Poster / Zine Style — Bold black outlines + coral-orange fill (transparent bg)
+
+For the homepage redesign. PNGs stored in `public/categories/poster/`. Referenced via `posterIcons` map in `src/components/home/CategoryIcons.jsx`. Generated via ChatGPT image generation.
+
+**Base prompt template:**
+```
+Simple bold food icon of a [FOOD ITEM]. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**1. Pizza:** ✅ Done
+
+**2. Burger:**
+```
+Simple bold food icon of a hamburger with bun, patty, and cheese. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**3. Seafood:**
+```
+Simple bold food icon of a seafood boil with shrimp, corn on the cob, and a crab leg spilling out. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**4. Wings:**
+```
+Simple bold food icon of a chicken wing drumette with bone sticking out. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**5. Sushi:**
+```
+Simple bold food icon of a nigiri sushi piece, fish on rice. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**6. Breakfast:**
+```
+Simple bold food icon of a fried egg sunny side up. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**7. Lobster Roll:**
+```
+Simple bold food icon of a lobster claw, single open claw. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**8. Chowder:**
+```
+Simple bold food icon of a steaming bowl of soup with steam curls. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**9. Pasta:**
+```
+Simple bold food icon of a fork twirling spaghetti noodles. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**10. Steak:**
+```
+Simple bold food icon of a T-bone steak with visible bone. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**11. Sandwich:**
+```
+Simple bold food icon of a triangle sandwich half with visible layers. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**12. Salad:**
+```
+Simple bold food icon of a salad bowl with leafy greens poking out. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**13. Taco:**
+```
+Simple bold food icon of a taco with curved shell and fillings. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**14. Tendys (Chicken Tenders):**
+```
+Simple bold food icon of two crispy chicken tenders/strips crossed. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**15. Dessert:**
+```
+Simple bold food icon of a cupcake with swirled frosting. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**16. Fish:**
+```
+Simple bold food icon of a whole fish with tail fin and eye. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**17. Clams:**
+```
+Simple bold food icon of an open clam shell with ridged texture. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**18. Chicken:**
+```
+Simple bold food icon of a roasted chicken drumstick with bone. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
+**19. Pork:**
+```
+Simple bold food icon of a pork chop with bone on one side. Thick black outlines (4px+ stroke weight), flat fill using only coral-orange #E4440A and white. No gradients, no shadows, no texture, no background. Cartoon pictogram style — chunky confident shapes, minimal detail, instantly readable at 32px. Like a bold screen-printed sticker or punk food zine illustration. Clean vector, transparent background. Square format.
+```
+
 ---
 
-*Last updated: Feb 16, 2026*
+*Last updated: Feb 17, 2026*

@@ -113,7 +113,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
       >
         {/* Colored banner bar */}
         <div
-          className="flex items-center justify-between px-5 py-2"
+          className="px-5 py-2"
           style={{
             background: podium.bg,
             borderBottom: '2px solid #1A1A1A',
@@ -130,56 +130,58 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
           >
             #{rank} {town ? `in ${town}` : 'on the Vineyard'}
           </span>
-          <CategoryIcon categoryId={category} size={24} color={podium.text} />
         </div>
-        {/* Content — stacked: dish → restaurant → rating */}
-        <div className="py-4 px-5">
-          <p
-            className="font-bold truncate"
-            style={{
-              color: '#1A1A1A',
-              fontSize: '16px',
-              lineHeight: 1.2,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {dish_name}
-          </p>
-          <p
-            className="truncate font-medium"
-            style={{
-              color: '#999999',
-              fontSize: '11px',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              marginTop: '3px',
-            }}
-          >
-            {restaurant_name}
-          </p>
-          <div className="flex items-baseline gap-2" style={{ marginTop: '6px' }}>
-            {isRanked ? (
-              <>
-                <span
-                  className="font-bold"
-                  style={{
-                    fontFamily: "'aglet-sans', sans-serif",
-                    fontSize: '20px',
-                    color: getRatingColor(avg_rating),
-                  }}
-                >
-                  {avg_rating}
+        {/* Content — text left, icon right */}
+        <div className="flex items-center gap-3 py-4 px-5">
+          <div className="flex-1 min-w-0">
+            <p
+              className="font-bold truncate"
+              style={{
+                color: '#1A1A1A',
+                fontSize: '16px',
+                lineHeight: 1.2,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {dish_name}
+            </p>
+            <p
+              className="truncate font-medium"
+              style={{
+                color: '#999999',
+                fontSize: '11px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                marginTop: '3px',
+              }}
+            >
+              {restaurant_name}
+            </p>
+            <div className="flex items-baseline gap-2" style={{ marginTop: '6px' }}>
+              {isRanked ? (
+                <>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: "'aglet-sans', sans-serif",
+                      fontSize: '20px',
+                      color: getRatingColor(avg_rating),
+                    }}
+                  >
+                    {avg_rating}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#BBBBBB', fontWeight: 500 }}>
+                    {total_votes} vote{total_votes === 1 ? '' : 's'}
+                  </span>
+                </>
+              ) : (
+                <span className="text-xs font-medium" style={{ color: '#999999' }}>
+                  {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
                 </span>
-                <span style={{ fontSize: '11px', color: '#BBBBBB', fontWeight: 500 }}>
-                  {total_votes} vote{total_votes === 1 ? '' : 's'}
-                </span>
-              </>
-            ) : (
-              <span className="text-xs font-medium" style={{ color: '#999999' }}>
-                {total_votes ? `${total_votes} vote${total_votes === 1 ? '' : 's'}` : 'New'}
-              </span>
-            )}
+              )}
+            </div>
           </div>
+          <CategoryIcon categoryId={category} size={72} color="#E4440A" />
         </div>
       </button>
     )
@@ -259,7 +261,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
           )}
         </div>
       </div>
-      <CategoryIcon categoryId={category} size={22} color="#E4440A" />
+      <CategoryIcon categoryId={category} size={56} color="#E4440A" />
     </button>
   )
 })

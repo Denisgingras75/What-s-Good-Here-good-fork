@@ -219,7 +219,7 @@ function CategoryNav({ town, onTownChange, selectedCategory, onCategoryChange })
               >
                 <CategoryIcon
                   categoryId={cat.id}
-                  size={34}
+                  size={42}
                   color={isActive ? '#FFFFFF' : '#E4440A'}
                 />
                 <span
@@ -259,9 +259,9 @@ function NumberOneHero({ dish, town, onClick }) {
         boxShadow: '5px 5px 0px #1A1A1A',
       }}
     >
-      {/* Top bar — rank label + icon */}
+      {/* Top bar — rank label */}
       <div
-        className="flex items-center justify-between px-4 py-2.5"
+        className="px-4 py-2.5"
         style={{
           borderBottom: '3px solid #1A1A1A',
           background: '#E4440A',
@@ -278,59 +278,61 @@ function NumberOneHero({ dish, town, onClick }) {
         >
           #1 {town ? `in ${town}` : 'on the Vineyard'}
         </p>
-        <CategoryIcon categoryId={category} size={28} color="#FFFFFF" />
       </div>
 
-      {/* Main content */}
-      <div className="py-5 px-4">
-        <h2
-          style={{
-            fontFamily: "'aglet-sans', sans-serif",
-            fontWeight: 800,
-            fontSize: '34px',
-            color: '#1A1A1A',
-            lineHeight: 1.0,
-            letterSpacing: '-0.03em',
-          }}
-        >
-          {dish_name}
-        </h2>
-        <p
-          style={{
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#999999',
-            marginTop: '7px',
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {restaurant_name}
-        </p>
-        <div className="flex items-baseline gap-3 mt-4">
-          {isRanked && (
-            <span
-              style={{
-                fontFamily: "'aglet-sans', sans-serif",
-                fontWeight: 800,
-                fontSize: '50px',
-                color: getRatingColor(avg_rating),
-                lineHeight: 1,
-              }}
-            >
-              {avg_rating}
-            </span>
-          )}
-          <span
+      {/* Main content — text left, big icon right */}
+      <div className="flex items-center gap-3 py-5 px-4">
+        <div className="flex-1 min-w-0">
+          <h2
             style={{
-              fontSize: '12px',
-              color: '#BBBBBB',
-              fontWeight: 500,
+              fontFamily: "'aglet-sans', sans-serif",
+              fontWeight: 800,
+              fontSize: '34px',
+              color: '#1A1A1A',
+              lineHeight: 1.0,
+              letterSpacing: '-0.03em',
             }}
           >
-            {total_votes} vote{total_votes === 1 ? '' : 's'}
-          </span>
+            {dish_name}
+          </h2>
+          <p
+            style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#999999',
+              marginTop: '7px',
+              letterSpacing: '0.02em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {restaurant_name}
+          </p>
+          <div className="flex items-baseline gap-3 mt-4">
+            {isRanked && (
+              <span
+                style={{
+                  fontFamily: "'aglet-sans', sans-serif",
+                  fontWeight: 800,
+                  fontSize: '50px',
+                  color: getRatingColor(avg_rating),
+                  lineHeight: 1,
+                }}
+              >
+                {avg_rating}
+              </span>
+            )}
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#BBBBBB',
+                fontWeight: 500,
+              }}
+            >
+              {total_votes} vote{total_votes === 1 ? '' : 's'}
+            </span>
+          </div>
         </div>
+        <CategoryIcon categoryId={category} size={96} color="#E4440A" />
       </div>
     </button>
   )

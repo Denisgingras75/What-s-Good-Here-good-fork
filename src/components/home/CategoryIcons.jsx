@@ -1,6 +1,17 @@
 // Bold flat food silhouette icons — Poster/zine aesthetic
 // Single color, chunky proportions, visible at 32-56px
 // All icons use viewBox="0 0 48 48" for consistency
+//
+// Poster PNGs (in /categories/poster/) override inline SVGs when available.
+// These are ChatGPT-generated icons with thick black outlines + red-orange fill.
+
+const posterIcons = {
+  pizza: '/categories/poster/pizza.png',
+  burger: '/categories/poster/burger.png',
+  seafood: '/categories/poster/seafood.png',
+  wings: '/categories/poster/wings.png',
+  sushi: '/categories/poster/sushi.png',
+}
 
 const icons = {
   pizza: (
@@ -158,7 +169,25 @@ const defaultIcon = (
  * @param {string} color - fill color (default 'currentColor')
  */
 export function CategoryIcon({ categoryId, size = 32, color = 'currentColor' }) {
-  const icon = icons[categoryId?.toLowerCase()] || defaultIcon
+  const key = categoryId?.toLowerCase()
+  const posterSrc = posterIcons[key]
+
+  // Prefer poster PNG when available
+  if (posterSrc) {
+    return (
+      <img
+        src={posterSrc}
+        alt=""
+        width={size}
+        height={size}
+        loading="lazy"
+        style={{ display: 'block', flexShrink: 0, objectFit: 'contain' }}
+        aria-hidden="true"
+      />
+    )
+  }
+
+  const icon = icons[key] || defaultIcon
   return (
     <svg
       width={size}
