@@ -135,16 +135,33 @@ export function Home() {
           </div>
         ) : top10Dishes.length > 0 ? (
           <div className="max-w-lg mx-auto">
-            {/* #1 Hero — only for the main Top 10, not category filtered */}
-            {!selectedCategory && top10Dishes[0] && (
-              <NumberOneHero dish={top10Dishes[0]} town={town} onClick={() => navigate(`/dish/${top10Dishes[0].dish_id}`)} />
+            {/* Category headline — above the #1 hero when filtering */}
+            {selectedCategoryLabel && (
+              <p
+                className="font-bold mb-4 stagger-item"
+                style={{
+                  fontFamily: "'aglet-sans', sans-serif",
+                  color: '#E4440A',
+                  fontSize: '20px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {town ? `Best ${selectedCategoryLabel} in ${town}` : `Best ${selectedCategoryLabel} on the Vineyard`}
+              </p>
+            )}
+            {/* #1 Hero — always shown */}
+            {(selectedCategory ? categoryDishes[0] : top10Dishes[0]) && (
+              <NumberOneHero
+                dish={selectedCategory ? categoryDishes[0] : top10Dishes[0]}
+                town={town}
+                onClick={() => navigate(`/dish/${(selectedCategory ? categoryDishes[0] : top10Dishes[0]).dish_id}`)}
+              />
             )}
             <Top10Compact
               key={selectedCategory || 'top10'}
-              dishes={selectedCategory ? categoryDishes : (top10Dishes.slice(1))}
+              dishes={selectedCategory ? categoryDishes.slice(1) : top10Dishes.slice(1)}
               town={town}
-              categoryLabel={selectedCategoryLabel}
-              startRank={selectedCategory ? 1 : 2}
+              startRank={2}
             />
           </div>
         ) : (
