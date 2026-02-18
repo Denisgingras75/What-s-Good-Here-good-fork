@@ -3,7 +3,7 @@
  * Used by TownPicker component and LocationContext
  */
 export const MV_TOWNS = [
-  { value: null, label: 'All Island' },
+  { value: null, label: 'All Vineyard' },
   { value: 'Oak Bluffs', label: 'Oak Bluffs' },
   { value: 'Edgartown', label: 'Edgartown' },
   { value: 'Vineyard Haven', label: 'Vineyard Haven' },

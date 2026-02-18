@@ -7,7 +7,7 @@ import { getCategoryEmoji } from '../../constants/categories'
 /**
  * Top10Compact - Ranked dish list for the homepage
  *
- * Supports MV vs Personal toggle for logged-in users with preferences.
+ * Supports ranked vs Personal toggle for logged-in users with preferences.
  * Accepts categoryLabel for inline category filtering.
  */
 export function Top10Compact({
@@ -19,7 +19,7 @@ export function Top10Compact({
   onSeeAll,
 }) {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('mv')
+  const [activeTab, setActiveTab] = useState('ranked')
 
   const activeDishes = activeTab === 'personal' && showToggle
     ? personalDishes
@@ -37,7 +37,7 @@ export function Top10Compact({
         style={{ color: 'var(--color-accent-gold)', fontSize: '13px' }}
       >
         {categoryLabel
-          ? (town ? `The best ${categoryLabel} in ${town}` : `The best ${categoryLabel} on the Vineyard`)
+          ? (town ? `The best ${categoryLabel} in ${town}` : `The best ${categoryLabel} near you`)
           : hasAnyVotes ? 'People have spoken' : 'Dishes near you'
         }
       </p>
@@ -47,15 +47,15 @@ export function Top10Compact({
         <div role="tablist" aria-label="Top 10 list filter" className="flex gap-2 mb-4">
           <button
             role="tab"
-            aria-selected={activeTab === 'mv'}
-            onClick={() => setActiveTab('mv')}
+            aria-selected={activeTab === 'ranked'}
+            onClick={() => setActiveTab('ranked')}
             className="flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all"
             style={{
-              background: activeTab === 'mv' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
-              color: activeTab === 'mv' ? 'white' : 'var(--color-text-secondary)',
+              background: activeTab === 'ranked' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
+              color: activeTab === 'ranked' ? 'white' : 'var(--color-text-secondary)',
             }}
           >
-            {town || 'MV'} Top 10
+            {town || 'Local'} Top 10
           </button>
           <button
             role="tab"
@@ -79,7 +79,7 @@ export function Top10Compact({
             letterSpacing: '-0.01em',
           }}
         >
-          Top 10 {town ? `in ${town}` : 'on the Island'}
+          Top 10 {town ? `in ${town}` : 'Near You'}
         </h3>
       ) : null}
 

@@ -94,7 +94,7 @@ export function RadiusSheet({ isOpen, onClose, radius, onRadiusChange }) {
                     className="text-sm"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
-                    {r === 1 ? 'Walking distance' : r === 5 ? 'Quick drive' : r === 10 ? 'Short trip' : r === 20 ? 'Anywhere on island' : r === 25 ? 'Extended range' : 'Maximum range'}
+                    {r === 1 ? 'Walking distance' : r === 5 ? 'Quick drive' : r === 10 ? 'Short trip' : r === 20 ? 'Across the area' : r === 25 ? 'Extended range' : 'Maximum range'}
                   </p>
                 </div>
               </div>

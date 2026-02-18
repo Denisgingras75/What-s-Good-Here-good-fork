@@ -34,8 +34,8 @@ export function Privacy() {
               Overview
             </h2>
             <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-              What's Good Here ("we", "our", or "the app") is a community-driven food discovery platform
-              for Martha's Vineyard. This Privacy Policy explains how we collect, use, and protect your
+              What's Good Here ("we", "our", or "the app") is a community-driven food discovery platform.
+              This Privacy Policy explains how we collect, use, and protect your
               information when you use our service.
             </p>
           </section>

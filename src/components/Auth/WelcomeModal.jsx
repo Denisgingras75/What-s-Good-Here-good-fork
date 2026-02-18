@@ -11,7 +11,7 @@ const STEPS = [
   {
     id: 'welcome',
     image: '/wgh-icon.png',
-    title: 'Find the best dishes on Martha\'s Vineyard',
+    title: 'Find the best dishes near you',
     subtitle: 'Real ratings from locals & visitors like you',
     description: 'No more guessing. See what\'s actually worth ordering.',
   },
@@ -288,7 +288,7 @@ export function WelcomeModal() {
           {/* Fun footer text */}
           {!isNameStep && (
             <p className="mt-6 text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>
-              {step === 0 && "Trusted by island food lovers"}
+              {step === 0 && "Trusted by local food lovers"}
               {step === 1 && "Dishes need 5+ votes to get ranked"}
             </p>
           )}

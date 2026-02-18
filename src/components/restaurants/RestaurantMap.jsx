@@ -292,7 +292,7 @@ function PlacePopupContent({ place, onAddPlace }) {
 }
 
 export function RestaurantMap({ restaurants, userLocation, onSelectRestaurant, onAddPlace, isAuthenticated, existingPlaceIds, radiusMi }) {
-  const defaultCenter = [41.43, -70.56] // Martha's Vineyard
+  const defaultCenter = [41.43, -70.56] // Fallback center
   const center = userLocation?.lat && userLocation?.lng
     ? [userLocation.lat, userLocation.lng]
     : defaultCenter

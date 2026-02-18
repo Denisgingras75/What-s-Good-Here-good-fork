@@ -197,7 +197,7 @@ export function Login() {
                     <span className="font-bold">1</span>
                   </div>
                   <p style={{ color: 'var(--color-text-secondary)' }}>
-                    Help you find <strong style={{ color: 'var(--color-text-primary)' }}>the best dishes</strong> on Martha's Vineyard
+                    Help you find <strong style={{ color: 'var(--color-text-primary)' }}>the best dishes</strong> near you
                   </p>
                 </div>
                 <div className="flex items-start gap-4">

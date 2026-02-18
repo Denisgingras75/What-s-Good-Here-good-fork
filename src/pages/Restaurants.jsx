@@ -41,7 +41,7 @@ export function Restaurants() {
   )
 
   // Discover nearby restaurants from Google Places (auth only, radius + 5mi buffer)
-  const { places: nearbyPlaces, loading: nearbyLoading } = useNearbyPlaces({
+  const { places: nearbyPlaces, loading: nearbyLoading, error: nearbyError } = useNearbyPlaces({
     lat: location?.lat,
     lng: location?.lng,
     radius: radius + 5,
@@ -328,7 +328,7 @@ export function Restaurants() {
             className="mt-6 text-center text-xs py-3"
             style={{ color: 'var(--color-text-tertiary)' }}
           >
-            No additional restaurants found nearby from Google
+            {nearbyError?.message || 'No additional restaurants found nearby from Google'}
           </p>
         )}
         {user && nearbyLoading && (

@@ -94,7 +94,7 @@ export function Discover() {
           Discover
         </h2>
         <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-          What's happening on the island
+          What's trending
         </p>
       </header>
 
@@ -265,11 +265,11 @@ export function Discover() {
         </div>
       )}
 
-      {/* New on the Island — recently discovered restaurants */}
+      {/* Recently added restaurants */}
       {newRestaurants.length > 0 && (
         <div className="px-4 pt-5">
           <h3 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-            New on the Island
+            Recently Added
           </h3>
           <div
             className="rounded-xl overflow-hidden"

@@ -2,7 +2,7 @@ import { ALL_TOWNS, MV_TOWNS, NANTUCKET_TOWNS, CAPE_COD_TOWNS } from '../constan
 
 /**
  * TownPicker - Inline pill that expands town options into the scroll strip
- * Shows both MV and Nantucket towns with grouping headers
+ * Shows towns grouped by region with headers
  */
 export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
   const currentLabel = ALL_TOWNS.find(t => t.value === town)?.label || 'All Areas'
@@ -13,8 +13,8 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
   }
 
   if (isOpen) {
-    // Build grouped town list: "All Islands" first, then MV towns, then Nantucket towns
-    const mvTowns = MV_TOWNS.slice(1) // skip "All Island"
+    // Build grouped town list: "All Areas" first, then towns by region
+    const mvTowns = MV_TOWNS.slice(1) // skip "All Vineyard"
     const nackTowns = NANTUCKET_TOWNS.slice(1) // skip "All Nantucket"
     const capeTowns = CAPE_COD_TOWNS.slice(1) // skip "All Cape"
 
@@ -50,12 +50,12 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
           All Areas
         </button>
 
-        {/* MV group label */}
+        {/* Vineyard group label */}
         <span
           className="flex-shrink-0 pl-2 pr-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider self-center"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
-          MV
+          Vineyard
         </span>
 
         {mvTowns.map((option) => (
@@ -81,7 +81,7 @@ export function TownPicker({ town, onTownChange, isOpen, onToggle }) {
           className="flex-shrink-0 pl-2 pr-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider self-center"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
-          ACK
+          Nantucket
         </span>
 
         {nackTowns.map((option) => (

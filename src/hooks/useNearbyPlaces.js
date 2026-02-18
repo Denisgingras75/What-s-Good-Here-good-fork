@@ -7,8 +7,8 @@ const MAX_DISCOVERY_RADIUS_MI = 25
 
 /**
  * Discover nearby restaurants via Google Places that aren't already in the DB.
- * Only runs when: user is authenticated and location is available.
- * Search radius is capped at 25 miles (MV + Cape Cod coverage).
+ * Requires authentication (edge functions need JWT) and GPS coordinates.
+ * Search radius is capped at 25 miles.
  *
  * @param {Object} params
  * @param {number} params.lat - User latitude
@@ -18,8 +18,9 @@ const MAX_DISCOVERY_RADIUS_MI = 25
  * @param {string[]} params.existingPlaceIds - Google Place IDs already in DB
  */
 export function useNearbyPlaces({ lat, lng, radius, isAuthenticated, existingPlaceIds = [] }) {
+  // Auth is required because edge functions require JWT for rate limiting
   const enabled = !!isAuthenticated && !!lat && !!lng
-  const searchRadius = Math.min(radius, MAX_DISCOVERY_RADIUS_MI)
+  const searchRadius = Math.min(radius || 5, MAX_DISCOVERY_RADIUS_MI)
   const radiusMeters = Math.round(searchRadius * MILES_TO_METERS)
 
   const { data, isLoading, error } = useQuery({
@@ -37,12 +38,20 @@ export function useNearbyPlaces({ lat, lng, radius, isAuthenticated, existingPla
   const places = (data || []).filter(p => !existingSet.has(p.placeId))
 
   if (error) {
-    logger.error('Error discovering nearby places:', error)
+    logger.error('Error discovering nearby places:', error?.message || error)
   }
+
+  // Surface the error with more detail for diagnostics
+  const errorInfo = error
+    ? { message: placesApi._lastError?.message || 'Could not load nearby restaurant suggestions' }
+    : !isAuthenticated && lat && lng
+      ? { message: 'Sign in to discover nearby restaurants from Google' }
+      : null
 
   return {
     places,
     loading: isLoading && enabled,
-    error: error ? { message: 'Could not load nearby restaurant suggestions' } : null,
+    error: errorInfo,
+    needsAuth: !isAuthenticated && !!lat && !!lng,
   }
 }

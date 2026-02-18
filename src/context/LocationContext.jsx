@@ -4,7 +4,7 @@ import { capture } from '../lib/analytics'
 import { logger } from '../utils/logger'
 import { getStorageItem, setStorageItem, STORAGE_KEYS } from '../lib/storage'
 
-// Default location: Martha's Vineyard center (between Vineyard Haven, Oak Bluffs, Edgartown)
+// Default fallback location (Martha's Vineyard) — used when GPS is unavailable
 const DEFAULT_LOCATION = {
   lat: 41.43,
   lng: -70.56,
@@ -41,10 +41,10 @@ export function LocationProvider({ children }) {
     })
   }, [])
 
-  // Town filter state (null = All Island)
+  // Town filter state (null = All Areas)
   const [town, setTownState] = useState(() => {
     const saved = getStorageItem(STORAGE_KEYS.TOWN)
-    // Return null if empty string or not set (All Island)
+    // Return null if empty string or not set (All Areas)
     return saved || null
   })
 

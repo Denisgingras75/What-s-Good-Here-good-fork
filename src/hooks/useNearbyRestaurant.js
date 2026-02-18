@@ -11,7 +11,7 @@ import { useLocationContext } from '../context/LocationContext'
 export function useNearbyRestaurant(radiusMeters = 500) {
   const { location, permissionState, isUsingDefault } = useLocationContext()
 
-  // Only query when we have real GPS — not the fallback MV center
+  // Only query when we have real GPS — not the fallback default
   const hasRealLocation = permissionState === 'granted' && !isUsingDefault
 
   const { nearby, loading } = useNearbyRestaurants(

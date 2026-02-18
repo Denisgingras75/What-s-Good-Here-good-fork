@@ -21,17 +21,17 @@ export function Top10Sidebar({ dishes, showToggle, activeTab, onTabChange }) {
           <div role="tablist" aria-label="Top 10 list filter" className="flex gap-2 mb-4">
             <button
               role="tab"
-              aria-selected={activeTab === 'mv'}
-              onClick={() => onTabChange('mv')}
+              aria-selected={activeTab === 'ranked'}
+              onClick={() => onTabChange('ranked')}
               className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-                activeTab === 'mv' ? 'shadow-md' : ''
+                activeTab === 'ranked' ? 'shadow-md' : ''
               }`}
               style={{
-                background: activeTab === 'mv' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
-                color: activeTab === 'mv' ? 'white' : 'var(--color-text-secondary)',
+                background: activeTab === 'ranked' ? 'var(--color-primary)' : 'var(--color-surface-elevated)',
+                color: activeTab === 'ranked' ? 'white' : 'var(--color-text-secondary)',
               }}
             >
-              MV Top 10
+              Top 10
             </button>
             <button
               role="tab"
@@ -56,7 +56,7 @@ export function Top10Sidebar({ dishes, showToggle, activeTab, onTabChange }) {
               borderBottom: '2px solid var(--color-accent-gold)',
             }}
           >
-            Top 10 on the Island
+            Top 10
           </h3>
         )}
 

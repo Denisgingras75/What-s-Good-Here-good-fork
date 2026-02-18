@@ -46,7 +46,7 @@ export function Terms() {
             </h2>
             <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               What's Good Here is a community-driven platform that helps people discover great
-              dishes on Martha's Vineyard. Users rate dishes, and we aggregate those ratings to
+              dishes at local restaurants. Users rate dishes, and we aggregate those ratings to
               create rankings that help others find the best food.
             </p>
           </section>

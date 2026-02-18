@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useLocationContext } from '../context/LocationContext'
 import { useNearbyRestaurant } from '../hooks/useNearbyRestaurant'
+import { useNearbyPlaces } from '../hooks/useNearbyPlaces'
 import { AddDishModal } from './AddDishModal'
 import { AddRestaurantModal } from './AddRestaurantModal'
 import { LoginModal } from './Auth/LoginModal'
@@ -12,13 +13,28 @@ const DISMISS_KEY = 'wgh_nearby_nudge_dismissed'
  * Smart location nudge — always visible, adapts to state:
  * 1. No GPS permission → "Enable GPS to find what's near you"
  * 2. GPS granted, near a known restaurant → "At [Name]? Rate a dish!"
- * 3. GPS granted, no match nearby → "Know this spot? Add it to WGH"
- * 4. GPS denied/unsupported → returns null (nothing we can do)
+ * 3. GPS granted, no WGH match, Google Place found → "At [Place]? Add it to WGH"
+ * 4. GPS granted, no match at all → "Know a good spot? Add it"
+ * 5. GPS denied/unsupported → returns null (nothing we can do)
  */
 export function NearbyNudge() {
   const { user } = useAuth()
-  const { permissionState, promptForLocation } = useLocationContext()
+  const { location, permissionState, promptForLocation } = useLocationContext()
   const { nearbyRestaurant, isLoading, hasRealLocation } = useNearbyRestaurant()
+
+  // When no WGH restaurant found, check Google Places for context
+  const { places: nearbyGooglePlaces } = useNearbyPlaces({
+    lat: location?.lat,
+    lng: location?.lng,
+    radius: 1, // 1 mile — very close for nudge purposes
+    isAuthenticated: !!user,
+    existingPlaceIds: [],
+  })
+
+  // Closest Google Place (if any)
+  const closestGooglePlace = !nearbyRestaurant && nearbyGooglePlaces.length > 0
+    ? nearbyGooglePlaces[0]
+    : null
 
   const [dismissed, setDismissed] = useState(() => {
     try {
@@ -30,6 +46,7 @@ export function NearbyNudge() {
 
   const [addDishOpen, setAddDishOpen] = useState(false)
   const [addRestaurantOpen, setAddRestaurantOpen] = useState(false)
+  const [addRestaurantQuery, setAddRestaurantQuery] = useState('')
   const [loginOpen, setLoginOpen] = useState(false)
 
   // Only hide if dismissed or truly can't use location
@@ -50,8 +67,9 @@ export function NearbyNudge() {
     setAddDishOpen(true)
   }
 
-  const handleAddRestaurant = () => {
+  const handleAddRestaurant = (placeName) => {
     if (!user) { setLoginOpen(true); return }
+    setAddRestaurantQuery(placeName || '')
     setAddRestaurantOpen(true)
   }
 
@@ -96,6 +114,15 @@ export function NearbyNudge() {
                   Rate a dish and help others discover what&apos;s good
                 </p>
               </>
+            ) : closestGooglePlace ? (
+              <>
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                  At {closestGooglePlace.name}?
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                  Add it to WGH and be the first to rate a dish
+                </p>
+              </>
             ) : (
               <>
                 <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -138,9 +165,20 @@ export function NearbyNudge() {
             >
               Rate a dish
             </button>
+          ) : closestGooglePlace ? (
+            <button
+              onClick={() => handleAddRestaurant(closestGooglePlace.name)}
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
+              style={{
+                background: 'var(--color-accent-gold)',
+                color: 'var(--color-bg)',
+              }}
+            >
+              Add it
+            </button>
           ) : (
             <button
-              onClick={handleAddRestaurant}
+              onClick={() => handleAddRestaurant('')}
               className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
               style={{
                 background: 'var(--color-accent-gold)',
@@ -164,9 +202,9 @@ export function NearbyNudge() {
         </div>
 
         {/* "Not here?" fallback when we matched the wrong restaurant */}
-        {!needsPermission && !isLoading && nearbyRestaurant && (
+        {!needsPermission && !isLoading && (nearbyRestaurant || closestGooglePlace) && (
           <button
-            onClick={handleAddRestaurant}
+            onClick={() => handleAddRestaurant('')}
             className="mt-2 text-xs transition-opacity hover:opacity-80"
             style={{ color: 'var(--color-text-tertiary)' }}
           >
@@ -188,6 +226,7 @@ export function NearbyNudge() {
       <AddRestaurantModal
         isOpen={addRestaurantOpen}
         onClose={() => setAddRestaurantOpen(false)}
+        initialQuery={addRestaurantQuery}
       />
 
       <LoginModal
