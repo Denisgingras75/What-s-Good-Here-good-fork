@@ -207,22 +207,32 @@ export const dishesApi = {
         }
       }
 
-      // Level 3: Cross-field search (name/category/cuisine + tag overlap)
+      // Level 3: Cross-field search (name + category must contain ALL tokens) + tag overlap
+      // PostgREST can't reliably AND multiple .or() calls, so we fetch broadly and filter client-side
       if (results.length < limit) {
-        const orParts = normalizedTokens.map(t =>
-          `name.ilike.%${t}%,category.ilike.%${t}%,restaurants.cuisine.ilike.%${t}%`
+        const broadOrParts = normalizedTokens.map(t =>
+          `name.ilike.%${t}%,category.ilike.%${t}%`
         ).join(',')
 
         const [fieldResult, tagResult] = await Promise.all([
           buildQuery()
-            .or(orParts)
+            .or(broadOrParts)
             .order('avg_rating', { ascending: false, nullsFirst: false })
-            .limit(fetchLimit),
+            .limit(fetchLimit * 2),
           buildQuery()
             .overlaps('tags', uniqueTags)
             .order('avg_rating', { ascending: false, nullsFirst: false })
             .limit(fetchLimit),
         ])
+
+        // Client-side AND filter: every token must appear in name or category
+        if (!fieldResult.error && fieldResult.data) {
+          fieldResult.data = fieldResult.data.filter(d => {
+            const name = (d.name || '').toLowerCase()
+            const cat = (d.category || '').toLowerCase()
+            return normalizedTokens.every(t => name.includes(t) || cat.includes(t))
+          })
+        }
 
         if (fieldResult.error) {
           logger.error('Search cross-field error:', fieldResult.error)
@@ -230,6 +240,18 @@ export const dishesApi = {
         } else {
           anyLevelSucceeded = true
           mergeInto(results, existingIds, fieldResult.data)
+        }
+
+        // Client-side AND filter for tag results too: at least one token must appear in name or category
+        // This prevents tag synonym expansion (e.g. "fried" → "crispy") from pulling in unrelated dishes
+        if (!tagResult.error && tagResult.data && normalizedTokens.length > 1) {
+          tagResult.data = tagResult.data.filter(d => {
+            const name = (d.name || '').toLowerCase()
+            const cat = (d.category || '').toLowerCase()
+            return normalizedTokens.every(t =>
+              name.includes(t) || cat.includes(t) || (d.tags || []).some(tag => tag.toLowerCase().includes(t))
+            )
+          })
         }
 
         if (tagResult.error) {
