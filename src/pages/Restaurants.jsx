@@ -329,8 +329,8 @@ export function Restaurants() {
                       background: restaurant.is_open
                         ? 'linear-gradient(135deg, #FFFFFF 50%, #FDE8DC 100%)'
                         : 'linear-gradient(135deg, #F5F5F5 50%, #EDEDED 100%)',
-                      border: restaurant.is_open ? '2px solid #1A1A1A' : '2px solid #CCCCCC',
-                      boxShadow: restaurant.is_open ? '2px 2px 0px #1A1A1A' : '2px 2px 0px #CCCCCC',
+                      border: restaurant.is_open ? '2px solid #C4753C' : '2px solid #CCCCCC',
+                      boxShadow: restaurant.is_open ? '2px 2px 0px #C4753C' : '2px 2px 0px #CCCCCC',
                     }}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -340,13 +340,26 @@ export function Restaurants() {
                           className="font-bold"
                           style={{
                             fontFamily: "'aglet-sans', sans-serif",
-                            color: '#1A1A1A',
-                            fontSize: '15px',
+                            color: restaurant.is_open ? '#1A1A1A' : '#999999',
+                            fontSize: restaurant.is_open ? '18px' : '14px',
                             letterSpacing: '-0.01em',
                           }}
                         >
                           {restaurant.name}
                         </h3>
+                        {restaurant.is_open && restaurant.town && (
+                          <p
+                            className="mt-0.5 font-medium"
+                            style={{
+                              fontSize: '12px',
+                              color: '#BBBBBB',
+                              letterSpacing: '0.02em',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            {restaurant.town}
+                          </p>
+                        )}
                         {!restaurant.is_open && (
                           <span
                             className="inline-block mt-1 px-2 py-0.5 rounded font-bold"
@@ -362,7 +375,7 @@ export function Restaurants() {
                         )}
                         {restaurant.knownFor && (
                           <p
-                            className="mt-1 font-medium"
+                            className="mt-1.5 font-medium"
                             style={{ fontSize: '12px', color: '#BBBBBB' }}
                           >
                             Known for{' '}
