@@ -575,10 +575,9 @@ export function Dish() {
               </svg>
             </button>
 
-            {/* Rating + votes row */}
-            <div className="flex items-end justify-between mt-3">
-              {/* Rating — left side */}
-              {isRanked && dish.avg_rating ? (
+            {/* Rating + votes row — only show when ranked */}
+            {isRanked && dish.avg_rating ? (
+              <div className="flex items-end justify-between mt-3">
                 <div className="flex-shrink-0">
                   <span
                     style={{
@@ -592,23 +591,13 @@ export function Dish() {
                     {formatScore10(dish.avg_rating)}
                   </span>
                 </div>
-              ) : null}
-
-              {/* Votes — right side */}
-              <div className={`text-right ${isRanked && dish.avg_rating ? '' : 'w-full'}`}>
-                <p className="text-sm font-bold" style={{ color: '#1A1A1A' }}>
-                  {dish.total_votes > 0 ? `${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'}` : ''}
-                </p>
-                {!isRanked && (
-                  <p className="text-xs mt-0.5" style={{ color: '#999999' }}>
-                    {dish.total_votes === 0
-                      ? 'Start the ranking'
-                      : `Early \u00B7 ${dish.total_votes} vote${dish.total_votes === 1 ? '' : 's'} so far`
-                    }
+                <div className="text-right">
+                  <p className="text-sm font-bold" style={{ color: '#1A1A1A' }}>
+                    {dish.total_votes} vote{dish.total_votes === 1 ? '' : 's'}
                   </p>
-                )}
+                </div>
               </div>
-            </div>
+            ) : null}
 
           </div>
 
