@@ -27,6 +27,7 @@ const posterIcons = {
   pork: '/categories/poster/pork.png',
   dessert: '/categories/poster/dessert.png',
   curry: '/categories/poster/curry.png',
+  'breakfast sandwich': '/categories/poster/breakfast-sandwich.png',
 }
 
 // Dish-name overrides — specific icons for dishes matching keywords
@@ -58,6 +59,7 @@ const dishNameIcons = [
   { match: 'burrito', src: '/categories/poster/burrito.png' },
   { match: 'quesadilla', src: '/categories/poster/quesadilla.png' },
   { match: 'rib', src: '/categories/poster/ribs.png' },
+  { match: 'lobster roll', src: '/categories/poster/lobster roll.png' },
   { match: 'lobster', src: '/categories/poster/lobster.png' },
   { match: 'crab', src: '/categories/poster/crab.png' },
   { match: 'scallop', src: '/categories/poster/scallops.png' },

@@ -798,7 +798,7 @@ INSERT INTO dishes (restaurant_id, name, category, price) VALUES
 ((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Chicken Bahn Mi', 'sandwich', 22.00),
 ((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Short Rib Grilled Cheese', 'sandwich', 26.00),
 ((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Plain Cheese', 'sandwich', 20.00),
-((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Lobster Grilled Cheese', 'lobster roll', 35.00),
+((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Lobster Grilled Cheese', 'sandwich', 35.00),
 ((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Crispy Chicken Pesto Cutlet', 'sandwich', 23.00),
 ((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Seared Cod Taco', 'taco', 23.00),
 ((SELECT id FROM restaurants WHERE name = 'Rockfish'), 'Short Rib Taco', 'taco', 26.00),
