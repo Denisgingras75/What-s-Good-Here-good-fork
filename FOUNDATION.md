@@ -121,3 +121,5 @@ This data doesn't exist anywhere else. Not on Yelp, not on Google, not on DoorDa
 ## Origin
 
 Built by Denis Gingras — former bar manager on Martha's Vineyard who lived the problems firsthand. The idea started from a simple frustration: Google couldn't answer "what's the best breakfast burrito near me" and there was no way to tell tourists where the live music was tonight on a small island where you literally know the owners. A friend helped build out much of the initial code. The vision has always been the same: **Untappd, but for food.**
+
+And the kicker: Untappd built a billion-dollar business on beer nerds. Not everyone drinks beer. **Everyone eats food.**
