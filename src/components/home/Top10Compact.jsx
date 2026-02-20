@@ -95,10 +95,11 @@ const PODIUM_COLORS = {
 
 // Podium (2-3) get banner cards, ranks 4+ are clean rows
 const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
-  const { dish_name, restaurant_name, avg_rating, total_votes, category } = dish
+  const { dish_name, restaurant_name, avg_rating, total_votes, category, featured_photo_url } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
   const isPodium = rank <= 3
   const podium = PODIUM_COLORS[rank]
+  const [photoLoaded, setPhotoLoaded] = useState(false)
 
   const accessibleLabel = isRanked
     ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes`
@@ -111,6 +112,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
         aria-label={accessibleLabel}
         className="w-full text-left rounded-xl overflow-hidden card-press"
         style={{
+          position: 'relative',
           background: 'var(--color-surface-elevated)',
           border: 'none',
           boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
@@ -120,6 +122,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
         <div
           className="px-5 py-2"
           style={{
+            position: 'relative',
+            zIndex: 1,
             background: podium.bg,
           }}
         >
@@ -135,8 +139,42 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
             #{rank} {town ? `in ${town}` : 'on the Vineyard'}
           </span>
         </div>
-        {/* Content — text left, icon right. #2 is bigger than #3. */}
-        <div className={`flex items-center gap-3 ${rank === 2 ? 'py-5 px-5' : 'py-3 px-5'}`}>
+
+        {/* Photo (absolute, fades from right) */}
+        {featured_photo_url ? (
+          <>
+            {!photoLoaded && (
+              <div
+                className="photo-shimmer"
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '50%',
+                }}
+              />
+            )}
+            <img
+              src={featured_photo_url}
+              alt={dish_name}
+              loading="lazy"
+              onLoad={() => setPhotoLoaded(true)}
+              className="dish-photo-fade"
+              style={{
+                opacity: photoLoaded ? 1 : 0,
+                transition: 'opacity 200ms ease',
+                width: '50%',
+              }}
+            />
+          </>
+        ) : null}
+
+        {/* Content — text left, icon right (only when no photo) */}
+        <div
+          className={`flex items-center gap-3 ${rank === 2 ? 'py-5 px-5' : 'py-3 px-5'}`}
+          style={{ position: 'relative', zIndex: 1 }}
+        >
           <div className="flex-1 min-w-0">
             <p
               className="font-bold truncate"
@@ -188,7 +226,9 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
               </p>
             )}
           </div>
-          <CategoryIcon categoryId={category} dishName={dish_name} size={rank === 2 ? 72 : 60} color="var(--color-primary)" />
+          {!featured_photo_url && (
+            <CategoryIcon categoryId={category} dishName={dish_name} size={rank === 2 ? 72 : 60} color="var(--color-primary)" />
+          )}
         </div>
       </button>
     )
