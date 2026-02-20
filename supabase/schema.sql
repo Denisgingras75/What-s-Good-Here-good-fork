@@ -637,11 +637,15 @@ BEGIN
       dp.dish_id,
       dp.photo_url
     FROM dish_photos dp
+    INNER JOIN dishes d2 ON dp.dish_id = d2.id
+    INNER JOIN filtered_restaurants fr2 ON d2.restaurant_id = fr2.id
     WHERE dp.status IN ('featured', 'community')
+      AND d2.parent_dish_id IS NULL
     ORDER BY dp.dish_id,
       CASE dp.source_type WHEN 'restaurant' THEN 0 ELSE 1 END,
       CASE dp.status WHEN 'featured' THEN 0 ELSE 1 END,
-      dp.quality_score DESC NULLS LAST
+      dp.quality_score DESC NULLS LAST,
+      dp.created_at DESC
   )
   SELECT
     d.id AS dish_id,

@@ -99,6 +99,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
   const { dish_name, restaurant_name, avg_rating, total_votes, category, featured_photo_url } = dish
   const isRanked = (total_votes || 0) >= MIN_VOTES_FOR_RANKING
   const podium = PODIUM_COLORS[rank]
+  const [photoFailed, setPhotoFailed] = useState(false)
+  const showPhoto = podium && featured_photo_url && !photoFailed
 
   const accessibleLabel = isRanked
     ? `Rank ${rank}: ${dish_name} at ${restaurant_name}, rated ${avg_rating} out of 10 with ${total_votes} votes`
@@ -139,8 +141,8 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
           </span>
         </div>
 
-        {featured_photo_url && (
-          <DishPhotoFade photoUrl={featured_photo_url} dishName={dish_name} width="50%" />
+        {showPhoto && (
+          <DishPhotoFade photoUrl={featured_photo_url} dishName={dish_name} width="50%" onPhotoError={() => setPhotoFailed(true)} />
         )}
 
         {/* Content — text left, icon right (only when no photo) */}
@@ -148,7 +150,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
           className={`flex items-center gap-3 ${rank === 2 ? 'py-5 px-5' : 'py-3 px-5'}`}
           style={{ position: 'relative', zIndex: 1 }}
         >
-          <div className="flex-1 min-w-0" style={featured_photo_url ? { maxWidth: '55%' } : undefined}>
+          <div className="flex-1 min-w-0" style={showPhoto ? { maxWidth: '55%' } : undefined}>
             <p
               className="font-bold truncate"
               style={{
@@ -199,7 +201,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
               </p>
             )}
           </div>
-          {!featured_photo_url && (
+          {!showPhoto && (
             <CategoryIcon categoryId={category} dishName={dish_name} size={rank === 2 ? 72 : 60} color="var(--color-primary)" />
           )}
         </div>
