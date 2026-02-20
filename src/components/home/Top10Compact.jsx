@@ -152,7 +152,7 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
         >
           <div className="flex-1 min-w-0" style={showPhoto ? { maxWidth: '55%' } : undefined}>
             <p
-              className="font-bold truncate"
+              className="font-bold"
               style={{
                 color: 'var(--color-text-primary)',
                 fontSize: rank === 2 ? '18px' : '15px',
