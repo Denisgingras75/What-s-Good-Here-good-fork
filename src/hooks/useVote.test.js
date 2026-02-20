@@ -12,6 +12,23 @@ vi.mock('../api/votesApi', () => ({
   },
 }))
 
+vi.mock('../api/badgesApi', () => ({
+  badgesApi: {
+    evaluateUserBadges: vi.fn().mockResolvedValue([]),
+    getBadgeProgress: vi.fn().mockResolvedValue(null),
+    getUserBadges: vi.fn().mockResolvedValue([]),
+    computeNearestBadge: vi.fn().mockReturnValue(null),
+  },
+}))
+
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'test-user' } } }),
+    },
+  },
+}))
+
 describe('useVote Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -101,6 +118,21 @@ describe('useVote Hook', () => {
         reviewText: null,
         purityData: null,
       })
+    })
+
+    it('should return newBadges and badgeProgress on success', async () => {
+      votesApi.submitVote.mockResolvedValueOnce({ success: true })
+
+      const { result } = renderHook(() => useVote())
+
+      let response
+      await act(async () => {
+        response = await result.current.submitVote('dish-1', true, 8)
+      })
+
+      expect(response.success).toBe(true)
+      expect(response.newBadges).toEqual([])
+      expect(response.badgeProgress).not.toBeUndefined()
     })
   })
 

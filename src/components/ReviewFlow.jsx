@@ -4,8 +4,10 @@ import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { useVote } from '../hooks/useVote'
 import { usePurityTracker } from '../hooks/usePurityTracker'
+import { badgesApi } from '../api/badgesApi'
 import { authApi } from '../api/authApi'
 import { FoodRatingSlider } from './FoodRatingSlider'
+import { BadgeUnlockCelebration } from './BadgeUnlockCelebration'
 import { ThumbsUpIcon } from './ThumbsUpIcon'
 import { ThumbsDownIcon } from './ThumbsDownIcon'
 import { MAX_REVIEW_LENGTH } from '../constants/app'
@@ -19,7 +21,7 @@ import { hapticLight, hapticSuccess } from '../utils/haptics'
 import { shareOrCopy, buildPostVoteShareData } from '../utils/share'
 import { setBackButtonInterceptor, clearBackButtonInterceptor } from '../utils/backButtonInterceptor'
 
-export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, onVote, onLoginRequired }) {
+export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, avgRating = null, onVote, onLoginRequired }) {
   const { user } = useAuth()
   const { submitVote, submitting } = useVote()
   const { getPurity, attachToTextarea, reset: resetPurity } = usePurityTracker()
@@ -43,8 +45,9 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [reviewText, setReviewText] = useState('')
   const [reviewError, setReviewError] = useState(null)
 
-  const [showSharePrompt, setShowSharePrompt] = useState(false)
+  const [showPostVote, setShowPostVote] = useState(false)
   const [lastSubmission, setLastSubmission] = useState(null)
+  const [postVoteInsight, setPostVoteInsight] = useState(null) // { newBadges, nearestBadge }
   const [awaitingLogin, setAwaitingLogin] = useState(false)
   const [announcement, setAnnouncement] = useState('') // For screen reader announcements
 
@@ -201,14 +204,35 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
     hapticSuccess()
 
-    setShowSharePrompt(true)
+    // Show post-vote card immediately (optimistic)
+    setShowPostVote(true)
+    setPostVoteInsight(null) // Will be filled when badge evaluation completes
 
     setAnnouncement('Vote submitted successfully')
     setTimeout(() => setAnnouncement(''), 1000)
 
+    // Submit vote + evaluate badges in background
     submitVote(dishId, wouldOrderAgain, sliderValue, reviewTextToSubmit, purityData)
       .then((result) => {
-        if (!result.success) {
+        if (result.success) {
+          // Build insight data for the post-vote card
+          const insight = { newBadges: [], nearestBadge: null }
+
+          if (result.newBadges && result.newBadges.length > 0) {
+            insight.newBadges = result.newBadges
+          }
+
+          if (result.badgeProgress) {
+            const nearest = badgesApi.computeNearestBadge(
+              result.badgeProgress.stats,
+              result.badgeProgress.earnedKeys,
+              category
+            )
+            insight.nearestBadge = nearest
+          }
+
+          setPostVoteInsight(insight)
+        } else {
           logger.error('Vote submission failed:', result.error)
         }
       })
@@ -219,7 +243,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
   // Intercept browser back button during vote flow
   useEffect(() => {
-    if (step <= 1 && !showSharePrompt) {
+    if (step <= 1 && !showPostVote) {
       clearBackButtonInterceptor()
       return
     }
@@ -230,9 +254,10 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setBackButtonInterceptor(() => {
       window.history.pushState(currentState, '', currentUrl)
 
-      if (showSharePrompt) {
-        setShowSharePrompt(false)
+      if (showPostVote) {
+        setShowPostVote(false)
         setLastSubmission(null)
+        setPostVoteInsight(null)
         onVote?.()
       } else if (step > 1) {
         setStep(step - 1)
@@ -240,7 +265,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     })
 
     return () => clearBackButtonInterceptor()
-  }, [step, showSharePrompt, onVote])
+  }, [step, showPostVote, onVote])
 
   const handleShareDish = async () => {
     if (!lastSubmission) return
@@ -264,30 +289,120 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       toast.success('Link copied!', { duration: 2000 })
     }
 
-    setShowSharePrompt(false)
+    setShowPostVote(false)
     setLastSubmission(null)
+    setPostVoteInsight(null)
     onVote?.()
   }
 
-  const handleShareDismiss = () => {
+  const handleDismiss = () => {
     capture('share_dismissed', { context: 'post_vote', dish_id: dishId })
-    setShowSharePrompt(false)
+    setShowPostVote(false)
     setLastSubmission(null)
+    setPostVoteInsight(null)
     onVote?.()
   }
 
-  // Share prompt after voting
-  if (showSharePrompt && lastSubmission) {
+  // ═══════════════════════════════════════════
+  // POST-VOTE EXPERIENCE — the dopamine moment
+  // ═══════════════════════════════════════════
+  if (showPostVote && lastSubmission) {
+    const hasConsensus = avgRating != null && totalVotes >= 5
+    const ratingDiff = hasConsensus ? lastSubmission.rating - avgRating : 0
+    const newBadges = postVoteInsight?.newBadges || []
+    const nearestBadge = postVoteInsight?.nearestBadge || null
+
     return (
-      <div className="space-y-3 text-center animate-fadeIn">
+      <div className="space-y-3 animate-fadeIn">
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {announcement}
         </div>
-        <div>{lastSubmission.wouldOrderAgain ? <ThumbsUpIcon size={40} /> : <ThumbsDownIcon size={40} />}</div>
-        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-          Vote saved!
-        </p>
-        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+
+        {/* Vote confirmed */}
+        <div className="text-center">
+          <div className="mb-2">
+            {lastSubmission.wouldOrderAgain ? <ThumbsUpIcon size={40} /> : <ThumbsDownIcon size={40} />}
+          </div>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            Vote saved!
+          </p>
+        </div>
+
+        {/* Consensus comparison — "You vs The Crowd" */}
+        {hasConsensus && (
+          <div
+            className="rounded-xl p-3 animate-fadeIn"
+            style={{
+              background: 'var(--color-surface-elevated)',
+              border: '1px solid var(--color-divider)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-center flex-1">
+                <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>You</p>
+                <p className="text-lg font-bold" style={{ color: 'var(--color-accent-gold)' }}>
+                  {lastSubmission.rating.toFixed(1)}
+                </p>
+              </div>
+              <div className="px-3">
+                <span className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>vs</span>
+              </div>
+              <div className="text-center flex-1">
+                <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>Crowd</p>
+                <p className="text-lg font-bold" style={{ color: 'var(--color-text-secondary)' }}>
+                  {Number(avgRating).toFixed(1)}
+                </p>
+              </div>
+            </div>
+            {/* Personality nudge */}
+            <p className="text-xs text-center" style={{ color: getComparisonColor(ratingDiff) }}>
+              {getComparisonText(ratingDiff)}
+            </p>
+          </div>
+        )}
+
+        {/* Badge unlock celebration */}
+        {newBadges.length > 0 && (
+          <BadgeUnlockCelebration badges={newBadges} />
+        )}
+
+        {/* Progress nudge — "X more → Badge Name" */}
+        {nearestBadge && newBadges.length === 0 && (
+          <div
+            className="rounded-xl px-3 py-2.5 flex items-center gap-3 animate-fadeIn"
+            style={{
+              background: 'var(--color-surface-elevated)',
+              border: '1px solid var(--color-divider)',
+            }}
+          >
+            <div className="flex-shrink-0 text-base" style={{ opacity: 0.7 }}>
+              {'\uD83C\uDFC5'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-text-secondary)' }}>
+                  {nearestBadge.remaining} more {nearestBadge.category} vote{nearestBadge.remaining !== 1 ? 's' : ''}
+                </p>
+                <span className="text-xs font-bold ml-2 flex-shrink-0" style={{ color: 'var(--color-accent-gold)' }}>
+                  {nearestBadge.badgeName}
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-bg)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min((nearestBadge.current / nearestBadge.target) * 100, 100)}%`,
+                    background: 'linear-gradient(90deg, var(--color-accent-gold), var(--color-primary))',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Share CTA */}
+        <p className="text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>
           Let friends know what's good here
         </p>
         <button
@@ -303,7 +418,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
           Share this dish
         </button>
         <button
-          onClick={handleShareDismiss}
+          onClick={handleDismiss}
           className="w-full py-2 text-sm transition-colors"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
@@ -523,4 +638,26 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       </button>
     </div>
   )
+}
+
+// ═══════════════════════════════════════
+// Helper: Consensus comparison text
+// ═══════════════════════════════════════
+
+function getComparisonText(diff) {
+  const absDiff = Math.abs(diff)
+  if (absDiff < 0.3) return 'Right with the crowd'
+  if (diff > 2.0) return 'Way more generous than most'
+  if (diff > 1.0) return 'You rate this higher than most'
+  if (diff > 0.3) return 'Slightly above the crowd'
+  if (diff < -2.0) return 'Tougher critic than most'
+  if (diff < -1.0) return 'You rate this lower than most'
+  return 'Slightly below the crowd'
+}
+
+function getComparisonColor(diff) {
+  const absDiff = Math.abs(diff)
+  if (absDiff < 0.3) return 'var(--color-rating)'
+  if (diff > 0) return 'var(--color-accent-gold)'
+  return 'var(--color-primary)'
 }

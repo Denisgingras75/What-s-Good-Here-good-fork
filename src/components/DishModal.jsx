@@ -395,6 +395,7 @@ export function DishModal({ dish, onClose, onVote, onLoginRequired }) {
               price={dish.price}
               totalVotes={dish.total_votes || 0}
               yesVotes={dish.yes_votes || 0}
+              avgRating={dish.avg_rating || null}
               onVote={onVote}
               onLoginRequired={onLoginRequired}
             />

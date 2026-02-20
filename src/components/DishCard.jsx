@@ -223,6 +223,7 @@ export const DishCard = memo(function DishCard({ dish, onVote, onLoginRequired, 
             price={price}
             totalVotes={totalVotes}
             yesVotes={yes_votes || 0}
+            avgRating={avg_rating || null}
             onVote={onVote}
             onLoginRequired={onLoginRequired}
           />

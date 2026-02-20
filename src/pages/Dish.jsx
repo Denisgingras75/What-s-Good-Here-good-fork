@@ -704,6 +704,7 @@ export function Dish() {
                 price={dish.price}
                 totalVotes={dish.total_votes}
                 yesVotes={dish.yes_votes}
+                avgRating={dish.avg_rating}
                 onVote={handleVote}
                 onLoginRequired={handleLoginRequired}
               />
