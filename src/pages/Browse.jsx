@@ -21,6 +21,8 @@ import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
 import { SortDropdown } from '../components/browse'
 import { RadiusSheet } from '../components/LocationPicker'
 import { LocationBanner } from '../components/LocationBanner'
+import { useRestaurantSearch } from '../hooks/useRestaurantSearch'
+import { AddRestaurantModal } from '../components/AddRestaurantModal'
 
 // Use centralized browse categories
 const CATEGORIES = BROWSE_CATEGORIES
@@ -64,14 +66,23 @@ export function Browse() {
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
 
-  const { location, radius, setRadius, town, permissionState, requestLocation } = useLocationContext()
+  const { location, radius, setRadius, town, permissionState, requestLocation, isUsingDefault } = useLocationContext()
   const [showRadiusSheet, setShowRadiusSheet] = useState(false)
+  const [addRestaurantOpen, setAddRestaurantOpen] = useState(false)
+  const [addRestaurantQuery, setAddRestaurantQuery] = useState('')
   const { stats: userStats } = useUserVotes(user?.id)
 
   // Search results from API using React Query hook
   // Handles cuisine/tag searches with proper caching and error handling
   // Pass town to filter search results by selected town
   const { results: searchResults, loading: searchLoading } = useDishSearch(debouncedSearchQuery, 50, town)
+
+  // Google Places restaurant search — don't bias by default MV location or Browse radius
+  const placesLat = isUsingDefault ? null : location?.lat
+  const placesLng = isUsingDefault ? null : location?.lng
+  const { externalResults: placesResults } = useRestaurantSearch(
+    searchQuery, placesLat, placesLng, searchQuery.trim().length >= 2, null
+  )
 
   const beforeVoteRef = useRef(null)
   const searchInputRef = useRef(null)
@@ -348,8 +359,19 @@ export function Browse() {
         data: r,
       }))
 
-    return [...dishMatches, ...restaurantMatches]
-  }, [searchQuery, dishSuggestions, restaurantSuggestions])
+    // Google Places results — restaurants not yet in WGH
+    const placeMatches = (Array.isArray(placesResults) ? placesResults : [])
+      .slice(0, 4)
+      .map(p => ({
+        type: 'place',
+        id: p.placeId,
+        name: p.name,
+        subtitle: p.address || '',
+        data: p,
+      }))
+
+    return [...dishMatches, ...restaurantMatches, ...placeMatches]
+  }, [searchQuery, dishSuggestions, restaurantSuggestions, placesResults])
 
   // Handle autocomplete selection
   const handleAutocompleteSelect = useCallback((suggestion) => {
@@ -357,12 +379,14 @@ export function Browse() {
     setAutocompleteIndex(-1)
 
     if (suggestion.type === 'dish') {
-      // Open the dish modal
       openDishPage(suggestion.data)
       setSearchQuery('')
     } else if (suggestion.type === 'restaurant') {
-      // Navigate to restaurant page
       navigate(`/restaurants/${suggestion.id}`)
+    } else if (suggestion.type === 'place') {
+      setAddRestaurantQuery(suggestion.name)
+      setAddRestaurantOpen(true)
+      setSearchQuery('')
     }
   }, [navigate, openDishPage])
 
@@ -568,11 +592,19 @@ export function Browse() {
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style={{
-                        background: suggestion.type === 'dish' ? 'var(--color-primary-muted)' : 'rgba(59, 130, 246, 0.15)',
-                        color: suggestion.type === 'dish' ? 'var(--color-primary)' : 'var(--color-blue-light)'
+                        background: suggestion.type === 'dish'
+                          ? 'var(--color-primary-muted)'
+                          : suggestion.type === 'place'
+                          ? 'rgba(217, 167, 101, 0.15)'
+                          : 'rgba(59, 130, 246, 0.15)',
+                        color: suggestion.type === 'dish'
+                          ? 'var(--color-primary)'
+                          : suggestion.type === 'place'
+                          ? 'var(--color-accent-gold)'
+                          : 'var(--color-blue-light)',
                       }}
                     >
-                      {suggestion.type === 'dish' ? 'Dish' : 'Spot'}
+                      {suggestion.type === 'dish' ? 'Dish' : suggestion.type === 'place' ? '+ Add' : 'Spot'}
                     </span>
                   </button>
                 ))}
@@ -827,6 +859,12 @@ export function Browse() {
       <LoginModal
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
+      />
+
+      <AddRestaurantModal
+        isOpen={addRestaurantOpen}
+        onClose={() => setAddRestaurantOpen(false)}
+        initialQuery={addRestaurantQuery}
       />
 
       {/* Impact feedback toast */}

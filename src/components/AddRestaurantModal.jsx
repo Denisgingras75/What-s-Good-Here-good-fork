@@ -18,7 +18,7 @@ const STEPS = { SEARCH: 'search', DETAILS: 'details', DISH: 'dish' }
 export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { location, permissionState } = useLocationContext()
+  const { location, permissionState, isUsingDefault } = useLocationContext()
   const containerRef = useFocusTrap(isOpen, onClose)
 
   const [step, setStep] = useState(STEPS.SEARCH)
@@ -36,6 +36,7 @@ export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
   const [town, setTown] = useState('')
   const [phone, setPhone] = useState('')
   const [websiteUrl, setWebsiteUrl] = useState('')
+  const [menuUrl, setMenuUrl] = useState('')
   const [googlePlaceId, setGooglePlaceId] = useState(null)
 
   // Optional first dish
@@ -44,8 +45,11 @@ export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
   const [dishPrice, setDishPrice] = useState('')
 
   const hasLocation = permissionState === 'granted'
+  // Don't pass location when on MV default — let Google search globally, not biased to MV
+  const placesLat = isUsingDefault ? null : location?.lat
+  const placesLng = isUsingDefault ? null : location?.lng
   const { localResults, externalResults, loading: searchLoading } = useRestaurantSearch(
-    searchQuery, location?.lat, location?.lng, isOpen && step === STEPS.SEARCH
+    searchQuery, placesLat, placesLng, isOpen && step === STEPS.SEARCH
   )
 
   // Reset state when modal opens
@@ -62,6 +66,7 @@ export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
       setTown('')
       setPhone('')
       setWebsiteUrl('')
+      setMenuUrl('')
       setGooglePlaceId(null)
       setDishName('')
       setDishCategory('')
@@ -110,6 +115,7 @@ export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
         setLng(details.lng)
         setPhone(details.phone || '')
         setWebsiteUrl(details.websiteUrl || '')
+        setMenuUrl(details.menuUrl || '')
         setGooglePlaceId(prediction.placeId)
         // Try to extract town from address
         const parts = (details.address || '').split(',')
@@ -184,6 +190,7 @@ export function AddRestaurantModal({ isOpen, onClose, initialQuery = '' }) {
         town: town.trim() || null,
         googlePlaceId,
         websiteUrl: websiteUrl.trim() || null,
+        menuUrl: menuUrl.trim() || null,
         phone: phone.trim() || null,
       })
 

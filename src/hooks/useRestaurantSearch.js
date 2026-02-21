@@ -83,7 +83,7 @@ export function useRestaurantSearch(query, lat, lng, enabled = true, radiusMiles
     }
 
     // Debounce
-    const timer = setTimeout(fetchResults, 250)
+    const timer = setTimeout(fetchResults, 400)
     return () => clearTimeout(timer)
   }, [query, lat, lng, enabled, radiusMiles])
 

@@ -26,13 +26,6 @@ export const placesApi = {
     if (!input || input.trim().length < 2) return []
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        logger.warn('Places autocomplete skipped: no auth session')
-        this._lastError = { reason: 'no_session', message: 'Not authenticated — Google Places requires login' }
-        return []
-      }
-
       const response = await supabase.functions.invoke('places-autocomplete', {
         body: { input: input.trim(), lat, lng, radius },
       })
@@ -72,14 +65,7 @@ export const placesApi = {
    */
   async discoverNearby(lat, lng, radiusMeters) {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        const err = { reason: 'no_session', message: 'Not authenticated — Google Places requires login' }
-        logger.warn('Places discoverNearby skipped:', err.message)
-        this._lastError = err
-        throw createClassifiedError(new Error(err.message))
-      }
-
+      // Try nearby search first
       const response = await supabase.functions.invoke('places-nearby-search', {
         body: { lat, lng, radiusMeters },
       })
@@ -123,11 +109,6 @@ export const placesApi = {
    * Internal fallback: discover restaurants via autocomplete endpoint
    */
   async _discoverViaAutocomplete(lat, lng, radiusMeters) {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      throw new Error('Not authenticated')
-    }
-
     const response = await supabase.functions.invoke('places-autocomplete', {
       body: { input: 'restaurants', lat, lng, radius: radiusMeters },
     })
@@ -153,12 +134,6 @@ export const placesApi = {
     if (!placeId) return null
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        this._lastError = { reason: 'no_session', message: 'Not authenticated' }
-        return null
-      }
-
       const response = await supabase.functions.invoke('places-details', {
         body: { placeId },
       })
@@ -192,11 +167,6 @@ export const placesApi = {
       results.session = session ? { status: 'ok', userId: session.user.id } : { status: 'no_session' }
     } catch (err) {
       results.session = { status: 'error', message: err.message }
-    }
-
-    if (results.session.status !== 'ok') {
-      logger.warn('[Places Diagnose] No auth session. All Places API calls will fail.', results)
-      return results
     }
 
     // 2. Test nearby search

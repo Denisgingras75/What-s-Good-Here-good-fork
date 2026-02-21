@@ -213,7 +213,7 @@ export function RestaurantDetail() {
               {restaurant.name}
             </h2>
             <p className="font-medium" style={{ color: 'var(--color-text-tertiary)', fontSize: '13px' }}>
-              {restaurant.dish_count ?? restaurant.dishCount ?? 0} dishes
+              {dishesLoading ? '…' : `${dishes.length} dish${dishes.length === 1 ? '' : 'es'}`}
               {restaurant.distance_miles != null && (
                 <span> · {restaurant.distance_miles} mi away</span>
               )}

@@ -165,7 +165,7 @@ export const restaurantsApi = {
    * @param {Object} params - Restaurant data
    * @returns {Promise<Object>} Created restaurant
    */
-  async create({ name, address, lat, lng, town, cuisine, googlePlaceId, websiteUrl, facebookUrl, instagramUrl, phone }) {
+  async create({ name, address, lat, lng, town, cuisine, googlePlaceId, websiteUrl, menuUrl, facebookUrl, instagramUrl, phone }) {
     try {
       // Content moderation
       const contentError = validateUserContent(name, 'Restaurant name')
@@ -194,6 +194,7 @@ export const restaurantsApi = {
           cuisine: cuisine || null,
           google_place_id: googlePlaceId || null,
           website_url: websiteUrl || null,
+          menu_url: menuUrl || null,
           facebook_url: facebookUrl || null,
           instagram_url: instagramUrl || null,
           phone: phone || null,

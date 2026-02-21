@@ -15,40 +15,38 @@ serve(async (req) => {
   }
 
   try {
-    // Verify auth
+    // Auth is fully optional — guests can search without a session.
+    // If an auth header is present, try to identify the user for per-account rate limiting.
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    let user = null
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    })
+    if (authHeader) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } },
+        })
+        const { data } = await supabase.auth.getUser()
+        user = data?.user ?? null
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Rate limit: 20 requests/min (debounced search fires often)
-    const { data: rateCheck } = await supabase.rpc('check_and_record_rate_limit', {
-      p_action: 'places_autocomplete',
-      p_max_attempts: 20,
-      p_window_seconds: 60,
-    })
-    if (rateCheck && !rateCheck.allowed) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded', retry_after: rateCheck.retry_after_seconds }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+        if (user) {
+          // Rate limit authed users: 20 requests/min
+          const { data: rateCheck } = await supabase.rpc('check_and_record_rate_limit', {
+            p_action: 'places_autocomplete',
+            p_max_attempts: 20,
+            p_window_seconds: 60,
+          })
+          if (rateCheck && !rateCheck.allowed) {
+            return new Response(JSON.stringify({ error: 'Rate limit exceeded', retry_after: rateCheck.retry_after_seconds }), {
+              status: 429,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+        }
+      } catch (_) {
+        // Auth check failed — continue as guest
+      }
     }
 
     // Parse request
@@ -63,13 +61,11 @@ serve(async (req) => {
     const url = 'https://places.googleapis.com/v1/places:autocomplete'
     const body: Record<string, unknown> = {
       input: input.trim(),
-      includedPrimaryTypes: ['restaurant', 'food', 'cafe', 'bar', 'bakery', 'meal_takeaway', 'meal_delivery'],
+      includedPrimaryTypes: ['restaurant', 'cafe', 'bar', 'bakery', 'food'],
       languageCode: 'en',
     }
 
     if (lat && lng) {
-      // Use locationBias to prefer results near the user's location
-      // locationRestriction is too strict for autocomplete — can return 0 results
       body.locationBias = {
         circle: {
           center: { latitude: lat, longitude: lng },
@@ -98,7 +94,6 @@ serve(async (req) => {
 
     const data = await response.json()
 
-    // Transform to simpler format
     const predictions = (data.suggestions || [])
       .filter((s: { placePrediction?: unknown }) => s.placePrediction)
       .map((s: { placePrediction: { placeId: string; text: { text: string }; structuredFormat?: { mainText?: { text: string }; secondaryText?: { text: string } } } }) => ({

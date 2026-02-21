@@ -39,10 +39,21 @@ export function Home() {
     return (b.avg_rating || 0) - (a.avg_rating || 0)
   }
 
-  // Top 10 dishes
+  // Top 10 dishes — max 2 per restaurant to avoid one place dominating
   const top10Dishes = useMemo(() => {
     if (!dishes?.length) return []
-    return dishes.slice().sort(rankSort).slice(0, 10)
+    const sorted = dishes.slice().sort(rankSort)
+    const perRestaurant = {}
+    const result = []
+    for (const dish of sorted) {
+      const count = perRestaurant[dish.restaurant_id] || 0
+      if (count < 2) {
+        result.push(dish)
+        perRestaurant[dish.restaurant_id] = count + 1
+      }
+      if (result.length === 10) break
+    }
+    return result
   }, [dishes])
 
   // "More Top Picks" — dishes 11-20
@@ -80,41 +91,46 @@ export function Home() {
         <DishSearch loading={loading} placeholder="What are you craving?" town={town} />
       </div>
 
-      {/* Category Grid — 2x3 bold cards */}
-      <section className="px-5 pb-4">
-        <div className="grid grid-cols-3 gap-3">
+      {/* Category quick-filters — horizontal scroll pills */}
+      <section className="pb-3">
+        <div
+          className="flex gap-2 px-5 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
           {HOME_CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => navigate(`/browse?category=${encodeURIComponent(cat.id)}`)}
-              className="flex flex-col items-center justify-center py-5 rounded-2xl transition-all active:scale-[0.96]"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full transition-all active:scale-[0.96]"
               style={{
                 background: 'var(--color-card)',
-                border: '2px solid var(--color-card-border, #1A1A1A)',
+                border: '1.5px solid var(--color-card-border, #1A1A1A)',
               }}
             >
-              <span style={{ fontSize: '32px' }}>{cat.emoji}</span>
+              <span style={{ fontSize: '18px' }}>{cat.emoji}</span>
               <span
-                className="mt-2 text-sm font-bold"
+                className="text-sm font-semibold"
                 style={{ color: 'var(--color-text-primary)' }}
               >
                 {cat.label}
               </span>
             </button>
           ))}
+          <button
+            onClick={() => navigate('/browse')}
+            className="flex-shrink-0 flex items-center px-3 py-2 rounded-full transition-all active:scale-[0.98]"
+            style={{
+              border: '1.5px solid var(--color-card-border, #1A1A1A)',
+            }}
+          >
+            <span
+              className="text-sm font-semibold"
+              style={{ color: 'var(--color-primary)' }}
+            >
+              All →
+            </span>
+          </button>
         </div>
-
-        {/* See all categories link */}
-        <button
-          onClick={() => navigate('/browse')}
-          className="w-full mt-3 py-2 text-sm font-semibold text-center rounded-xl transition-all active:scale-[0.98]"
-          style={{
-            color: 'var(--color-primary)',
-            border: '2px solid var(--color-card-border, #1A1A1A)',
-          }}
-        >
-          See all categories
-        </button>
       </section>
 
       {/* Nearby nudge */}
@@ -163,8 +179,8 @@ export function Home() {
           >
             {top10Dishes.map((dish, i) => (
               <button
-                key={dish.id}
-                onClick={() => navigate(`/dish/${dish.id}`)}
+                key={dish.dish_id}
+                onClick={() => navigate(`/dish/${dish.dish_id}`)}
                 className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors"
                 style={{
                   borderBottom: i < top10Dishes.length - 1 ? '1px solid var(--color-divider)' : 'none',
@@ -187,7 +203,7 @@ export function Home() {
                     className="font-bold truncate"
                     style={{ color: 'var(--color-text-primary)', fontSize: '15px' }}
                   >
-                    {dish.name}
+                    {dish.dish_name}
                   </p>
                   <p
                     className="text-xs truncate"
@@ -232,8 +248,8 @@ export function Home() {
           >
             {moreTopPicks.map((dish) => (
               <button
-                key={dish.id}
-                onClick={() => navigate(`/dish/${dish.id}`)}
+                key={dish.dish_id}
+                onClick={() => navigate(`/dish/${dish.dish_id}`)}
                 className="flex-shrink-0 w-44 rounded-2xl overflow-hidden text-left transition-all active:scale-[0.97]"
                 style={{ border: '2px solid var(--color-card-border, #1A1A1A)' }}
               >
@@ -249,7 +265,7 @@ export function Home() {
                     className="font-bold truncate"
                     style={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
                   >
-                    {dish.name}
+                    {dish.dish_name}
                   </p>
                   <p
                     className="text-xs truncate mt-0.5"

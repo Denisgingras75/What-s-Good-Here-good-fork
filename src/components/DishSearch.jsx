@@ -38,7 +38,7 @@ const BROWSE_CATEGORIES = [
 export function DishSearch({ loading = false, placeholder = "Find What's Good near you", town = null }) {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { location, radius, permissionState } = useLocationContext()
+  const { location, permissionState, isUsingDefault } = useLocationContext()
   const [query, setQuery] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [searchResults, setSearchResults] = useState([])
@@ -49,9 +49,13 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
   const mountedRef = useRef(true)
 
   // Restaurant search (local + Google Places)
+  // Don't pass location when using the MV default — let Google search globally.
+  // Don't pass the app's radius filter — Browse distance ≠ Places search bias.
   const hasLocation = permissionState === 'granted'
+  const placesLat = isUsingDefault ? null : location?.lat
+  const placesLng = isUsingDefault ? null : location?.lng
   const { localResults: restaurantResults, externalResults: placesResults, loading: restaurantSearchLoading } = useRestaurantSearch(
-    query, location?.lat, location?.lng, isFocused, radius
+    query, placesLat, placesLng, isFocused, null
   )
 
   // Nearby restaurants (shown on focus before typing)
@@ -347,7 +351,7 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
                     No results for &quot;{query}&quot;
                   </p>
                   <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {!user ? 'Sign in to search Google Places for more restaurants' : 'Try a different spelling'}
+                    Try a different spelling or add it below
                   </p>
                   {user ? (
                     <button

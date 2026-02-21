@@ -15,40 +15,35 @@ serve(async (req) => {
   }
 
   try {
-    // Verify auth
+    // Auth is fully optional — guests can search without a session.
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    if (authHeader) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } },
+        })
+        const { data } = await supabase.auth.getUser()
+        const user = data?.user ?? null
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    })
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Rate limit: 3 requests/min (nearby search is heavier than autocomplete)
-    const { data: rateCheck } = await supabase.rpc('check_and_record_rate_limit', {
-      p_action: 'places_nearby_search',
-      p_max_attempts: 3,
-      p_window_seconds: 60,
-    })
-    if (rateCheck && !rateCheck.allowed) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded', retry_after: rateCheck.retry_after_seconds }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+        if (user) {
+          // Rate limit authed users: 10 requests/min
+          const { data: rateCheck } = await supabase.rpc('check_and_record_rate_limit', {
+            p_action: 'places_nearby_search',
+            p_max_attempts: 10,
+            p_window_seconds: 60,
+          })
+          if (rateCheck && !rateCheck.allowed) {
+            return new Response(JSON.stringify({ error: 'Rate limit exceeded', retry_after: rateCheck.retry_after_seconds }), {
+              status: 429,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+        }
+      } catch (_) {
+        // Auth check failed — continue as guest
+      }
     }
 
     // Parse request
