@@ -73,6 +73,20 @@ export function buildDishShareData(dish) {
 }
 
 /**
+ * Build share payload for a restaurant.
+ * @param {{ id: string, name: string, town?: string }} restaurant
+ * @returns {{ url: string, title: string, text: string }}
+ */
+export function buildRestaurantShareData(restaurant) {
+  const url = `${window.location.origin}/restaurant/${restaurant.id}`
+  return {
+    url,
+    title: restaurant.name,
+    text: `Check out ${restaurant.name}${restaurant.town ? ` in ${restaurant.town}` : ''} on What's Good Here!`,
+  }
+}
+
+/**
  * Build share payload after voting on a dish.
  * @param {{ dish_id: string, dish_name: string, restaurant_name: string }} dish
  * @param {boolean} wouldOrderAgain

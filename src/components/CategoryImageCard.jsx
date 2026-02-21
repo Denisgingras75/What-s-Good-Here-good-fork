@@ -57,9 +57,13 @@ export function CategoryImageCard({
           </div>
         ) : (
           <div
-            className="w-full h-full rounded-full"
+            className="w-full h-full rounded-full flex items-center justify-center"
             style={{ background: 'var(--color-bg)' }}
-          />
+          >
+            {category.emoji && (
+              <span style={{ fontSize: '40px', lineHeight: 1 }}>{category.emoji}</span>
+            )}
+          </div>
         )}
         </PlateIcon>
       </div>

@@ -10,6 +10,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { WelcomeModal } from './components/Auth/WelcomeModal'
 import { RouteProgress } from './components/RouteProgress'
 import { preloadSounds } from './lib/sounds'
+import { preloadCategoryImages } from './constants/categories'
 
 // Helper to handle chunk load failures after new deploys
 // If a lazy-loaded chunk fails to load (e.g., after deploy), reload the page once
@@ -50,6 +51,7 @@ const Home = lazyWithRetry(() => import('./pages/Home'), 'Home')
 const Browse = lazyWithRetry(() => import('./pages/Browse'), 'Browse')
 const Dish = lazyWithRetry(() => import('./pages/Dish'), 'Dish')
 const Restaurants = lazyWithRetry(() => import('./pages/Restaurants'), 'Restaurants')
+const RestaurantDetail = lazyWithRetry(() => import('./pages/RestaurantDetail'), 'RestaurantDetail')
 const Profile = lazyWithRetry(() => import('./pages/Profile'), 'Profile')
 const Admin = lazyWithRetry(() => import('./pages/Admin'), 'Admin')
 const Login = lazyWithRetry(() => import('./pages/Login'), 'Login')
@@ -60,6 +62,7 @@ const Discover = lazyWithRetry(() => import('./pages/Discover'), 'Discover')
 const ResetPassword = lazyWithRetry(() => import('./pages/ResetPassword'), 'ResetPassword')
 const AcceptInvite = lazyWithRetry(() => import('./pages/AcceptInvite'), 'AcceptInvite')
 const ManageRestaurant = lazyWithRetry(() => import('./pages/ManageRestaurant'), 'ManageRestaurant')
+const HowReviewsWork = lazyWithRetry(() => import('./pages/HowReviewsWork'), 'HowReviewsWork')
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'), 'NotFound')
 
 // Prefetch functions for smoother navigation - call on hover/focus
@@ -68,6 +71,7 @@ export const prefetchRoutes = {
   browse: () => import('./pages/Browse'),
   dish: () => import('./pages/Dish'),
   restaurants: () => import('./pages/Restaurants'),
+  restaurantDetail: () => import('./pages/RestaurantDetail'),
   discover: () => import('./pages/Discover'),
   profile: () => import('./pages/Profile'),
 }
@@ -89,9 +93,10 @@ const PageLoader = () => (
 )
 
 function App() {
-  // Preload sounds on app start
+  // Preload sounds and category images on app start
   useEffect(() => {
     preloadSounds()
+    preloadCategoryImages()
   }, [])
 
   return (
@@ -121,7 +126,7 @@ function App() {
               <Route path="/browse" element={<Layout><Browse /></Layout>} />
               <Route path="/dish/:dishId" element={<Layout><Dish /></Layout>} />
               <Route path="/restaurants" element={<Layout><Restaurants /></Layout>} />
-              <Route path="/restaurants/:restaurantId" element={<Layout><Restaurants /></Layout>} />
+              <Route path="/restaurants/:restaurantId" element={<Layout><RestaurantDetail /></Layout>} />
               <Route path="/discover" element={<Layout><Discover /></Layout>} />
               <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
               <Route path="/user/:userId" element={<Layout><UserProfile /></Layout>} />
@@ -132,6 +137,7 @@ function App() {
               <Route path="/manage" element={<ProtectedRoute><ManageRestaurant /></ProtectedRoute>} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/how-reviews-work" element={<Layout><HowReviewsWork /></Layout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

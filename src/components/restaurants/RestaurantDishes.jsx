@@ -6,7 +6,7 @@ import { TopDishCard } from './TopDishCard'
 const TOP_DISHES_COUNT = 5
 
 // Restaurant dishes component - Job #2: "What should I order?"
-export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isFavorite, onToggleFavorite, user, searchQuery = '', friendsVotesByDish = {}, restaurantName, restaurantTown }) {
+export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequired, isFavorite, onToggleFavorite, user, searchQuery = '', friendsVotesByDish = {}, restaurantName, restaurantTown, onAddDish }) {
   const [showAllDishes, setShowAllDishes] = useState(false)
 
   // Filter and sort dishes
@@ -37,8 +37,10 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
       const aPct = a.percent_worth_it || 0
       const bPct = b.percent_worth_it || 0
       if (bPct !== aPct) return bPct - aPct
-      // Final tie-breaker: vote count
-      return (b.total_votes || 0) - (a.total_votes || 0)
+      // Final tie-breaker: vote count, then alphabetical
+      const voteDiff = (b.total_votes || 0) - (a.total_votes || 0)
+      if (voteDiff !== 0) return voteDiff
+      return (a.dish_name || '').localeCompare(b.dish_name || '')
     })
 
     return {
@@ -200,10 +202,28 @@ export function RestaurantDishes({ dishes, loading, error, onVote, onLoginRequir
               : 'No dishes at this restaurant yet'
             }
           </p>
-          {sortedDishes.filtered && (
+          {sortedDishes.filtered ? (
             <p className="mt-1.5 font-medium" style={{ color: '#BBBBBB', fontSize: '12px' }}>
               Try a different search term
             </p>
+          ) : (
+            <>
+              <p className="mt-1 font-medium" style={{ color: '#BBBBBB', fontSize: '12px' }}>
+                Be the first to add one and help others decide what to order
+              </p>
+              {onAddDish && (
+                <button
+                  onClick={onAddDish}
+                  className="mt-4 px-5 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-[0.97]"
+                  style={{
+                    background: 'var(--color-primary)',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  + Add a dish
+                </button>
+              )}
+            </>
           )}
         </div>
       )}

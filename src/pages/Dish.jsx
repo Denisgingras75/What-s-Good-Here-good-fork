@@ -16,6 +16,9 @@ import { PhotoUploadConfirmation } from '../components/PhotoUploadConfirmation'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
 import { DishPlaceholder } from '../components/DishPlaceholder'
+import { PhotoUploadButton } from '../components/PhotoUploadButton'
+import { TrustBadge } from '../components/TrustBadge'
+import { ValueBadge } from '../components/browse/ValueBadge'
 import { CATEGORY_INFO } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { getRatingColor, formatScore10 } from '../utils/ranking'
@@ -48,6 +51,7 @@ function transformDish(data) {
     avg_rating: data.avg_rating,
     parent_dish_id: data.parent_dish_id,
     has_variants: data.has_variants,
+    value_percentile: data.value_percentile,
   }
 }
 
@@ -591,6 +595,7 @@ export function Dish() {
                   <p className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
                     {dish.total_votes} vote{dish.total_votes === 1 ? '' : 's'}
                   </p>
+                  <ValueBadge valuePercentile={dish.value_percentile} />
                 </div>
               </div>
             ) : null}
@@ -784,9 +789,12 @@ export function Dish() {
                             {review.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
                           </div>
                           <div>
-                            <p className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                              @{review.profiles?.display_name || 'Anonymous'}
-                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                                @{review.profiles?.display_name || 'Anonymous'}
+                              </p>
+                              <TrustBadge type={review.trust_badge} />
+                            </div>
                           </div>
                         </Link>
                         <div className="flex items-center gap-2">
@@ -812,6 +820,24 @@ export function Dish() {
               </div>
             )}
 
+            {/* No reviews message */}
+            {!reviewsLoading && reviews.length === 0 && dish.total_votes > 0 && (
+              <div
+                className="mb-6 p-4 rounded-xl text-center"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-divider)' }}
+              >
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                  No written reviews yet — be the first to share your thoughts!
+                </p>
+              </div>
+            )}
+
+            {/* Photo Upload */}
+            <PhotoUploadButton
+              dishId={dish.dish_id}
+              onPhotoUploaded={handlePhotoUploaded}
+              onLoginRequired={handleLoginRequired}
+            />
 
           </div>
         </>

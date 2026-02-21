@@ -58,6 +58,7 @@
   /* Cards */
   --color-card: #FFFFFF;
   --color-card-hover: #F9F7F5;
+  --color-card-border: #1A1A1A;
   --color-medal-gold: #E8B820;
   --color-medal-silver: #9EAAB2;
   --color-medal-bronze: #B07340;
@@ -125,6 +126,7 @@
   /* Cards — navy-teal */
   --color-card: #1A3A42;
   --color-card-hover: #243A43;
+  --color-card-border: rgba(200, 90, 84, 0.3);
   --color-medal-gold: #D9A765;
   --color-medal-silver: #A8B5BF;
   --color-medal-bronze: #C4855C;
@@ -218,6 +220,12 @@
   [data-theme="light"] .card-elevated:hover {
     border-color: transparent;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-subtle {
+    @apply rounded-xl;
+    background: var(--color-card);
+    border: 2px solid var(--color-card-border, #1A1A1A);
   }
 
   .image-zoom {
@@ -562,6 +570,27 @@
   /* Warm text shadow for hero headlines */
   .text-shadow-warm {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Gradient hero background */
+  .gradient-hero {
+    background: var(--color-bg);
+  }
+
+  /* Search input focus ring */
+  .glow-search:focus-within {
+    box-shadow: 0 0 0 2px var(--color-primary);
+    border-color: var(--color-primary) !important;
+  }
+
+  /* Rating glow for high scores */
+  .glow-rating-high {
+    text-shadow: 0 0 12px rgba(107, 179, 132, 0.5);
+  }
+
+  /* Gold text glow */
+  .glow-gold-text {
+    text-shadow: 0 0 16px rgba(217, 167, 101, 0.4), 0 0 32px rgba(217, 167, 101, 0.15);
   }
 
   .focus-ring {

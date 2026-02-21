@@ -16,15 +16,15 @@ Tech: React 19, Vite, Tailwind CSS, React Router v7, Supabase (Postgres + Auth +
 
 ## Core Data Model
 
-### Tables (17)
+### Tables (20)
 
 Evidence: `supabase/schema.sql:24-259`
 
 | Table | PK | Key Columns | Relationships | Constraints | Status |
 |---|---|---|---|---|---|
-| **restaurants** | `id` UUID | name, address, lat/lng, is_open, cuisine, town, menu_section_order[] | — | — | **VERIFIED** |
+| **restaurants** | `id` UUID | name, address, lat/lng, is_open, cuisine, town, menu_section_order[], website_url, facebook_url, instagram_url, phone, google_place_id, menu_url, created_by | — | — | **VERIFIED** |
 | **dishes** | `id` UUID | name, category, menu_section, price, avg_rating, total_votes, consensus_*, value_score, parent_dish_id, tags[] | FK → restaurants; self-ref parent_dish_id (variants) | — | **VERIFIED** |
-| **votes** | `id` UUID | dish_id, user_id, would_order_again (bool), rating_10 (decimal), review_text, vote_position, category_snapshot | FK → dishes, auth.users; UNIQUE(dish_id, user_id) | review_text max 200 chars | **VERIFIED** |
+| **votes** | `id` UUID | dish_id, user_id, would_order_again (bool), rating_10 (decimal), review_text, vote_position, category_snapshot, purity_score, source, source_metadata | FK → dishes, auth.users; partial UNIQUE(dish_id, user_id) WHERE source='user' | review_text max 200 chars; source IN (user, ai_estimated) | **VERIFIED** |
 | **profiles** | `id` UUID = auth.users(id) | display_name, has_onboarded, preferred_categories[], follower_count, following_count | PK references auth.users | unique lowercase display_name | **VERIFIED** |
 | **favorites** | `id` UUID | user_id, dish_id | FK → auth.users, dishes; UNIQUE(user_id, dish_id) | — | **VERIFIED** |
 | **admins** | `id` UUID | user_id (unique), created_by | FK → auth.users | — | **VERIFIED** |
@@ -35,7 +35,10 @@ Evidence: `supabase/schema.sql:24-259`
 | **bias_events** | `id` UUID | user_id, dish_id, dish_name, user_rating, consensus_rating, deviation, was_early_voter, bias_before/after, seen | FK → auth.users, dishes | — | **VERIFIED** |
 | **badges** | `key` TEXT | name, subtitle, description, icon, is_public_eligible, sort_order, rarity, family, category | — | 41 seeded badges | **VERIFIED** |
 | **user_badges** | `id` UUID | user_id, badge_key, unlocked_at, metadata_json | FK → auth.users, badges; UNIQUE(user_id, badge_key) | — | **VERIFIED** |
-| **specials** | `id` UUID | restaurant_id, deal_name, description, price, is_active, expires_at, created_by | FK → restaurants, auth.users | — | **VERIFIED** |
+| **specials** | `id` UUID | restaurant_id, deal_name, description, price, is_active, is_promoted, source, expires_at, created_by | FK → restaurants, auth.users | source IN (manual, auto_scrape) | **VERIFIED** |
+| **events** | `id` UUID | restaurant_id, event_name, description, event_date, start_time, end_time, event_type, recurring_pattern, recurring_day_of_week, is_active, is_promoted, source, created_by | FK → restaurants, auth.users | event_type IN (live_music, trivia, comedy, karaoke, open_mic, other); source IN (manual, auto_scrape) | **VERIFIED** |
+| **jitter_profiles** | `user_id` UUID (PK) | profile_data (JSONB), review_count, confidence_level, consistency_score, flagged | FK → auth.users | confidence_level IN (low, medium, high) | **VERIFIED** |
+| **jitter_samples** | `id` UUID | user_id, sample_data (JSONB), collected_at | FK → auth.users | auto-pruned to 30 per user | **VERIFIED** |
 | **restaurant_managers** | `id` UUID | user_id, restaurant_id, role, invited_at, accepted_at, created_by | FK → auth.users, restaurants; UNIQUE(user_id, restaurant_id) | — | **VERIFIED** |
 | **restaurant_invites** | `id` UUID | token (unique hex), restaurant_id, created_by, expires_at, used_by, used_at | FK → restaurants, auth.users | expires after 7 days | **VERIFIED** |
 | **rate_limits** | `id` UUID | user_id, action, created_at | FK → auth.users | pg_cron hourly cleanup | **VERIFIED** |
@@ -165,7 +168,23 @@ Evidence: `schema.sql:1534-1776`
 | `update_dish_rating_on_vote` | votes | AFTER INSERT/UPDATE/DELETE | Syncs avg_rating/total_votes on dishes table |
 | `trigger_compute_value_score` | dishes | BEFORE INSERT/UPDATE OF avg_rating, total_votes, price, category | Calculates value_score from rating and price vs median |
 
+| `jitter_sample_merge` | jitter_samples | AFTER INSERT | Merges sample into running jitter profile, prunes old samples (keep last 30) |
+
 **VERIFIED** — all triggers read directly from schema.sql
+
+### Edge Functions (9)
+
+| Function | Purpose | Trigger |
+|---|---|---|
+| `places-autocomplete` | Google Places autocomplete proxy | On-demand (search) |
+| `places-details` | Google Places details proxy | On-demand (restaurant add) |
+| `places-nearby-search` | Google Places nearby search proxy | On-demand (discovery) |
+| `discover-restaurants` | Find restaurants from Google Places for a town | Manual/cron |
+| `restaurant-scraper` | Scrape restaurant website for menu/events | Manual/cron |
+| `scraper-dispatcher` | Dispatch scraping jobs across restaurants | Cron |
+| `menu-refresh` | Refresh menu data from scraped content | Cron |
+| `backfill-restaurants` | Backfill restaurant data from Google Places | Manual |
+| `seed-reviews` | Generate AI-estimated reviews from Google Places data | Manual |
 
 ---
 
@@ -266,7 +285,15 @@ Evidence: `schema.sql:1534-1776`
 
 Switching restaurants resets to "Top Rated" tab. Search filters work in both views.
 
-**VERIFIED** — `src/pages/Restaurants.jsx`, `src/api/restaurantsApi.js`, `src/components/restaurants/`
+**Map View:** Leaflet-based interactive map (`RestaurantMap`) with list/map toggle. Pins show restaurant locations colored by cuisine type. Tap pin → popup with name, distance, dish count.
+
+**Add Restaurant:** Users can add restaurants via `AddRestaurantModal` — Google Places autocomplete pre-fills name, address, lat/lng. Duplicate detection via `find_nearby_restaurants` RPC (150m radius). Rate-limited to 5/hr.
+
+**Restaurant Detail:** Standalone page (`/restaurants/:restaurantId`) with dish tabs (Top Rated/Menu), specials & events, AddDishModal, share button, contact info.
+
+**Events:** `EventCard` component shows live music, trivia, comedy, etc. Managed by restaurant owners via `EventsManager` in the manager portal.
+
+**VERIFIED** — `src/pages/Restaurants.jsx`, `src/pages/RestaurantDetail.jsx`, `src/api/restaurantsApi.js`, `src/components/restaurants/`
 
 ### Feature 7: User Profile (own)
 

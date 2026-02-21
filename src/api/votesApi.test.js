@@ -25,6 +25,12 @@ vi.mock('../lib/reviewBlocklist', () => ({
   containsBlockedContent: vi.fn(() => false),
 }))
 
+vi.mock('./jitterApi', () => ({
+  jitterApi: {
+    getTrustBadgeType: vi.fn(() => null),
+  },
+}))
+
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
@@ -397,8 +403,8 @@ describe('votesApi', () => {
   })
 
   describe('getReviewsForDish', () => {
-    it('should fetch paginated reviews for a dish', async () => {
-      const mockReviews = [
+    it('should fetch paginated reviews and enrich with profiles and trust badges', async () => {
+      const mockVoteRows = [
         {
           id: 'review-1',
           review_text: 'Great!',
@@ -406,27 +412,47 @@ describe('votesApi', () => {
           would_order_again: true,
           review_created_at: '2024-01-01',
           user_id: 'user-1',
-          profiles: { id: 'user-1', display_name: 'John' },
+          source: null,
+          source_metadata: null,
         },
       ]
 
-      supabase.from.mockReturnValue({
+      const mockProfiles = [{ id: 'user-1', display_name: 'John' }]
+
+      // First call: votes query
+      supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             not: vi.fn().mockReturnValue({
               neq: vi.fn().mockReturnValue({
                 order: vi.fn().mockReturnValue({
-                  range: vi.fn().mockResolvedValue({ data: mockReviews, error: null }),
+                  range: vi.fn().mockResolvedValue({ data: mockVoteRows, error: null }),
                 }),
               }),
             }),
           }),
         }),
       })
+      // Second call: profiles query
+      supabase.from.mockReturnValueOnce({
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({ data: mockProfiles, error: null }),
+        }),
+      })
+      // Third call: jitter_profiles query
+      supabase.from.mockReturnValueOnce({
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      })
 
       const result = await votesApi.getReviewsForDish('dish-1', { limit: 10, offset: 0 })
 
-      expect(result).toEqual(mockReviews)
+      expect(result).toHaveLength(1)
+      expect(result[0].review_text).toBe('Great!')
+      expect(result[0].profiles).toEqual({ id: 'user-1', display_name: 'John' })
+      // trust_badge is set by jitterApi.getTrustBadgeType (mocked to null)
+      expect('trust_badge' in result[0]).toBe(true)
     })
 
     it('should return empty array on error (graceful degradation)', async () => {
@@ -451,23 +477,25 @@ describe('votesApi', () => {
   })
 
   describe('getSmartSnippetForDish', () => {
-    it('should return best review sorted by rating then date', async () => {
-      const mockBestReview = {
+    it('should return best review sorted by rating then date, enriched with profile', async () => {
+      const mockVoteRow = {
         review_text: 'Amazing!',
         rating_10: 10,
         review_created_at: '2024-01-01',
         user_id: 'user-1',
-        profiles: { id: 'user-1', display_name: 'Foodie' },
       }
 
-      supabase.from.mockReturnValue({
+      const mockProfile = { id: 'user-1', display_name: 'Foodie' }
+
+      // First call: votes query
+      supabase.from.mockReturnValueOnce({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             not: vi.fn().mockReturnValue({
               neq: vi.fn().mockReturnValue({
                 order: vi.fn().mockReturnValue({
                   order: vi.fn().mockReturnValue({
-                    limit: vi.fn().mockResolvedValue({ data: [mockBestReview], error: null }),
+                    limit: vi.fn().mockResolvedValue({ data: [mockVoteRow], error: null }),
                   }),
                 }),
               }),
@@ -475,10 +503,20 @@ describe('votesApi', () => {
           }),
         }),
       })
+      // Second call: profile lookup
+      supabase.from.mockReturnValueOnce({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({ data: mockProfile, error: null }),
+          }),
+        }),
+      })
 
       const result = await votesApi.getSmartSnippetForDish('dish-1')
 
-      expect(result).toEqual(mockBestReview)
+      expect(result.review_text).toBe('Amazing!')
+      expect(result.rating_10).toBe(10)
+      expect(result.profiles).toEqual(mockProfile)
     })
 
     it('should return null when no reviews exist', async () => {

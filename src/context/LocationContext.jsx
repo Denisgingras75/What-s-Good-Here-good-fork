@@ -162,6 +162,20 @@ export function LocationProvider({ children }) {
     setLoading(false)
   }, [])
 
+  // Components call this to trigger location permission on demand.
+  // Won't re-prompt if user already denied — avoids nagging.
+  const promptForLocation = useCallback(() => {
+    if (permissionState === 'denied' || permissionState === 'unsupported') {
+      return
+    }
+    if (permissionState === 'granted') {
+      // Already granted — just refresh the position
+      requestLocation()
+      return
+    }
+    requestLocation()
+  }, [permissionState, requestLocation])
+
   const isUsingDefault = location?.lat === DEFAULT_LOCATION.lat && location?.lng === DEFAULT_LOCATION.lng
 
   return (
@@ -176,6 +190,7 @@ export function LocationProvider({ children }) {
       permissionState,
       hasAskedBefore,
       requestLocation,
+      promptForLocation,
       useDefaultLocation,
       isUsingDefault,
     }}>

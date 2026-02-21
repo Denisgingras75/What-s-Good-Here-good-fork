@@ -23,6 +23,10 @@ export const BROWSE_CATEGORIES = [
   { id: 'clams', label: 'Clams', emoji: '🐚' },
   { id: 'chicken', label: 'Chicken', emoji: '🐔' },
   { id: 'pork', label: 'Pork', emoji: '🐷' },
+  { id: 'oysters', label: 'Oysters', emoji: '🦪' },
+  { id: 'coffee', label: 'Coffee', emoji: '☕' },
+  { id: 'cocktails', label: 'Cocktails', emoji: '🍸' },
+  { id: 'ice cream', label: 'Ice Cream', emoji: '🍦' },
 ]
 
 // Main categories shown in category picker (singular labels)
@@ -46,6 +50,10 @@ export const MAIN_CATEGORIES = [
   { id: 'clams', label: 'Clams', emoji: '🐚' },
   { id: 'chicken', label: 'Chicken', emoji: '🐔' },
   { id: 'pork', label: 'Pork', emoji: '🐷' },
+  { id: 'oysters', label: 'Oysters', emoji: '🦪' },
+  { id: 'coffee', label: 'Coffee', emoji: '☕' },
+  { id: 'cocktails', label: 'Cocktails', emoji: '🍸' },
+  { id: 'ice cream', label: 'Ice Cream', emoji: '🍦' },
 ]
 
 // All categories in the system (including sub-categories)
@@ -66,6 +74,11 @@ export const ALL_CATEGORIES = [
   { id: 'sides', label: 'Sides', emoji: '🥦' },
   { id: 'duck', label: 'Duck', emoji: '🦆' },
   { id: 'lamb', label: 'Lamb', emoji: '🍖' },
+  { id: 'clams', label: 'Clams', emoji: '🐚' },
+  { id: 'oysters', label: 'Oysters', emoji: '🦪' },
+  { id: 'coffee', label: 'Coffee', emoji: '☕' },
+  { id: 'cocktails', label: 'Cocktails', emoji: '🍸' },
+  { id: 'ice cream', label: 'Ice Cream', emoji: '🍦' },
 ]
 
 // Fuzzy match a search term to existing categories
@@ -178,6 +191,15 @@ export function getCategoryNeonImage(id) {
   return CATEGORY_IMAGES_LIGHT[key] || CATEGORY_IMAGES_DARK[key] || null
 }
 
+// Preload category images for smooth Browse page loading
+export function preloadCategoryImages() {
+  const images = { ...CATEGORY_IMAGES_DARK, ...CATEGORY_IMAGES_LIGHT }
+  Object.values(images).forEach(src => {
+    const img = new Image()
+    img.src = src
+  })
+}
+
 // Category display info - used for profile stats and tier display
 // Maps category id to emoji and label
 export const CATEGORY_INFO = {
@@ -211,6 +233,10 @@ export const CATEGORY_INFO = {
   'fish': { emoji: '🐟', label: 'Fish' },
   'chicken': { emoji: '🐔', label: 'Chicken' },
   'clams': { emoji: '🐚', label: 'Clams' },
+  'oysters': { emoji: '🦪', label: 'Oysters' },
+  'coffee': { emoji: '☕', label: 'Coffee' },
+  'cocktails': { emoji: '🍸', label: 'Cocktails' },
+  'ice cream': { emoji: '🍦', label: 'Ice Cream' },
 }
 
 // Get category info with fuzzy matching

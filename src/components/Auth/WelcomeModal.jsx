@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useProfile } from '../../hooks/useProfile'
 import { WghLogo } from '../WghLogo'
+import { CategoryPicker } from '../CategoryPicker'
+import { HeartIcon } from '../HeartIcon'
 import { ThumbsUpIcon } from '../ThumbsUpIcon'
 import { ThumbsDownIcon } from '../ThumbsDownIcon'
 import { capture } from '../../lib/analytics'
@@ -27,6 +29,13 @@ const STEPS = [
     subtitle: 'Join the community',
     description: 'Friends can find you by your name',
   },
+  {
+    id: 'favorites',
+    icon: 'heart',
+    title: 'Choose up to 3 favorites',
+    subtitle: 'See your personalized "My Top 10" on the home screen',
+    description: null,
+  },
 ]
 
 export function WelcomeModal() {
@@ -34,6 +43,7 @@ export function WelcomeModal() {
   const { profile, updateProfile, loading } = useProfile(user?.id)
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState([])
   const [saving, setSaving] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [phase, setPhase] = useState('onboarding') // 'onboarding' | 'celebration' | 'fade-out'
@@ -57,8 +67,13 @@ export function WelcomeModal() {
     setSaving(true)
     const updates = { has_onboarded: true }
     if (name.trim()) updates.display_name = name.trim()
+    if (selectedCategories.length > 0) updates.preferred_categories = selectedCategories
     await updateProfile(updates)
-    capture('onboarding_completed', { name_set: nameSet })
+    capture('onboarding_completed', {
+      name_set: nameSet,
+      categories_selected: selectedCategories.length,
+      categories: selectedCategories,
+    })
     setSaving(false)
 
     // Show celebration screen
@@ -86,11 +101,14 @@ export function WelcomeModal() {
   const handleNameSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) return
-    await completeOnboarding(true)
+    // Save name and move to favorites step
+    await updateProfile({ display_name: name.trim() })
+    setStep(step + 1)
   }
 
-  const handleSkipName = async () => {
-    await completeOnboarding(false)
+  const handleSkipName = () => {
+    // Move to favorites without setting name
+    setStep(step + 1)
   }
 
   if (!isOpen) return null
@@ -167,6 +185,7 @@ export function WelcomeModal() {
   // ==================== ONBOARDING STEPS ====================
   const currentStep = activeSteps[step]
   const isNameStep = currentStep.id === 'name'
+  const isFavoritesStep = currentStep.id === 'favorites'
 
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
@@ -217,7 +236,7 @@ export function WelcomeModal() {
               className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-lg transition-all"
               style={{ background: 'var(--color-primary)' }}
             >
-              {currentStep.icon === 'thumbsUp' ? <ThumbsUpIcon size={52} /> : <span className="text-4xl">{currentStep.emoji}</span>}
+              {currentStep.icon === 'heart' ? <HeartIcon size={56} /> : currentStep.icon === 'thumbsUp' ? <ThumbsUpIcon size={52} /> : <span className="text-4xl">{currentStep.emoji}</span>}
             </div>
           )}
 
@@ -273,7 +292,31 @@ export function WelcomeModal() {
               />
               <button
                 type="submit"
-                disabled={!name.trim() || saving}
+                disabled={!name.trim()}
+                className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
+              >
+                Continue
+              </button>
+              <button
+                type="button"
+                onClick={handleSkipName}
+                className="w-full py-2 text-sm transition-colors"
+                style={{ color: 'var(--color-text-tertiary)' }}
+              >
+                Skip for now
+              </button>
+            </form>
+          ) : isFavoritesStep ? (
+            <div className="space-y-4">
+              <CategoryPicker
+                selectedCategories={selectedCategories}
+                onSelectionChange={setSelectedCategories}
+                showHeader={false}
+              />
+              <button
+                onClick={() => completeOnboarding(!!name.trim())}
+                disabled={saving}
                 className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
                 style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
@@ -281,14 +324,14 @@ export function WelcomeModal() {
               </button>
               <button
                 type="button"
-                onClick={handleSkipName}
+                onClick={() => completeOnboarding(!!name.trim())}
                 disabled={saving}
                 className="w-full py-2 text-sm transition-colors"
                 style={{ color: 'var(--color-text-tertiary)' }}
               >
                 Skip for now
               </button>
-            </form>
+            </div>
           ) : (
             <div className="space-y-3">
               <button
@@ -297,7 +340,7 @@ export function WelcomeModal() {
                 className="w-full px-6 py-4 font-semibold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
                 style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
-                {saving ? 'Saving...' : step === activeSteps.length - 1 ? "Let's go!" : 'Next'}
+                {saving ? 'Saving...' : 'Next'}
               </button>
               {step > 0 && (
                 <button

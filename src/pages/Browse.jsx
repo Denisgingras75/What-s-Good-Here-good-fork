@@ -20,6 +20,10 @@ import { DishCardSkeleton } from '../components/Skeleton'
 import { ImpactFeedback, getImpactMessage } from '../components/ImpactFeedback'
 import { SortDropdown, CategoryGrid } from '../components/browse'
 import { CategoryImageCard } from '../components/CategoryImageCard'
+import { RadiusSheet } from '../components/LocationPicker'
+import { LocationBanner } from '../components/LocationBanner'
+import { useRestaurantSearch } from '../hooks/useRestaurantSearch'
+import { AddRestaurantModal } from '../components/AddRestaurantModal'
 
 // Use centralized browse categories
 const CATEGORIES = BROWSE_CATEGORIES
@@ -63,13 +67,23 @@ export function Browse() {
   const [dishSuggestions, setDishSuggestions] = useState([])
   const [restaurantSuggestions, setRestaurantSuggestions] = useState([])
 
-  const { location, radius, town } = useLocationContext()
+  const { location, radius, setRadius, town, permissionState, requestLocation, isUsingDefault } = useLocationContext()
+  const [showRadiusSheet, setShowRadiusSheet] = useState(false)
+  const [addRestaurantOpen, setAddRestaurantOpen] = useState(false)
+  const [addRestaurantQuery, setAddRestaurantQuery] = useState('')
   const { stats: userStats } = useUserVotes(user?.id)
 
   // Search results from API using React Query hook
   // Handles cuisine/tag searches with proper caching and error handling
   // Pass town to filter search results by selected town
   const { results: searchResults, loading: searchLoading } = useDishSearch(debouncedSearchQuery, 50, town)
+
+  // Google Places restaurant search — don't bias by default MV location or Browse radius
+  const placesLat = isUsingDefault ? null : location?.lat
+  const placesLng = isUsingDefault ? null : location?.lng
+  const { externalResults: placesResults } = useRestaurantSearch(
+    searchQuery, placesLat, placesLng, searchQuery.trim().length >= 2, null
+  )
 
   const beforeVoteRef = useRef(null)
   const searchInputRef = useRef(null)
@@ -91,8 +105,10 @@ export function Browse() {
       setDebouncedSearchQuery(queryFromUrl)
       setSelectedCategory(null)
     } else {
-      // No category or search - redirect to Home
-      navigate('/', { replace: true })
+      // No category or search - show category grid
+      setSelectedCategory(null)
+      setSearchQuery('')
+      setDebouncedSearchQuery('')
     }
   }, [searchParams, navigate])
 
@@ -272,6 +288,31 @@ export function Browse() {
 
     // Then sort based on selected option
     switch (sortBy) {
+      case 'best_value':
+        result = result.slice().sort((a, b) => {
+          const aRanked = (a.total_votes || 0) >= MIN_VOTES_FOR_RANKING
+          const bRanked = (b.total_votes || 0) >= MIN_VOTES_FOR_RANKING
+          if (aRanked && !bRanked) return -1
+          if (!aRanked && bRanked) return 1
+          const aVal = a.value_percentile != null ? Number(a.value_percentile) : -1
+          const bVal = b.value_percentile != null ? Number(b.value_percentile) : -1
+          if (bVal !== aVal) return bVal - aVal
+          return (b.avg_rating || 0) - (a.avg_rating || 0)
+        })
+        break
+      case 'most_voted':
+        result = result.slice().sort((a, b) => {
+          return (b.total_votes || 0) - (a.total_votes || 0)
+        })
+        break
+      case 'closest':
+        result = result.slice().sort((a, b) => {
+          const aDist = a.distance_miles != null ? Number(a.distance_miles) : 9999
+          const bDist = b.distance_miles != null ? Number(b.distance_miles) : 9999
+          if (aDist !== bDist) return aDist - bDist
+          return (b.avg_rating || 0) - (a.avg_rating || 0)
+        })
+        break
       case 'top_rated':
       default:
         // Sort by avg_rating (1-10 scale) for Discovery view
@@ -322,8 +363,19 @@ export function Browse() {
         data: r,
       }))
 
-    return [...dishMatches, ...restaurantMatches]
-  }, [searchQuery, dishSuggestions, restaurantSuggestions])
+    // Google Places results — restaurants not yet in WGH
+    const placeMatches = (Array.isArray(placesResults) ? placesResults : [])
+      .slice(0, 4)
+      .map(p => ({
+        type: 'place',
+        id: p.placeId,
+        name: p.name,
+        subtitle: p.address || '',
+        data: p,
+      }))
+
+    return [...dishMatches, ...restaurantMatches, ...placeMatches]
+  }, [searchQuery, dishSuggestions, restaurantSuggestions, placesResults])
 
   // Handle autocomplete selection
   const handleAutocompleteSelect = useCallback((suggestion) => {
@@ -337,6 +389,11 @@ export function Browse() {
     } else if (suggestion.type === 'restaurant') {
       // Navigate to restaurant page
       navigate(`/restaurants/${suggestion.id}`)
+    } else if (suggestion.type === 'place') {
+      // Open Add Restaurant modal with this place pre-filled
+      setAddRestaurantQuery(suggestion.name)
+      setAddRestaurantOpen(true)
+      setSearchQuery('')
     }
   }, [navigate, openDishPage])
 
@@ -577,11 +634,19 @@ export function Browse() {
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style={{
-                        background: suggestion.type === 'dish' ? 'var(--color-primary-muted)' : 'rgba(59, 130, 246, 0.15)',
-                        color: suggestion.type === 'dish' ? 'var(--color-primary)' : 'var(--color-blue-light)'
+                        background: suggestion.type === 'dish'
+                          ? 'var(--color-primary-muted)'
+                          : suggestion.type === 'place'
+                          ? 'rgba(217, 167, 101, 0.15)'
+                          : 'rgba(59, 130, 246, 0.15)',
+                        color: suggestion.type === 'dish'
+                          ? 'var(--color-primary)'
+                          : suggestion.type === 'place'
+                          ? 'var(--color-accent-gold)'
+                          : 'var(--color-blue-light)',
                       }}
                     >
-                      {suggestion.type === 'dish' ? 'Dish' : 'Spot'}
+                      {suggestion.type === 'dish' ? 'Dish' : suggestion.type === 'place' ? '+ Add' : 'Spot'}
                     </span>
                   </button>
                 ))}
@@ -612,18 +677,48 @@ export function Browse() {
                 </p>
               </div>
 
-              {/* Sort dropdown */}
-              <SortDropdown
-                sortBy={sortBy}
-                onSortChange={handleSortChange}
-                isOpen={sortDropdownOpen}
-                onToggle={setSortDropdownOpen}
-              />
+              <div className="flex items-center gap-2">
+                {/* Radius chip */}
+                <button
+                  onClick={() => setShowRadiusSheet(true)}
+                  aria-label={`Search radius: ${radius} miles. Tap to change`}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-all"
+                  style={{
+                    background: 'var(--color-surface-elevated)',
+                    borderColor: 'var(--color-divider)',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                >
+                  <span>{radius} mi</span>
+                  <svg
+                    aria-hidden="true"
+                    className="w-3 h-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Sort dropdown */}
+                <SortDropdown
+                  sortBy={sortBy}
+                  onSortChange={handleSortChange}
+                  isOpen={sortDropdownOpen}
+                  onToggle={setSortDropdownOpen}
+                />
+              </div>
             </div>
           </div>
 
           {/* Dish Grid */}
           <div className="px-4 py-4">
+            <LocationBanner
+              permissionState={permissionState}
+              requestLocation={requestLocation}
+            />
             {(loading || searchLoading) ? (
               <div className="space-y-2">
                 {[...Array(5)].map((_, i) => (
@@ -778,9 +873,22 @@ export function Browse() {
         </>
       )}
 
+      <RadiusSheet
+        isOpen={showRadiusSheet}
+        onClose={() => setShowRadiusSheet(false)}
+        radius={radius}
+        onRadiusChange={setRadius}
+      />
+
       <LoginModal
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
+      />
+
+      <AddRestaurantModal
+        isOpen={addRestaurantOpen}
+        onClose={() => setAddRestaurantOpen(false)}
+        initialQuery={addRestaurantQuery}
       />
 
       {/* Impact feedback toast */}

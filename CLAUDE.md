@@ -271,6 +271,14 @@ Defined in `src/index.css`. Always use `var(--color-*)` — never hardcode. Ligh
 - `useUnratedDishes` — Dishes user hasn't voted on yet
 - `useFocusTrap` — Keyboard focus trap for modals
 - `useDish` — Single dish by ID
+- `useEvents` — Restaurant events via React Query
+- `useNearbyPlaces` — Google Places autocomplete nearby
+- `useNearbyRestaurant` — Single nearby restaurant by distance
+- `useNearbyRestaurants` — Distance-filtered restaurant list
+- `usePurityTracker` — Jitter Protocol behavioral biometrics for reviews
+- `useRestaurants` — All restaurants with distance sorting
+- `useRestaurantSearch` — Restaurant search with Places fallback
+- `useTrendingDishes` — Most-voted dishes in recent window
 
 ### 4.9 Key Supabase RPCs
 - `get_ranked_dishes` — Main Browse feed (ranked by votes, distance, variants, value score)
@@ -285,6 +293,10 @@ Defined in `src/index.css`. Always use `var(--color-*)` — never hardcode. Ligh
 - `get_friends_votes_for_dish` / `get_friends_votes_for_restaurant` — Social context
 - `evaluate_user_badges` — Award badges based on stats
 - `get_invite_details` / `accept_restaurant_invite` — Manager invite flow
+- `find_nearby_restaurants` — Geo-proximity restaurant search (duplicate detection)
+- `get_restaurants_within_radius` — Distance-filtered restaurant list with dish counts
+- `check_restaurant_create_rate_limit` — Restaurant creation rate limiting (5/hr)
+- `check_dish_create_rate_limit` — Dish creation rate limiting (20/hr)
 
 ### 4.10 File Organization
 - **Storage helpers go in `src/lib/storage.js`** — not scattered in components

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { createClassifiedError } from '../utils/errorHandler'
 import { sanitizeSearchQuery } from '../utils/sanitize'
+import { validateUserContent } from '../lib/reviewBlocklist'
 import { logger } from '../utils/logger'
 import { TAG_SYNONYMS } from '../constants/tags'
 
@@ -302,6 +303,136 @@ export const dishesApi = {
   },
 
   /**
+   * Get trending dishes (most votes in last 7 days)
+   * @param {number} limit - Max results (default 10)
+   * @param {string|null} town - Optional town filter
+   * @returns {Promise<Array>} Trending dishes with vote counts
+   */
+  async getTrending(limit = 10, town = null) {
+    try {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const since = sevenDaysAgo.toISOString()
+
+      // Get votes from last 7 days grouped by dish
+      const { data: recentVotes, error: votesError } = await supabase
+        .from('votes')
+        .select('dish_id')
+        .gte('created_at', since)
+
+      if (votesError) {
+        throw createClassifiedError(votesError)
+      }
+
+      if (!recentVotes?.length) return []
+
+      // Count votes per dish
+      const voteCounts = {}
+      for (const v of recentVotes) {
+        voteCounts[v.dish_id] = (voteCounts[v.dish_id] || 0) + 1
+      }
+
+      // Filter dishes with at least 2 recent votes
+      const trendingIds = Object.entries(voteCounts)
+        .filter(([, count]) => count >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit * 2) // fetch extra for town filtering
+        .map(([id]) => id)
+
+      if (!trendingIds.length) return []
+
+      // Fetch dish details
+      const { data: dishes, error: dishError } = await supabase
+        .from('dishes')
+        .select(`
+          id, name, category, photo_url, avg_rating,
+          restaurants!inner ( id, name, town, is_open )
+        `)
+        .in('id', trendingIds)
+        .eq('restaurants.is_open', true)
+
+      if (dishError) {
+        throw createClassifiedError(dishError)
+      }
+
+      let results = (dishes || [])
+        .filter(d => d.restaurants)
+        .map(d => ({
+          dish_id: d.id,
+          dish_name: d.name,
+          category: d.category,
+          photo_url: d.photo_url,
+          avg_rating: d.avg_rating,
+          total_votes: voteCounts[d.id] || 0,
+          recent_votes: voteCounts[d.id] || 0,
+          restaurant_id: d.restaurants.id,
+          restaurant_name: d.restaurants.name,
+          restaurant_town: d.restaurants.town,
+        }))
+
+      // Town filter
+      if (town) {
+        results = results.filter(d => d.restaurant_town === town)
+      }
+
+      // Sort by recent votes descending
+      results.sort((a, b) => b.recent_votes - a.recent_votes)
+
+      return results.slice(0, limit)
+    } catch (error) {
+      logger.error('Error fetching trending dishes:', error)
+      throw error.type ? error : createClassifiedError(error)
+    }
+  },
+
+  /**
+   * Get recently added dishes
+   * @param {number} limit - Max results (default 10)
+   * @param {string|null} town - Optional town filter
+   * @returns {Promise<Array>} Recently added dishes
+   */
+  async getRecent(limit = 10, town = null) {
+    try {
+      const { data, error } = await supabase
+        .from('dishes')
+        .select(`
+          id, name, category, photo_url, avg_rating, created_at,
+          restaurants!inner ( id, name, town, is_open )
+        `)
+        .eq('restaurants.is_open', true)
+        .order('created_at', { ascending: false })
+        .limit(town ? limit * 3 : limit)
+
+      if (error) {
+        throw createClassifiedError(error)
+      }
+
+      let results = (data || [])
+        .filter(d => d.restaurants)
+        .map(d => ({
+          dish_id: d.id,
+          dish_name: d.name,
+          category: d.category,
+          photo_url: d.photo_url,
+          avg_rating: d.avg_rating,
+          created_at: d.created_at,
+          restaurant_id: d.restaurants.id,
+          restaurant_name: d.restaurants.name,
+          restaurant_town: d.restaurants.town,
+        }))
+
+      if (town) {
+        results = results.filter(d => d.restaurant_town === town)
+      }
+
+      return results.slice(0, limit)
+    } catch (error) {
+      logger.error('Error fetching recent dishes:', error)
+      throw error.type ? error : createClassifiedError(error)
+    }
+  },
+
+  /**
    * Get variants for a parent dish
    * @param {string} parentDishId - Parent dish ID
    * @returns {Promise<Array>} Array of variant dishes with vote stats
@@ -477,6 +608,49 @@ export const dishesApi = {
       }
     } catch (error) {
       logger.error('Error fetching dish:', error)
+      throw error.type ? error : createClassifiedError(error)
+    }
+  },
+
+  /**
+   * Create a new dish (any authenticated user)
+   * @param {Object} params - Dish data
+   * @returns {Promise<Object>} Created dish
+   */
+  async create({ restaurantId, name, category, price }) {
+    try {
+      // Content moderation
+      const contentError = validateUserContent(name, 'Dish name')
+      if (contentError) throw new Error(contentError)
+
+      // Check rate limit first
+      const { data: rateCheck, error: rateError } = await supabase.rpc('check_dish_create_rate_limit')
+      if (rateError) throw createClassifiedError(rateError)
+      if (rateCheck && !rateCheck.allowed) {
+        const err = new Error(rateCheck.message || 'Too many dishes created. Please wait.')
+        err.type = 'RATE_LIMIT'
+        throw err
+      }
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw createClassifiedError(new Error('Not authenticated'))
+
+      const { data, error } = await supabase
+        .from('dishes')
+        .insert({
+          restaurant_id: restaurantId,
+          name,
+          category,
+          price: price || null,
+          created_by: user.id,
+        })
+        .select('id, name, category, price, restaurant_id')
+        .single()
+
+      if (error) throw createClassifiedError(error)
+      return data
+    } catch (error) {
+      logger.error('Error creating dish:', error)
       throw error.type ? error : createClassifiedError(error)
     }
   },

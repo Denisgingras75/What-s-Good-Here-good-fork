@@ -528,3 +528,34 @@
 - `!inputRef.current?.contains(e.target)` with optional chaining
 
 **Files:** `src/components/DishSearch.jsx:56`
+
+---
+
+## ~~T37: Local Hub — Events, Specials & Automated Scraping~~ DONE (Denis)
+
+**What was done:**
+- Events table + RLS policies + EventCard component
+- EventsManager for restaurant admin portal
+- Restaurant scraper edge function (menu + events)
+- Scraper dispatcher for batch processing
+- Menu refresh edge function
+- Specials now support `is_promoted` and `source` fields
+
+**Files:** `supabase/schema.sql`, `supabase/functions/restaurant-scraper/`, `src/components/EventCard.jsx`, `src/components/restaurant-admin/EventsManager.jsx`
+
+---
+
+## ~~T38: Memorial Day Launch Infrastructure~~ DONE (Denis)
+
+**What was done:**
+- Jitter Protocol (behavioral biometrics for human verification)
+- Review seeding via Google Places + Claude Haiku
+- Vote source weighting (ai_estimated at 0.5x)
+- TrustBadge component for review provenance
+- Google Places integration (autocomplete, details, nearby search)
+- AddRestaurantModal with duplicate detection
+- Restaurant map (Leaflet)
+- OG image generation (Vercel serverless)
+- Social share rewrites for rich previews
+
+**Files:** Multiple — see `docs/plans/2026-02-21-memorial-day-launch-design.md`

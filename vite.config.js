@@ -15,6 +15,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff2}'],
         // Allow larger files (splash image is ~2.4MB)
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
+        // Force new SW to take over immediately
+        skipWaiting: true,
+        clientsClaim: true,
+        // Clean up old precache entries from previous SW versions
+        cleanupOutdatedCaches: true,
         // Runtime caching for API calls and images
         runtimeCaching: [
           {

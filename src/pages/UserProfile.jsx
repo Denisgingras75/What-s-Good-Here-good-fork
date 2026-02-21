@@ -15,7 +15,6 @@ import { ThumbsUpIcon } from '../components/ThumbsUpIcon'
 import { ThumbsDownIcon } from '../components/ThumbsDownIcon'
 import { ReviewsIcon } from '../components/ReviewsIcon'
 import { profileApi } from '../api/profileApi'
-import { supabase } from '../lib/supabase'
 
 const MAX_VISIBLE_DISHES = 5
 

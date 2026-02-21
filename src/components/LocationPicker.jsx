@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 
-const RADIUS_OPTIONS = [1, 5, 10, 20]
+const RADIUS_OPTIONS = [1, 5, 10, 20, 25, 50]
 
 /**
  * Radius selection bottom sheet
@@ -80,7 +80,7 @@ export function RadiusSheet({ isOpen, onClose, radius, onRadiusChange }) {
                   }}
                 >
                   <span style={radius === r ? { color: 'var(--color-text-on-primary)' } : undefined}>
-                    {r <= 5 ? '🚶' : r <= 10 ? '🚗' : '🛣️'}
+                    {r <= 5 ? '🚶' : r <= 10 ? '🚗' : r <= 20 ? '🛣️' : '🌎'}
                   </span>
                 </div>
                 <div className="text-left">
@@ -94,7 +94,7 @@ export function RadiusSheet({ isOpen, onClose, radius, onRadiusChange }) {
                     className="text-sm"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
-                    {r === 1 ? 'Walking distance' : r === 5 ? 'Quick drive' : r === 10 ? 'Short trip' : 'Anywhere on island'}
+                    {r === 1 ? 'Walking distance' : r === 5 ? 'Quick drive' : r === 10 ? 'Short trip' : r === 20 ? 'Across the area' : r === 25 ? 'Extended range' : 'Maximum range'}
                   </p>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { capture } from '../lib/analytics'
 import { useAuth } from '../context/AuthContext'
 import { useVote } from '../hooks/useVote'
+import { usePurityTracker } from '../hooks/usePurityTracker'
 import { authApi } from '../api/authApi'
 import { FoodRatingSlider } from './FoodRatingSlider'
 import { ThumbsUpIcon } from './ThumbsUpIcon'
@@ -20,6 +21,7 @@ import { setBackButtonInterceptor, clearBackButtonInterceptor } from '../utils/b
 export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, category, price, totalVotes = 0, yesVotes = 0, percentWorthIt = 0, isRanked = false, hasPhotos = false, onVote, onLoginRequired, onPhotoUploaded, onToggleFavorite, isFavorite }) {
   const { user } = useAuth()
   const { submitVote, submitting } = useVote()
+  const { getPurity, getJitterProfile, attachToTextarea, reset: resetPurity } = usePurityTracker()
   const [userVote, setUserVote] = useState(null)
   const [userRating, setUserRating] = useState(null)
   const [userReviewText, setUserReviewText] = useState(null)
@@ -48,6 +50,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   const [photoAdded, setPhotoAdded] = useState(false)
   const [reviewExpanded, setReviewExpanded] = useState(false)
   const reviewTextareaRef = useRef(null)
+  // Combined ref: partner's focus ref + Denis's purity tracker ref
+  const combinedTextareaRef = (el) => {
+    reviewTextareaRef.current = el
+    attachToTextarea(el)
+  }
   const confirmationTimerRef = useRef(null)
 
   const noVotes = localTotalVotes - localYesVotes
@@ -206,6 +213,10 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
       is_update: previousVote !== null,
     })
 
+    // Capture purity and jitter before clearing state
+    const purityData = reviewTextToSubmit ? getPurity() : null
+    const jitterData = reviewTextToSubmit ? getJitterProfile() : null
+
     // Clear UI state immediately - instant feedback
     clearPendingVoteStorage()
     setStep(1)
@@ -214,6 +225,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     setReviewError(null)
     setPhotoAdded(false)
     setReviewExpanded(false)
+    resetPurity()
 
     // Haptic success feedback
     hapticSuccess()
@@ -226,7 +238,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     onVote?.()
 
     // Submit to server in background (non-blocking)
-    submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit)
+    submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit, purityData, jitterData)
       .then((result) => {
         if (!result.success) {
           logger.error('Vote submission failed:', result.error)
@@ -449,7 +461,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         <div className="relative">
           <label htmlFor="review-text" className="sr-only">Your review</label>
           <textarea
-            ref={reviewTextareaRef}
+            ref={combinedTextareaRef}
             id="review-text"
             value={reviewText}
             onChange={(e) => {

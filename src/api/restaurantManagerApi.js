@@ -20,7 +20,11 @@ export const restaurantManagerApi = {
           id,
           name,
           address,
-          town
+          town,
+          phone,
+          website_url,
+          facebook_url,
+          instagram_url
         )
       `)
       .eq('user_id', user.id)
@@ -125,6 +129,34 @@ export const restaurantManagerApi = {
       logger.error('Error removing manager:', error)
       throw createClassifiedError(error)
     }
+  },
+
+  /**
+   * Update restaurant contact/social info (manager)
+   * @param {string} restaurantId
+   * @param {Object} updates - { phone, website_url, facebook_url, instagram_url }
+   * @returns {Promise<Object>}
+   */
+  async updateRestaurantInfo(restaurantId, updates) {
+    const allowed = {}
+    if (updates.phone !== undefined) allowed.phone = updates.phone?.trim() || null
+    if (updates.website_url !== undefined) allowed.website_url = updates.website_url?.trim() || null
+    if (updates.facebook_url !== undefined) allowed.facebook_url = updates.facebook_url?.trim() || null
+    if (updates.instagram_url !== undefined) allowed.instagram_url = updates.instagram_url?.trim() || null
+
+    const { data, error } = await supabase
+      .from('restaurants')
+      .update(allowed)
+      .eq('id', restaurantId)
+      .select('id, name, phone, website_url, facebook_url, instagram_url')
+      .single()
+
+    if (error) {
+      logger.error('Error updating restaurant info:', error)
+      throw createClassifiedError(error)
+    }
+
+    return data
   },
 
   /**
@@ -321,5 +353,103 @@ export const restaurantManagerApi = {
    */
   async deactivateSpecial(id) {
     return this.updateSpecial(id, { is_active: false })
+  },
+
+  /**
+   * Get all events for a restaurant (active + inactive for managers)
+   * @param {string} restaurantId
+   * @returns {Promise<Array>}
+   */
+  async getRestaurantEvents(restaurantId) {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('restaurant_id', restaurantId)
+      .order('is_active', { ascending: false })
+      .order('event_date', { ascending: true })
+
+    if (error) {
+      logger.error('Error fetching restaurant events:', error)
+      throw createClassifiedError(error)
+    }
+
+    return data || []
+  },
+
+  /**
+   * Create an event (manager)
+   * @param {Object} params
+   * @returns {Promise<Object>}
+   */
+  async createEvent({ restaurantId, eventName, description, eventDate, startTime, endTime, eventType, recurringPattern, recurringDayOfWeek }) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw createClassifiedError(new Error('Not authenticated'))
+
+    const { data, error } = await supabase
+      .from('events')
+      .insert({
+        restaurant_id: restaurantId,
+        event_name: eventName,
+        description,
+        event_date: eventDate,
+        start_time: startTime || null,
+        end_time: endTime || null,
+        event_type: eventType,
+        recurring_pattern: recurringPattern || null,
+        recurring_day_of_week: recurringDayOfWeek != null ? recurringDayOfWeek : null,
+        created_by: user.id,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      logger.error('Error creating event:', error)
+      throw createClassifiedError(error)
+    }
+
+    return data
+  },
+
+  /**
+   * Update an event (manager)
+   * Whitelists fields to prevent arbitrary column updates.
+   * @param {string} id
+   * @param {Object} updates
+   * @returns {Promise<Object>}
+   */
+  async updateEvent(id, updates) {
+    const allowed = {}
+    if (updates.event_name !== undefined) allowed.event_name = updates.event_name
+    if (updates.description !== undefined) allowed.description = updates.description
+    if (updates.event_date !== undefined) allowed.event_date = updates.event_date
+    if (updates.start_time !== undefined) allowed.start_time = updates.start_time
+    if (updates.end_time !== undefined) allowed.end_time = updates.end_time
+    if (updates.event_type !== undefined) allowed.event_type = updates.event_type
+    if (updates.recurring_pattern !== undefined) allowed.recurring_pattern = updates.recurring_pattern
+    if (updates.recurring_day_of_week !== undefined) allowed.recurring_day_of_week = updates.recurring_day_of_week
+    if (updates.is_active !== undefined) allowed.is_active = updates.is_active
+
+    const { data, error } = await supabase
+      .from('events')
+      .update(allowed)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      logger.error('Error updating event:', error)
+      throw createClassifiedError(error)
+    }
+
+    return data
+  },
+
+  /**
+   * Deactivate an event (soft delete)
+   * @param {string} id
+   * @returns {Promise<Object>}
+   */
+  async deactivateEvent(id) {
+    return this.updateEvent(id, { is_active: false })
   },
 }

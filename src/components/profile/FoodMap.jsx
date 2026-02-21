@@ -4,7 +4,7 @@ import { restaurantsApi } from '../../api/restaurantsApi'
 
 /**
  * Food Map — exploration progress card
- * Shows how much of the island's food scene the user has explored
+ * Shows how much of the local food scene the user has explored
  */
 export function FoodMap({ stats, title }) {
   const [totalRestaurants, setTotalRestaurants] = useState(null)
@@ -36,7 +36,7 @@ export function FoodMap({ stats, title }) {
             letterSpacing: '-0.01em',
           }}
         >
-          {title || 'Your MV Food Map'}
+          {title || 'Your Food Map'}
         </h2>
       </div>
 

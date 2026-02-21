@@ -5,6 +5,7 @@ import { containsBlockedContent } from '../lib/reviewBlocklist'
 import { MAX_REVIEW_LENGTH } from '../constants/app'
 import { createClassifiedError } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
+import { jitterApi } from './jitterApi'
 
 /**
  * Votes API - Centralized data fetching and mutation for votes
@@ -20,7 +21,7 @@ export const votesApi = {
    * @param {string} params.reviewText - Optional review text (max 200 chars)
    * @returns {Promise<Object>} Success status
    */
-  async submitVote({ dishId, wouldOrderAgain, rating10 = null, reviewText = null }) {
+  async submitVote({ dishId, wouldOrderAgain, rating10 = null, reviewText = null, purityData = null, jitterData = null }) {
     // Quick client-side check first (better UX)
       const clientRateLimit = checkVoteRateLimit()
       if (!clientRateLimit.allowed) {
@@ -75,6 +76,11 @@ export const votesApi = {
         voteData.review_created_at = new Date().toISOString()
       }
 
+      // Attach purity score if available (silent anti-spam metric)
+      if (purityData && purityData.purity != null) {
+        voteData.purity_score = purityData.purity
+      }
+
       const { error } = await supabase
         .from('votes')
         .upsert(voteData, {
@@ -83,6 +89,19 @@ export const votesApi = {
 
       if (error) {
         throw createClassifiedError(error)
+      }
+
+      // Submit jitter profile data if available
+      if (jitterData) {
+        try {
+          await supabase.from('jitter_samples').insert({
+            user_id: user.id,
+            sample_data: jitterData,
+          })
+        } catch (jitterErr) {
+          // Jitter submission is non-critical -- log but don't fail the vote
+          logger.warn('Jitter sample submission failed:', jitterErr)
+        }
       }
 
       capture('vote_submitted', {
@@ -243,6 +262,7 @@ export const votesApi = {
    */
   async getReviewsForDish(dishId, { limit = 10, offset = 0 } = {}) {
     try {
+      // Fetch reviews (votes.user_id -> auth.users, not profiles, so no direct join)
       const { data, error } = await supabase
         .from('votes')
         .select(`
@@ -252,10 +272,8 @@ export const votesApi = {
           would_order_again,
           review_created_at,
           user_id,
-          profiles (
-            id,
-            display_name
-          )
+          source,
+          source_metadata
         `)
         .eq('dish_id', dishId)
         .not('review_text', 'is', null)
@@ -268,7 +286,38 @@ export const votesApi = {
         return [] // Graceful degradation
       }
 
-      return data || []
+      if (!data?.length) return []
+
+      // Enrich with profile display names
+      const userIds = [...new Set(data.map(v => v.user_id).filter(Boolean))]
+      const { data: profiles } = userIds.length
+        ? await supabase.from('profiles').select('id, display_name').in('id', userIds)
+        : { data: [] }
+      const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]))
+
+      // Fetch jitter profiles for all reviewers to determine trust badges
+      let jitterMap = {}
+      if (userIds.length > 0) {
+        const { data: jitterData } = await supabase
+          .from('jitter_profiles')
+          .select('user_id, confidence_level, consistency_score, review_count, flagged')
+          .in('user_id', userIds)
+
+        if (jitterData) {
+          for (const j of jitterData) {
+            jitterMap[j.user_id] = j
+          }
+        }
+      }
+
+      // Enrich reviews with profiles and trust badges
+      return data.map(review => ({
+        ...review,
+        profiles: profileMap[review.user_id] || { id: review.user_id, display_name: null },
+        trust_badge: review.source === 'ai_estimated'
+          ? 'ai_estimated'
+          : jitterApi.getTrustBadgeType(jitterMap[review.user_id] || null),
+      }))
     } catch (error) {
       logger.error('Error fetching reviews for dish:', error)
       return [] // Graceful degradation - don't break the UI
@@ -283,17 +332,14 @@ export const votesApi = {
    */
   async getSmartSnippetForDish(dishId) {
     try {
+      // Fetch best review (no direct FK from votes -> profiles)
       const { data, error } = await supabase
         .from('votes')
         .select(`
           review_text,
           rating_10,
           review_created_at,
-          user_id,
-          profiles (
-            id,
-            display_name
-          )
+          user_id
         `)
         .eq('dish_id', dishId)
         .not('review_text', 'is', null)
@@ -307,8 +353,20 @@ export const votesApi = {
         return null // Graceful degradation
       }
 
-      // Return the best review or null
-      return data?.[0] || null
+      const review = data?.[0]
+      if (!review) return null
+
+      // Enrich with profile display name
+      if (review.user_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .eq('id', review.user_id)
+          .maybeSingle()
+        review.profiles = profile || { id: review.user_id, display_name: null }
+      }
+
+      return review
     } catch (error) {
       logger.error('Error fetching smart snippet:', error)
       return null // Graceful degradation - don't break the UI
@@ -361,6 +419,35 @@ export const votesApi = {
    * @param {Object} options - Pagination options
    * @returns {Promise<Array>} Array of reviews with dish info
    */
+  /**
+   * Get current user's ratings for specific dishes (for comparison on other profiles)
+   * @param {string[]} dishIds - Array of dish IDs
+   * @returns {Promise<Object>} Map of dish ID to rating_10
+   */
+  async getMyRatingsForDishes(dishIds) {
+    try {
+      if (!dishIds || dishIds.length === 0) return {}
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return {}
+
+      const { data, error } = await supabase
+        .from('votes')
+        .select('dish_id, rating_10')
+        .eq('user_id', user.id)
+        .in('dish_id', dishIds)
+
+      if (error) throw createClassifiedError(error)
+
+      const ratingsMap = {}
+      ;(data || []).forEach(v => { ratingsMap[v.dish_id] = v.rating_10 })
+      return ratingsMap
+    } catch (error) {
+      logger.error('Error fetching my ratings for dishes:', error)
+      throw error.type ? error : createClassifiedError(error)
+    }
+  },
+
   async getReviewsForUser(userId, { limit = 20, offset = 0 } = {}) {
     try {
       if (!userId) {

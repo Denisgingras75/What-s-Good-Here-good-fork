@@ -119,16 +119,34 @@ export function TopDishCard({ dish, rank, onVote, onLoginRequired, isFavorite, o
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h4
-                className="font-bold truncate"
-                style={{
-                  color: '#1A1A1A',
-                  fontSize: '14px',
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {dish_name}
-              </h4>
+              <div className="flex items-center gap-1.5">
+                <h4
+                  className="font-bold truncate"
+                  style={{
+                    color: '#1A1A1A',
+                    fontSize: '14px',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {dish_name}
+                </h4>
+                {isRanked && percent_worth_it >= 90 && (
+                  <span
+                    className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+                    style={{ background: 'var(--color-accent-gold-muted, rgba(217, 167, 101, 0.15))', color: 'var(--color-accent-gold)' }}
+                  >
+                    GREAT
+                  </span>
+                )}
+                {isRanked && percent_worth_it >= 80 && percent_worth_it < 90 && (
+                  <span
+                    className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide"
+                    style={{ background: 'rgba(107, 179, 132, 0.15)', color: 'var(--color-rating)' }}
+                  >
+                    Good Here
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-0.5">
                 {price && (
                   <span className="font-bold" style={{ color: '#999999', fontSize: '12px' }}>

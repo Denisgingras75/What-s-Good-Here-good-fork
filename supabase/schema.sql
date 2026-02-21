@@ -18,7 +18,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
 -- =============================================
--- 1. TABLES (17 tables in dependency order)
+-- 1. TABLES (20 tables in dependency order)
 -- =============================================
 
 -- 1a. restaurants
@@ -32,6 +32,15 @@ CREATE TABLE IF NOT EXISTS restaurants (
   cuisine TEXT,
   town TEXT,
   region TEXT NOT NULL DEFAULT 'mv',
+  created_by UUID REFERENCES auth.users(id),
+  google_place_id TEXT,
+  website_url TEXT,
+  facebook_url TEXT,
+  instagram_url TEXT,
+  phone TEXT,
+  menu_url TEXT,
+  menu_last_checked TIMESTAMPTZ,
+  menu_content_hash TEXT,
   menu_section_order TEXT[] DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -47,6 +56,7 @@ CREATE TABLE IF NOT EXISTS dishes (
   photo_url TEXT,
   parent_dish_id UUID REFERENCES dishes(id) ON DELETE SET NULL,
   display_order INT DEFAULT 0,
+  created_by UUID REFERENCES auth.users(id),
   tags TEXT[] DEFAULT '{}',
   cuisine TEXT,
   avg_rating DECIMAL(3, 1),
@@ -73,10 +83,15 @@ CREATE TABLE IF NOT EXISTS votes (
   vote_position INT,
   scored_at TIMESTAMPTZ,
   category_snapshot TEXT,
+  purity_score DECIMAL(5, 2),
+  source TEXT NOT NULL DEFAULT 'user' CHECK (source IN ('user', 'ai_estimated')),
+  source_metadata JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(dish_id, user_id),
   CONSTRAINT review_text_max_length CHECK (review_text IS NULL OR length(review_text) <= 200)
 );
+
+-- Partial unique index: only user votes are unique per dish/user (ai_estimated can have multiples)
+CREATE UNIQUE INDEX IF NOT EXISTS votes_user_unique ON votes (dish_id, user_id) WHERE source = 'user';
 
 -- 1d. profiles (created by Supabase auth trigger; defined here for completeness)
 CREATE TABLE IF NOT EXISTS profiles (
@@ -212,6 +227,8 @@ CREATE TABLE IF NOT EXISTS specials (
   price DECIMAL(10, 2),
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
+  is_promoted BOOLEAN DEFAULT false,
+  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'auto_scrape')),
   expires_at TIMESTAMPTZ,
   created_by UUID REFERENCES auth.users(id)
 );
@@ -249,7 +266,45 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 
 
--- 1s. category_median_prices (view)
+-- 1s. jitter_profiles (Jitter Protocol: behavioral biometrics for human verification)
+CREATE TABLE IF NOT EXISTS jitter_profiles (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  profile_data JSONB NOT NULL DEFAULT '{}',
+  review_count INTEGER NOT NULL DEFAULT 0,
+  confidence_level TEXT NOT NULL DEFAULT 'low' CHECK (confidence_level IN ('low', 'medium', 'high')),
+  consistency_score DECIMAL(4, 3) DEFAULT 0,
+  flagged BOOLEAN DEFAULT false,
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 1t. jitter_samples
+CREATE TABLE IF NOT EXISTS jitter_samples (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  sample_data JSONB NOT NULL,
+  collected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 1u. events
+CREATE TABLE IF NOT EXISTS events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  event_name TEXT NOT NULL,
+  description TEXT,
+  event_date DATE NOT NULL,
+  start_time TIME,
+  end_time TIME,
+  event_type TEXT NOT NULL CHECK (event_type IN ('live_music', 'trivia', 'comedy', 'karaoke', 'open_mic', 'other')),
+  recurring_pattern TEXT CHECK (recurring_pattern IN ('weekly', 'monthly') OR recurring_pattern IS NULL),
+  recurring_day_of_week INT CHECK (recurring_day_of_week BETWEEN 0 AND 6 OR recurring_day_of_week IS NULL),
+  is_active BOOLEAN DEFAULT true,
+  is_promoted BOOLEAN DEFAULT false,
+  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'auto_scrape')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  created_by UUID REFERENCES auth.users(id)
+);
+
+-- 1v. category_median_prices (view)
 -- SECURITY INVOKER ensures this runs with the querying user's permissions, not the creator's
 CREATE OR REPLACE VIEW category_median_prices
 WITH (security_invoker = true) AS
@@ -269,6 +324,8 @@ GROUP BY category;
 CREATE INDEX IF NOT EXISTS idx_restaurants_location ON restaurants(lat, lng);
 CREATE INDEX IF NOT EXISTS idx_restaurants_open_lat_lng ON restaurants(is_open, lat, lng) WHERE is_open = true;
 CREATE INDEX IF NOT EXISTS idx_restaurants_cuisine ON restaurants(cuisine);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_restaurants_google_place_id ON restaurants(google_place_id) WHERE google_place_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_restaurants_created_by ON restaurants(created_by);
 
 -- dishes
 CREATE INDEX IF NOT EXISTS idx_dishes_restaurant ON dishes(restaurant_id);
@@ -332,6 +389,14 @@ CREATE INDEX IF NOT EXISTS idx_restaurant_invites_used_by ON restaurant_invites(
 CREATE INDEX IF NOT EXISTS idx_rate_limits_user_action ON rate_limits(user_id, action, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_rate_limits_cleanup ON rate_limits(created_at);
 
+-- events
+CREATE INDEX IF NOT EXISTS idx_events_restaurant ON events(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_events_active_upcoming ON events(event_date, is_promoted DESC) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type) WHERE is_active = true;
+
+-- jitter_samples (keep only last 30 samples per user, rolling window)
+CREATE INDEX IF NOT EXISTS idx_jitter_samples_user ON jitter_samples (user_id, collected_at DESC);
+
 
 -- =============================================
 -- 3. ROW LEVEL SECURITY
@@ -359,13 +424,13 @@ ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- restaurants: public read, admin write (+ manager policies below)
 CREATE POLICY "Public read access" ON restaurants FOR SELECT USING (true);
-CREATE POLICY "Admins can insert restaurants" ON restaurants FOR INSERT WITH CHECK (is_admin());
+CREATE POLICY "Authenticated users can insert restaurants" ON restaurants FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Admins can update restaurants" ON restaurants FOR UPDATE USING (is_admin());
 CREATE POLICY "Admins can delete restaurants" ON restaurants FOR DELETE USING (is_admin());
 
 -- dishes: public read, admin + manager write
 CREATE POLICY "Public read access" ON dishes FOR SELECT USING (true);
-CREATE POLICY "Admin or manager insert dishes" ON dishes FOR INSERT WITH CHECK (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Authenticated users can insert dishes" ON dishes FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Admin or manager update dishes" ON dishes FOR UPDATE USING (is_admin() OR is_restaurant_manager(restaurant_id));
 CREATE POLICY "Admins can delete dishes" ON dishes FOR DELETE USING (is_admin());
 
@@ -439,6 +504,33 @@ CREATE POLICY "Admins manage invites" ON restaurant_invites FOR ALL USING (is_ad
 
 -- rate_limits: users see own
 CREATE POLICY "Users can view own rate limits" ON rate_limits FOR SELECT USING ((select auth.uid()) = user_id);
+
+-- events: conditional read, admin + manager write
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Read active events" ON events FOR SELECT USING (is_active = true OR is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager insert events" ON events FOR INSERT WITH CHECK (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager update events" ON events FOR UPDATE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+CREATE POLICY "Admin or manager delete events" ON events FOR DELETE USING (is_admin() OR is_restaurant_manager(restaurant_id));
+
+-- jitter_profiles + jitter_samples: users can read own profile, insert own samples, service role manages all
+ALTER TABLE jitter_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jitter_samples ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own jitter profile" ON jitter_profiles
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Allow anyone to read jitter confidence (for trust badges)
+CREATE POLICY "Public read jitter confidence" ON jitter_profiles
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can insert own jitter samples" ON jitter_samples
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Service role manages jitter" ON jitter_profiles
+  FOR ALL USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role manages jitter samples" ON jitter_samples
+  FOR ALL USING (auth.role() = 'service_role');
 
 
 -- =============================================
@@ -658,14 +750,35 @@ BEGIN
     fr.cuisine,
     d.price,
     d.photo_url,
-    COALESCE(vs.total_child_votes, COUNT(v.id))::BIGINT AS total_votes,
-    COALESCE(vs.total_child_yes, SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END))::BIGINT AS yes_votes,
+    COALESCE(vs.total_child_votes,
+      SUM(CASE WHEN v.source = 'user' THEN 1.0 WHEN v.source = 'ai_estimated' THEN 0.5 ELSE 1.0 END)
+    )::BIGINT AS total_votes,
+    COALESCE(vs.total_child_yes,
+      SUM(CASE WHEN v.would_order_again AND v.source = 'user' THEN 1.0
+               WHEN v.would_order_again AND v.source = 'ai_estimated' THEN 0.5
+               ELSE 0 END)
+    )::BIGINT AS yes_votes,
     CASE
-      WHEN COALESCE(vs.total_child_votes, COUNT(v.id)) > 0
-      THEN ROUND(100.0 * COALESCE(vs.total_child_yes, SUM(CASE WHEN v.would_order_again THEN 1 ELSE 0 END)) / COALESCE(vs.total_child_votes, COUNT(v.id)))::INT
+      WHEN COALESCE(vs.total_child_votes,
+        SUM(CASE WHEN v.source = 'user' THEN 1.0 WHEN v.source = 'ai_estimated' THEN 0.5 ELSE 1.0 END)) > 0
+      THEN ROUND(100.0 *
+        COALESCE(vs.total_child_yes,
+          SUM(CASE WHEN v.would_order_again AND v.source = 'user' THEN 1.0
+                   WHEN v.would_order_again AND v.source = 'ai_estimated' THEN 0.5
+                   ELSE 0 END)) /
+        COALESCE(vs.total_child_votes,
+          SUM(CASE WHEN v.source = 'user' THEN 1.0 WHEN v.source = 'ai_estimated' THEN 0.5 ELSE 1.0 END))
+      )::INT
       ELSE 0
     END AS percent_worth_it,
-    COALESCE(ROUND(AVG(v.rating_10), 1), 0) AS avg_rating,
+    COALESCE(ROUND(
+      (SUM(CASE WHEN v.source = 'user' THEN v.rating_10
+                WHEN v.source = 'ai_estimated' THEN v.rating_10 * 0.5
+                ELSE 0 END) /
+       NULLIF(SUM(CASE WHEN v.source = 'user' THEN 1.0
+                       WHEN v.source = 'ai_estimated' THEN 0.5
+                       ELSE 0 END), 0)
+      )::NUMERIC, 1), 0) AS avg_rating,
     fr.distance AS distance_miles,
     (vs.child_count IS NOT NULL AND vs.child_count > 0) AS has_variants,
     COALESCE(vs.child_count, 0)::INT AS variant_count,
@@ -674,8 +787,16 @@ BEGIN
     d.value_score,
     d.value_percentile,
     dish_search_score(
-      COALESCE(ROUND(AVG(v.rating_10), 1), 0),
-      COALESCE(vs.total_child_votes, COUNT(v.id)),
+      COALESCE(ROUND(
+        (SUM(CASE WHEN v.source = 'user' THEN v.rating_10
+                  WHEN v.source = 'ai_estimated' THEN v.rating_10 * 0.5
+                  ELSE 0 END) /
+         NULLIF(SUM(CASE WHEN v.source = 'user' THEN 1.0
+                         WHEN v.source = 'ai_estimated' THEN 0.5
+                         ELSE 0 END), 0)
+        )::NUMERIC, 1), 0),
+      COALESCE(vs.total_child_votes,
+        SUM(CASE WHEN v.source = 'user' THEN 1.0 WHEN v.source = 'ai_estimated' THEN 0.5 ELSE 1.0 END))::BIGINT,
       fr.distance,
       COALESCE(rvc.recent_votes, 0)
     ) AS search_score,
@@ -1816,6 +1937,252 @@ SELECT cron.schedule('cleanup-old-rate-limits', '15 * * * *', $$DELETE FROM rate
 
 
 -- =============================================
+-- 13x. Merge a new jitter sample into the user's running profile
+-- Called by trigger after jitter_samples INSERT
+CREATE OR REPLACE FUNCTION merge_jitter_sample()
+RETURNS TRIGGER AS $$
+DECLARE
+  existing_profile JSONB;
+  new_sample JSONB;
+  sample_count INTEGER;
+  new_confidence TEXT;
+  new_consistency DECIMAL(4, 3);
+BEGIN
+  new_sample := NEW.sample_data;
+
+  -- Get or initialize profile
+  SELECT profile_data, review_count INTO existing_profile, sample_count
+  FROM jitter_profiles WHERE user_id = NEW.user_id;
+
+  IF NOT FOUND THEN
+    -- First sample: create profile directly from sample
+    INSERT INTO jitter_profiles (user_id, profile_data, review_count, confidence_level, consistency_score, last_updated)
+    VALUES (
+      NEW.user_id,
+      new_sample,
+      1,
+      'low',
+      0,
+      NOW()
+    );
+  ELSE
+    sample_count := sample_count + 1;
+
+    -- Determine confidence level
+    IF sample_count >= 15 THEN
+      new_confidence := 'high';
+    ELSIF sample_count >= 5 THEN
+      new_confidence := 'medium';
+    ELSE
+      new_confidence := 'low';
+    END IF;
+
+    -- Calculate consistency: compare new sample's mean_inter_key to running profile's
+    -- Consistency = 1 - normalized_deviation (higher = more consistent)
+    new_consistency := 0;
+    IF existing_profile ? 'mean_inter_key' AND new_sample ? 'mean_inter_key'
+       AND (existing_profile->>'mean_inter_key')::DECIMAL > 0 THEN
+      new_consistency := GREATEST(0, LEAST(1,
+        1.0 - ABS(
+          (new_sample->>'mean_inter_key')::DECIMAL - (existing_profile->>'mean_inter_key')::DECIMAL
+        ) / (existing_profile->>'mean_inter_key')::DECIMAL
+      ));
+      -- Weighted running average with existing consistency
+      IF (SELECT consistency_score FROM jitter_profiles WHERE user_id = NEW.user_id) > 0 THEN
+        new_consistency := (
+          (SELECT consistency_score FROM jitter_profiles WHERE user_id = NEW.user_id) *
+          (sample_count - 1) + new_consistency
+        ) / sample_count;
+      END IF;
+    END IF;
+
+    -- Merge: running weighted average of key metrics
+    UPDATE jitter_profiles SET
+      profile_data = jsonb_build_object(
+        'mean_inter_key', ROUND((
+          COALESCE((existing_profile->>'mean_inter_key')::DECIMAL, 0) * (sample_count - 1) +
+          COALESCE((new_sample->>'mean_inter_key')::DECIMAL, 0)
+        ) / sample_count, 2),
+        'std_inter_key', ROUND((
+          COALESCE((existing_profile->>'std_inter_key')::DECIMAL, 0) * (sample_count - 1) +
+          COALESCE((new_sample->>'std_inter_key')::DECIMAL, 0)
+        ) / sample_count, 2),
+        'mean_dwell', CASE
+          WHEN new_sample ? 'mean_dwell' AND new_sample->>'mean_dwell' IS NOT NULL
+          THEN ROUND((
+            COALESCE((existing_profile->>'mean_dwell')::DECIMAL, (new_sample->>'mean_dwell')::DECIMAL) * (sample_count - 1) +
+            (new_sample->>'mean_dwell')::DECIMAL
+          ) / sample_count, 2)
+          ELSE existing_profile->'mean_dwell'
+        END,
+        'std_dwell', CASE
+          WHEN new_sample ? 'std_dwell' AND new_sample->>'std_dwell' IS NOT NULL
+          THEN ROUND((
+            COALESCE((existing_profile->>'std_dwell')::DECIMAL, (new_sample->>'std_dwell')::DECIMAL) * (sample_count - 1) +
+            (new_sample->>'std_dwell')::DECIMAL
+          ) / sample_count, 2)
+          ELSE existing_profile->'std_dwell'
+        END,
+        'bigram_signatures', COALESCE(new_sample->'bigram_signatures', existing_profile->'bigram_signatures', '{}'::JSONB),
+        'fatigue_drift', new_sample->'fatigue_drift',
+        'total_keystrokes', COALESCE((existing_profile->>'total_keystrokes')::INTEGER, 0) +
+          COALESCE((new_sample->>'total_keystrokes')::INTEGER, 0)
+      ),
+      review_count = sample_count,
+      confidence_level = new_confidence,
+      consistency_score = ROUND(new_consistency::NUMERIC, 3),
+      last_updated = NOW()
+    WHERE user_id = NEW.user_id;
+  END IF;
+
+  -- Prune old samples (keep last 30)
+  DELETE FROM jitter_samples
+  WHERE user_id = NEW.user_id
+    AND id NOT IN (
+      SELECT id FROM jitter_samples
+      WHERE user_id = NEW.user_id
+      ORDER BY collected_at DESC
+      LIMIT 30
+    );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS jitter_sample_merge ON jitter_samples;
+CREATE TRIGGER jitter_sample_merge
+  AFTER INSERT ON jitter_samples
+  FOR EACH ROW
+  EXECUTE FUNCTION merge_jitter_sample();
+
+-- Convenience: restaurant creation rate limiting (5 per hour)
+CREATE OR REPLACE FUNCTION check_restaurant_create_rate_limit()
+RETURNS JSONB LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+  SELECT check_and_record_rate_limit('restaurant_create', 5, 3600);
+$$;
+
+-- Convenience: dish creation rate limiting (20 per hour)
+CREATE OR REPLACE FUNCTION check_dish_create_rate_limit()
+RETURNS JSONB LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+  SELECT check_and_record_rate_limit('dish_create', 20, 3600);
+$$;
+
+-- Find nearby restaurants (for duplicate detection and "you're here" suggestions)
+CREATE OR REPLACE FUNCTION find_nearby_restaurants(
+  p_name TEXT DEFAULT NULL,
+  p_lat DECIMAL DEFAULT NULL,
+  p_lng DECIMAL DEFAULT NULL,
+  p_radius_meters INT DEFAULT 150
+)
+RETURNS TABLE (
+  id UUID,
+  name TEXT,
+  address TEXT,
+  lat DECIMAL,
+  lng DECIMAL,
+  google_place_id TEXT,
+  distance_meters DECIMAL
+) AS $$
+DECLARE
+  lat_delta DECIMAL := p_radius_meters / 111320.0;
+  lng_delta DECIMAL := p_radius_meters / (111320.0 * COS(RADIANS(COALESCE(p_lat, 0))));
+BEGIN
+  RETURN QUERY
+  SELECT
+    r.id,
+    r.name,
+    r.address,
+    r.lat,
+    r.lng,
+    r.google_place_id,
+    ROUND((
+      6371000 * ACOS(
+        LEAST(1.0, GREATEST(-1.0,
+          COS(RADIANS(p_lat)) * COS(RADIANS(r.lat)) *
+          COS(RADIANS(r.lng) - RADIANS(p_lng)) +
+          SIN(RADIANS(p_lat)) * SIN(RADIANS(r.lat))
+        ))
+      )
+    )::NUMERIC, 1) AS distance_meters
+  FROM restaurants r
+  WHERE
+    (p_lat IS NULL OR (
+      r.lat BETWEEN (p_lat - lat_delta) AND (p_lat + lat_delta)
+      AND r.lng BETWEEN (p_lng - lng_delta) AND (p_lng + lng_delta)
+    ))
+    AND (p_name IS NULL OR r.name ILIKE '%' || p_name || '%')
+  ORDER BY
+    CASE WHEN p_lat IS NOT NULL THEN
+      6371000 * ACOS(
+        LEAST(1.0, GREATEST(-1.0,
+          COS(RADIANS(p_lat)) * COS(RADIANS(r.lat)) *
+          COS(RADIANS(r.lng) - RADIANS(p_lng)) +
+          SIN(RADIANS(p_lat)) * SIN(RADIANS(r.lat))
+        ))
+      )
+    ELSE 0 END ASC
+  LIMIT 20;
+END;
+$$ LANGUAGE plpgsql STABLE SET search_path = public;
+
+-- Get restaurants within radius (distance-filtered restaurant list)
+CREATE OR REPLACE FUNCTION get_restaurants_within_radius(
+  p_lat DECIMAL,
+  p_lng DECIMAL,
+  p_radius_miles INT DEFAULT 50
+)
+RETURNS TABLE (
+  id UUID,
+  name TEXT,
+  address TEXT,
+  lat DECIMAL,
+  lng DECIMAL,
+  is_open BOOLEAN,
+  cuisine TEXT,
+  town TEXT,
+  google_place_id TEXT,
+  website_url TEXT,
+  phone TEXT,
+  distance_miles DECIMAL,
+  dish_count BIGINT
+) AS $$
+DECLARE
+  lat_delta DECIMAL := p_radius_miles / 69.0;
+  lng_delta DECIMAL := p_radius_miles / (69.0 * COS(RADIANS(p_lat)));
+BEGIN
+  RETURN QUERY
+  WITH nearby AS (
+    SELECT r.id, r.name, r.address, r.lat, r.lng, r.is_open, r.cuisine, r.town,
+           r.google_place_id, r.website_url, r.phone,
+           ROUND((
+             3959 * ACOS(
+               LEAST(1.0, GREATEST(-1.0,
+                 COS(RADIANS(p_lat)) * COS(RADIANS(r.lat)) *
+                 COS(RADIANS(r.lng) - RADIANS(p_lng)) +
+                 SIN(RADIANS(p_lat)) * SIN(RADIANS(r.lat))
+               ))
+             )
+           )::NUMERIC, 2) AS distance_miles
+    FROM restaurants r
+    WHERE r.lat BETWEEN (p_lat - lat_delta) AND (p_lat + lat_delta)
+      AND r.lng BETWEEN (p_lng - lng_delta) AND (p_lng + lng_delta)
+  )
+  SELECT
+    n.id, n.name, n.address, n.lat, n.lng, n.is_open, n.cuisine, n.town,
+    n.google_place_id, n.website_url, n.phone,
+    n.distance_miles,
+    COUNT(d.id)::BIGINT AS dish_count
+  FROM nearby n
+  LEFT JOIN dishes d ON d.restaurant_id = n.id AND d.parent_dish_id IS NULL
+  WHERE n.distance_miles <= p_radius_miles
+  GROUP BY n.id, n.name, n.address, n.lat, n.lng, n.is_open, n.cuisine, n.town,
+           n.google_place_id, n.website_url, n.phone, n.distance_miles
+  ORDER BY n.distance_miles ASC;
+END;
+$$ LANGUAGE plpgsql STABLE SET search_path = public;
+
+
+-- =============================================
 -- 14. GRANTS
 -- =============================================
 
@@ -1824,6 +2191,12 @@ GRANT EXECUTE ON FUNCTION get_smart_snippet(UUID) TO anon;
 GRANT EXECUTE ON FUNCTION check_and_record_rate_limit TO authenticated;
 GRANT EXECUTE ON FUNCTION check_vote_rate_limit TO authenticated;
 GRANT EXECUTE ON FUNCTION check_photo_upload_rate_limit TO authenticated;
+GRANT EXECUTE ON FUNCTION check_restaurant_create_rate_limit TO authenticated;
+GRANT EXECUTE ON FUNCTION check_dish_create_rate_limit TO authenticated;
+GRANT EXECUTE ON FUNCTION find_nearby_restaurants TO authenticated;
+GRANT EXECUTE ON FUNCTION find_nearby_restaurants TO anon;
+GRANT EXECUTE ON FUNCTION get_restaurants_within_radius(DECIMAL, DECIMAL, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_restaurants_within_radius(DECIMAL, DECIMAL, INT) TO anon;
 
 
 -- =============================================

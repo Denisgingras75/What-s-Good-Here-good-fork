@@ -6,9 +6,10 @@ import { useDishes } from '../hooks/useDishes'
 import { useDishSearch } from '../hooks/useDishSearch'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { BROWSE_CATEGORIES } from '../constants/categories'
-import { SearchHero, Top10Compact, DishPhotoFade } from '../components/home'
+import { SearchHero, Top10Compact, DishPhotoFade, NearbyDiscovery } from '../components/home'
 import { CategoryIcon } from '../components/home/CategoryIcons'
 import { TownPicker } from '../components/TownPicker'
+import { NearbyNudge } from '../components/NearbyNudge'
 import { getRatingColor } from '../utils/ranking'
 
 export function Home() {
@@ -82,6 +83,9 @@ export function Home() {
           />
         }
       />
+
+      {/* Nearby nudge — location-aware contextual prompt */}
+      <NearbyNudge />
 
       {/* Section 2: #1 Hero → Categories → Rest of Top 10 */}
       <section className="px-4 pt-6 pb-6" style={{ background: 'var(--color-surface-elevated)' }}>
@@ -186,7 +190,10 @@ export function Home() {
             />
           </div>
         ) : (
-          <EmptyState onBrowse={() => navigate('/browse')} />
+          <>
+            <EmptyState onBrowse={() => navigate('/browse')} />
+            <NearbyDiscovery />
+          </>
         )}
       </section>
     </div>
