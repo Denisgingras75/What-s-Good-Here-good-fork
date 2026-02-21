@@ -30,7 +30,7 @@ export function TrustBadge({ type, size = 'sm' }) {
       label: 'Estimated from public reviews',
       icon: '\u2139',
       bg: 'rgba(59, 130, 246, 0.1)',
-      color: '#3b82f6',
+      color: 'var(--color-blue)',
       border: 'rgba(59, 130, 246, 0.25)',
     },
     building: {
@@ -82,7 +82,7 @@ export function TrustSummary({ verifiedCount, aiCount }) {
         </span>
       )}
       {aiCount > 0 && (
-        <span className="flex items-center gap-1" style={{ color: '#3b82f6' }}>
+        <span className="flex items-center gap-1" style={{ color: 'var(--color-blue)' }}>
           <span>{'\u2139'}</span>
           <span>{aiCount} AI-estimated</span>
         </span>

@@ -2036,7 +2036,8 @@ BEGIN
           ) / sample_count, 2)
           ELSE existing_profile->'std_dwell'
         END,
-        'bigram_signatures', COALESCE(new_sample->'bigram_signatures', existing_profile->'bigram_signatures', '{}'::JSONB),
+        'bigram_signatures', COALESCE(existing_profile->'bigram_signatures', '{}'::JSONB) ||
+                             COALESCE(new_sample->'bigram_signatures', '{}'::JSONB),
         'fatigue_drift', new_sample->'fatigue_drift',
         'total_keystrokes', COALESCE((existing_profile->>'total_keystrokes')::INTEGER, 0) +
           COALESCE((new_sample->>'total_keystrokes')::INTEGER, 0)

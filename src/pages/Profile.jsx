@@ -7,6 +7,7 @@ import { adminApi } from '../api/adminApi'
 import { profileApi } from '../api/profileApi'
 import { followsApi } from '../api/followsApi'
 import { votesApi } from '../api/votesApi'
+import { jitterApi } from '../api/jitterApi'
 import { dishPhotosApi } from '../api/dishPhotosApi'
 import { useProfile } from '../hooks/useProfile'
 import { useUserVotes } from '../hooks/useUserVotes'
@@ -34,6 +35,7 @@ import {
   PhotosInfoSection,
   MissionSection,
 } from '../components/profile'
+import { TrustBadge } from '../components/TrustBadge'
 import { SimilarTasteUsers } from '../components/SimilarTasteUsers'
 
 const TABS = [
@@ -75,6 +77,7 @@ export function Profile() {
   const [userReviews, setUserReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
   const [ratingBias, setRatingBias] = useState(null)
+  const [jitterProfile, setJitterProfile] = useState(null)
 
   // Check admin status from database (matches RLS policies)
   useEffect(() => {
@@ -105,6 +108,19 @@ export function Profile() {
       .then(setRatingBias)
       .catch((error) => {
         logger.error('Failed to fetch rating bias:', error)
+      })
+  }, [user])
+
+  // Fetch jitter profile for trust badge
+  useEffect(() => {
+    if (!user) {
+      setJitterProfile(null)
+      return
+    }
+    jitterApi.getMyProfile()
+      .then(setJitterProfile)
+      .catch((error) => {
+        logger.error('Failed to fetch jitter profile:', error)
       })
   }, [user])
 
@@ -364,6 +380,30 @@ export function Profile() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Review Trust */}
+          {jitterApi.getTrustBadgeType(jitterProfile) && (
+            <div className="px-4 pt-3">
+              <div
+                className="rounded-2xl border px-4 py-3.5 flex items-center justify-between"
+                style={{
+                  background: 'var(--color-card)',
+                  borderColor: 'var(--color-divider)',
+                  boxShadow: '0 2px 12px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+                }}
+              >
+                <div>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
+                    Review Trust
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {jitterProfile.review_count} review{jitterProfile.review_count !== 1 ? 's' : ''} analyzed
+                  </p>
+                </div>
+                <TrustBadge type={jitterApi.getTrustBadgeType(jitterProfile)} size="md" />
+              </div>
             </div>
           )}
 

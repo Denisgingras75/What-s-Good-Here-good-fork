@@ -17,7 +17,7 @@ import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
 import { DishPlaceholder } from '../components/DishPlaceholder'
 import { PhotoUploadButton } from '../components/PhotoUploadButton'
-import { TrustBadge } from '../components/TrustBadge'
+import { TrustBadge, TrustSummary } from '../components/TrustBadge'
 import { ValueBadge } from '../components/browse/ValueBadge'
 import { CATEGORY_INFO } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
@@ -765,9 +765,15 @@ export function Dish() {
             {/* Reviews Section — flowing list with dividers */}
             {reviews.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-                  Reviews ({reviews.length})
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                    Reviews ({reviews.length})
+                  </h3>
+                  <TrustSummary
+                    verifiedCount={reviews.filter(r => r.trust_badge === 'human_verified' || r.trust_badge === 'trusted_reviewer').length}
+                    aiCount={reviews.filter(r => r.trust_badge === 'ai_estimated').length}
+                  />
+                </div>
                 <div>
                   {reviews.map((review, index) => (
                     <div
