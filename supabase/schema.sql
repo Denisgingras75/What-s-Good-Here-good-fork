@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS votes (
 -- Partial unique index: only user votes are unique per dish/user (ai_estimated can have multiples)
 CREATE UNIQUE INDEX IF NOT EXISTS votes_user_unique ON votes (dish_id, user_id) WHERE source = 'user';
 
--- 1d. profiles (created by Supabase auth trigger; defined here for completeness)
+-- 1d. profiles (auto-created by handle_new_user trigger on auth.users INSERT)
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT,
@@ -2300,5 +2300,39 @@ ON CONFLICT (key) DO UPDATE SET
   category = EXCLUDED.category;
 
 
--- 17. CLEANUP: Duplicate production-only policies have been dropped.
+-- =============================================
+-- 17. AUTH TRIGGER: Auto-create profile on signup
+-- =============================================
+-- Ensures every auth.users entry gets a profiles row.
+-- For OAuth users (Google), pulls display_name from metadata.
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, display_name, has_onboarded)
+  VALUES (
+    NEW.id,
+    COALESCE(
+      NEW.raw_user_meta_data->>'full_name',
+      NEW.raw_user_meta_data->>'name',
+      NULL
+    ),
+    false
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+
+-- 18. CLEANUP: Duplicate production-only policies have been dropped.
 -- See supabase/migrations/cleanup_rls_policies.sql for the migration that was run.

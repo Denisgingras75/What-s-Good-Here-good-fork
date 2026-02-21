@@ -87,6 +87,15 @@ export function Home() {
       {/* Nearby nudge — location-aware contextual prompt */}
       <NearbyNudge />
 
+      {/* Trust banner — shows dish/restaurant count + verified label */}
+      {!loading && dishes?.length > 0 && (
+        <div className="px-5 py-2">
+          <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+            {dishes.length} dishes rated · {new Set(dishes.map(d => d.restaurant_id)).size} restaurants · Verified human reviews
+          </p>
+        </div>
+      )}
+
       {/* Section 2: #1 Hero → Categories → Rest of Top 10 */}
       <section className="px-4 pt-6 pb-6" style={{ background: 'var(--color-surface-elevated)' }}>
         {searchQuery ? (

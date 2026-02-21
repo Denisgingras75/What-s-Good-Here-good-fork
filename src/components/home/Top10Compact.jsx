@@ -270,6 +270,14 @@ const Top10Row = memo(function Top10Row({ dish, rank, town, onClick }) {
             <span style={{ fontFamily: "'aglet-sans', sans-serif", fontWeight: 800, fontSize: '18px', color: getRatingColor(avg_rating) }}>
               {avg_rating}
             </span>
+            {dish.percent_worth_it > 0 && (
+              <>
+                <span style={{ width: '1px', height: '14px', background: 'var(--color-divider)', display: 'inline-block', verticalAlign: 'middle' }} />
+                <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontWeight: 600 }}>
+                  {dish.percent_worth_it}%
+                </span>
+              </>
+            )}
             <span style={{ width: '1px', height: '14px', background: 'var(--color-divider)', display: 'inline-block', verticalAlign: 'middle' }} />
             <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
               {total_votes} vote{total_votes === 1 ? '' : 's'}

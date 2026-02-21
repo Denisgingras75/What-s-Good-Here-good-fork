@@ -168,8 +168,12 @@ export const profileApi = {
         return existing
       }
 
-      // Create new profile without display name - they'll set it in onboarding
-      return await this.createProfile()
+      // For OAuth users (Google), use their provider name as default display_name
+      // This lets WelcomeModal skip the name step for Google sign-ins
+      const providerName = user.user_metadata?.full_name
+        || user.user_metadata?.name
+        || null
+      return await this.createProfile(providerName)
     } catch (error) {
       logger.error('Error getting or creating profile:', error)
       throw error.type ? error : createClassifiedError(error)
