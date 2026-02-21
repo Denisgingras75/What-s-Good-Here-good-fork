@@ -25,9 +25,9 @@ export const SpecialCard = memo(function SpecialCard({ special, promoted }) {
       onClick={handleClick}
       className="w-full rounded-xl p-4 text-left card-press"
       style={{
-        background: '#FFFFFF',
-        border: '2px solid #1A1A1A',
-        boxShadow: '2px 2px 0px #1A1A1A',
+        background: 'var(--color-surface-elevated)',
+        border: '2px solid var(--color-card-border)',
+        boxShadow: '2px 2px 0px var(--color-card-border)',
       }}
     >
       <div className="flex gap-3">
@@ -51,7 +51,7 @@ export const SpecialCard = memo(function SpecialCard({ special, promoted }) {
           )}
 
           {/* Deal Name */}
-          <h3 className="font-bold text-base" style={{ color: '#1A1A1A' }}>
+          <h3 className="font-bold text-base" style={{ color: 'var(--color-text-primary)' }}>
             {deal_name}
           </h3>
 
@@ -59,7 +59,7 @@ export const SpecialCard = memo(function SpecialCard({ special, promoted }) {
           <p
             className="text-xs mt-0.5 font-medium"
             style={{
-              color: '#999999',
+              color: 'var(--color-text-tertiary)',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
             }}
@@ -72,7 +72,7 @@ export const SpecialCard = memo(function SpecialCard({ special, promoted }) {
           {description && (
             <p
               className="text-sm mt-2 line-clamp-2"
-              style={{ color: '#999999' }}
+              style={{ color: 'var(--color-text-tertiary)' }}
             >
               {description}
             </p>
@@ -84,8 +84,8 @@ export const SpecialCard = memo(function SpecialCard({ special, promoted }) {
               <span
                 className="inline-block px-2 py-1 rounded-md text-sm font-bold"
                 style={{
-                  background: '#FFF0EB',
-                  color: '#E4440A',
+                  background: 'var(--color-primary-muted)',
+                  color: 'var(--color-primary)',
                 }}
               >
                 ${Number(price).toFixed(2)}

@@ -39,7 +39,7 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
       role="presentation"
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.6)' }} aria-hidden="true" />
 
       {/* Modal */}
       <div
@@ -47,7 +47,7 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="review-modal-title"
-        className="relative w-full sm:max-w-md mx-auto bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+        className="relative w-full sm:max-w-md mx-auto rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
         style={{ background: 'var(--color-bg)' }}
       >
@@ -65,7 +65,8 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
           <button
             onClick={onClose}
             aria-label="Close review"
-            className="absolute top-3 right-3 w-[38px] h-[38px] rounded-full flex items-center justify-center bg-black/50 text-white"
+            className="absolute top-3 right-3 w-[38px] h-[38px] rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.5)', color: '#FFFFFF' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -74,11 +75,11 @@ export function ReviewDetailModal({ review, reviewerName, onClose }) {
 
           {/* Rating badge */}
           {review.rating_10 && (
-            <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
+            <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.6)' }}>
               <span className="text-lg font-bold" style={{ color: getRatingColor(review.rating_10) }}>
                 {review.rating_10 % 1 === 0 ? review.rating_10 : review.rating_10.toFixed(1)}
               </span>
-              <span className="text-sm text-white/70">/10</span>
+              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>/10</span>
             </div>
           )}
         </div>

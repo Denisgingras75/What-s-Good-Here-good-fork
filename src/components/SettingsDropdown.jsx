@@ -124,7 +124,7 @@ export function SettingsDropdown() {
             <div className="w-10 h-6 rounded-full transition-colors" style={{ background: soundMuted ? 'var(--color-surface)' : 'var(--color-primary)' }}>
               <div
                 className="w-4 h-4 rounded-full shadow-sm transform transition-transform mt-1"
-                style={{ background: '#FFFFFF', marginLeft: soundMuted ? '4px' : '22px' }}
+                style={{ background: 'var(--color-surface-elevated)', marginLeft: soundMuted ? '4px' : '22px' }}
               />
             </div>
           </button>

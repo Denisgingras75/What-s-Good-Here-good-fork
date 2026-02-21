@@ -145,8 +145,8 @@ export function NotificationBell() {
         {/* Unread Badge */}
         {unreadCount > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[20px] h-[20px] flex items-center justify-center text-xs font-bold text-white rounded-full px-1 shadow-lg"
-            style={{ background: 'var(--color-red)' }}
+            className="absolute -top-0.5 -right-0.5 min-w-[20px] h-[20px] flex items-center justify-center text-xs font-bold rounded-full px-1 shadow-lg"
+            style={{ background: 'var(--color-red)', color: '#FFFFFF' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>

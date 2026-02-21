@@ -95,17 +95,17 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
 
         {/* Rating badge - bottom left */}
         {isRanked ? (
-          <div className="absolute bottom-3 left-3 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm flex flex-col items-center">
+          <div className="absolute bottom-3 left-3 px-2.5 py-1.5 rounded-lg backdrop-blur-sm flex flex-col items-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
             <span className="text-base font-bold leading-tight" style={{ color: getRatingColor(displayRating) }}>
               {displayRating || '—'}
             </span>
-            <span className="text-[10px] text-white/70">
+            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {has_variants && best_variant_name ? `Best: ${best_variant_name}` : `${total_votes} votes`}
             </span>
           </div>
         ) : (
-          <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
-            <span className="text-xs font-medium text-white/80">
+          <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.6)' }}>
+            <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>
               {votesNeeded > 0 ? `Needs ${votesNeeded} more vote${votesNeeded > 1 ? 's' : ''}` : 'Needs votes'}
             </span>
           </div>
@@ -113,8 +113,8 @@ export function BrowseCard({ dish, onClick, isFavorite, onToggleFavorite }) {
 
         {/* Distance - bottom right */}
         {distance_miles && (
-          <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
-            <span className="text-xs font-semibold text-white/90">
+          <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.6)' }}>
+            <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>
               {Number(distance_miles).toFixed(1)} mi
             </span>
           </div>

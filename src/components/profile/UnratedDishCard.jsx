@@ -45,7 +45,7 @@ export function UnratedDishCard({ dish, onClick, onDelete }) {
           <RestaurantAvatar name={dish.restaurant_name} town={dish.restaurant_town} fill />
         )}
         {dish.user_photo_url && (
-          <div className="absolute bottom-1 left-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
+          <div className="absolute bottom-1 left-1 text-xs px-1.5 py-0.5 rounded flex items-center gap-1" style={{ background: 'rgba(0,0,0,0.6)', color: '#FFFFFF' }}>
             <CameraIcon size={14} />
             <span>Your photo</span>
           </div>

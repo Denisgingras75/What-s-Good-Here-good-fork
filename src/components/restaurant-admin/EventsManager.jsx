@@ -178,8 +178,8 @@ export function EventsManager({ restaurantId, events, onAdd, onUpdate, onDeactiv
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2 rounded-lg font-medium text-white text-sm disabled:opacity-50"
-                style={{ background: 'var(--color-primary)' }}
+                className="flex-1 py-2 rounded-lg font-medium text-sm disabled:opacity-50"
+                style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
               >
                 {submitting ? 'Saving...' : editingId ? 'Update' : 'Add Event'}
               </button>

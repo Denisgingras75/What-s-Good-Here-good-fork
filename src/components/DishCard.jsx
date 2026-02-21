@@ -71,8 +71,8 @@ export const DishCard = memo(function DishCard({ dish, onVote, onLoginRequired, 
 
         {/* Rating badge - bottom left (only show if 10+ votes) */}
         {totalVotes >= 10 && (
-          <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
-            <span className="text-sm font-semibold text-white flex items-center gap-1">
+          <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.6)' }}>
+            <span className="text-sm font-semibold flex items-center gap-1" style={{ color: '#FFFFFF' }}>
               <ThumbsUpIcon size={24} /> {Math.round(percent_worth_it)}%
             </span>
           </div>
@@ -90,11 +90,11 @@ export const DishCard = memo(function DishCard({ dish, onVote, onLoginRequired, 
                   onToggleFavorite(dish_id)
                 }}
                 aria-label={isFavorite ? 'Remove from heard list' : 'Mark as heard it was good'}
-                className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 ${
-                  isFavorite
-                    ? 'bg-black/90 backdrop-blur-sm ring-2 ring-[var(--color-primary)]/50'
-                    : 'bg-black/60 backdrop-blur-sm hover:bg-black/80'
-                }`}
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 backdrop-blur-sm"
+                style={isFavorite
+                  ? { background: 'rgba(0,0,0,0.9)', boxShadow: 'var(--glow-primary)' }
+                  : { background: 'rgba(0,0,0,0.6)' }
+                }
               >
                 <HearingIcon size={26} className="md:w-7 md:h-7" active={isFavorite} />
               </button>
@@ -104,8 +104,8 @@ export const DishCard = memo(function DishCard({ dish, onVote, onLoginRequired, 
 
           {/* Distance badge */}
           {distance_miles && (
-            <div className="px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-sm shadow-lg">
-              <span className="text-xs font-semibold text-neutral-700">
+            <div className="px-2.5 py-1 rounded-lg backdrop-blur-sm shadow-lg" style={{ background: 'rgba(255,255,255,0.95)' }}>
+              <span className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                 {Number(distance_miles).toFixed(1)} mi
               </span>
             </div>

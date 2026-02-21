@@ -627,6 +627,41 @@ CREATE POLICY "Users can view own rate limits" ON rate_limits FOR SELECT USING (
 
 
 -- =============================================
+-- 3b. DROP FUNCTIONS WITH CHANGED RETURN TYPES
+-- =============================================
+-- PostgreSQL cannot ALTER return types — must DROP + CREATE.
+-- Safe: these are all recreated immediately below.
+
+DROP FUNCTION IF EXISTS get_ranked_dishes(DECIMAL, DECIMAL, INTEGER, TEXT, TEXT);
+DROP FUNCTION IF EXISTS get_restaurant_dishes(UUID);
+DROP FUNCTION IF EXISTS get_dish_variants(UUID);
+DROP FUNCTION IF EXISTS get_friends_votes_for_dish(UUID, UUID);
+DROP FUNCTION IF EXISTS get_friends_votes_for_restaurant(UUID, UUID);
+DROP FUNCTION IF EXISTS get_taste_compatibility(UUID, UUID);
+DROP FUNCTION IF EXISTS get_similar_taste_users(UUID, INTEGER);
+DROP FUNCTION IF EXISTS get_user_rating_identity(UUID);
+DROP FUNCTION IF EXISTS get_unseen_reveals(UUID);
+DROP FUNCTION IF EXISTS get_badge_evaluation_stats(UUID);
+DROP FUNCTION IF EXISTS evaluate_user_badges(UUID);
+DROP FUNCTION IF EXISTS get_user_badges(UUID, BOOLEAN);
+DROP FUNCTION IF EXISTS get_public_badges(UUID);
+DROP FUNCTION IF EXISTS get_category_experts(TEXT, INTEGER);
+DROP FUNCTION IF EXISTS get_expert_votes_for_restaurant(UUID);
+DROP FUNCTION IF EXISTS get_invite_details(TEXT);
+DROP FUNCTION IF EXISTS accept_restaurant_invite(TEXT);
+-- Drop ALL overloads of these functions (may have stale signatures in DB)
+DO $$ DECLARE r RECORD; BEGIN
+  FOR r IN SELECT oid::regprocedure::text AS sig FROM pg_proc WHERE proname = 'find_nearby_restaurants' AND pronamespace = 'public'::regnamespace LOOP
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || r.sig || ' CASCADE';
+  END LOOP;
+  FOR r IN SELECT oid::regprocedure::text AS sig FROM pg_proc WHERE proname = 'get_restaurants_within_radius' AND pronamespace = 'public'::regnamespace LOOP
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || r.sig || ' CASCADE';
+  END LOOP;
+END $$;
+DROP FUNCTION IF EXISTS get_smart_snippet(UUID);
+DROP FUNCTION IF EXISTS check_and_record_rate_limit(TEXT, INTEGER, INTEGER);
+
+-- =============================================
 -- 4. HELPER FUNCTIONS
 -- =============================================
 
@@ -1926,12 +1961,12 @@ EXCEPTION WHEN undefined_function OR others THEN
   RAISE NOTICE 'pg_cron not available — skipping cron job scheduling';
 END $$;
 
-DO $$
+DO $outer$
 BEGIN
-  PERFORM cron.schedule('cleanup-old-rate-limits', '15 * * * *', $$DELETE FROM rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'$$);
+  PERFORM cron.schedule('cleanup-old-rate-limits', '15 * * * *', $inner$DELETE FROM rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'$inner$);
 EXCEPTION WHEN undefined_function OR others THEN
   RAISE NOTICE 'pg_cron not available — skipping cron job scheduling';
-END $$;
+END $outer$;
 
 
 -- =============================================
@@ -1945,10 +1980,16 @@ GRANT EXECUTE ON FUNCTION check_vote_rate_limit TO authenticated;
 GRANT EXECUTE ON FUNCTION check_photo_upload_rate_limit TO authenticated;
 GRANT EXECUTE ON FUNCTION check_restaurant_create_rate_limit TO authenticated;
 GRANT EXECUTE ON FUNCTION check_dish_create_rate_limit TO authenticated;
-GRANT EXECUTE ON FUNCTION find_nearby_restaurants TO authenticated;
-GRANT EXECUTE ON FUNCTION find_nearby_restaurants TO anon;
-GRANT EXECUTE ON FUNCTION get_restaurants_within_radius(DECIMAL, DECIMAL, INT) TO authenticated;
-GRANT EXECUTE ON FUNCTION get_restaurants_within_radius(DECIMAL, DECIMAL, INT) TO anon;
+GRANT EXECUTE ON FUNCTION find_nearby_restaurants(TEXT, DECIMAL, DECIMAL, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION find_nearby_restaurants(TEXT, DECIMAL, DECIMAL, INT) TO anon;
+-- get_restaurants_within_radius has default params so we grant by looking up the actual oid
+DO $$ DECLARE fn_oid oid; BEGIN
+  SELECT oid INTO fn_oid FROM pg_proc WHERE proname = 'get_restaurants_within_radius' AND pronamespace = 'public'::regnamespace LIMIT 1;
+  IF fn_oid IS NOT NULL THEN
+    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated', fn_oid::regprocedure);
+    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO anon', fn_oid::regprocedure);
+  END IF;
+END $$;
 
 
 -- =============================================

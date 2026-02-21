@@ -179,8 +179,8 @@ export function ManageRestaurant() {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 rounded-xl font-semibold text-white"
-            style={{ background: 'var(--color-primary)' }}
+            className="px-6 py-3 rounded-xl font-semibold"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
           >
             Go Home
           </button>
@@ -236,7 +236,7 @@ export function ManageRestaurant() {
               onClick={() => setActiveTab(tab)}
               className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all"
               style={activeTab === tab
-                ? { background: 'var(--color-primary)', color: '#fff' }
+                ? { background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }
                 : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }
               }
             >
