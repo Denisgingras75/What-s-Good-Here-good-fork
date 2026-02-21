@@ -197,19 +197,8 @@ export function UserProfile() {
       if (dishIds.length === 0) return
 
       try {
-        const { data, error } = await supabase
-          .from('votes')
-          .select('dish_id, rating_10')
-          .eq('user_id', currentUser.id)
-          .in('dish_id', dishIds)
-
-        if (error) throw error
-
-        if (data) {
-          const ratingsMap = {}
-          data.forEach(v => { ratingsMap[v.dish_id] = v.rating_10 })
-          setMyRatings(ratingsMap)
-        }
+        const ratingsMap = await votesApi.getMyRatingsForDishes(dishIds)
+        setMyRatings(ratingsMap)
       } catch (err) {
         logger.error('Failed to fetch my ratings:', err)
       }

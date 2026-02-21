@@ -326,6 +326,37 @@ Switching restaurants resets to "Top Rated" tab. Search filters work in both vie
 
 **VERIFIED** — `src/pages/Discover.jsx`
 
+### Feature 9b: Local Hub (Specials & Events)
+
+**User flow:** Specials and events surface on restaurant detail pages and via the Discover feed
+**Components:** `SpecialCard`, `EventCard`
+**Hooks:** `useSpecials`, `useEvents`
+**API calls:** `specialsApi.getActiveSpecials()`, `eventsApi.getActiveEvents()`
+**Data reads:** specials, events tables with restaurant joins
+**Promoted items:** Gold left border + "Featured" badge, pinned to top of feed
+
+**"Happening Here":** Restaurant detail pages show active specials and upcoming events below dish tabs. Uses `useRestaurantSpecials(restaurantId)` and `useRestaurantEvents(restaurantId)` hooks.
+
+**VERIFIED** — `src/components/SpecialCard.jsx`, `src/components/EventCard.jsx`
+
+### Feature 9c: Events Management
+
+**User flow:** Manager portal → Events tab → CRUD events for restaurant
+**Screens:** `ManageRestaurant.jsx` (Events tab)
+**Components:** `EventsManager`
+**API calls:** `restaurantManagerApi.createEvent()`, `.updateEvent()`, `.deactivateEvent()`
+**Data reads/writes:** events table
+**Auth gate:** Manager or admin only
+
+**VERIFIED** — `src/components/restaurant-admin/EventsManager.jsx`
+
+### Feature 9d: Automated Scraper
+
+**Architecture:** pg_cron (daily 6 AM EST) → scraper-dispatcher edge function → restaurant-scraper edge function per restaurant
+**Flow:** Fetch restaurant websites/Facebook pages → Claude Haiku extracts events/specials → upsert with source='auto_scrape'
+**Edge functions:** `supabase/functions/restaurant-scraper/`, `supabase/functions/scraper-dispatcher/`
+**Secrets:** ANTHROPIC_API_KEY in Supabase Edge Function secrets
+
 ### Feature 10: Favorites
 
 **User flow:** Tap heart icon on dish → saves to "Heard it was Good Here" list in Profile

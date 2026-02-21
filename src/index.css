@@ -64,6 +64,9 @@
   --color-medal-bronze: #B07340;
   --color-danger: #DC2626;
   --color-success: #16A34A;
+  --color-success-light: #F0FFF4;
+  --color-success-muted: rgba(22, 163, 74, 0.10);
+  --color-success-border: rgba(22, 163, 74, 0.30);
   --color-muted: #999999;
   /* Tagline — muted under headings */
   --color-text-tagline: #999999;
@@ -133,6 +136,9 @@
   --color-green-deep: #5BA97A;
   --color-danger: #C85A54;
   --color-success: #6BB384;
+  --color-success-light: #0D2818;
+  --color-success-muted: rgba(107, 179, 132, 0.10);
+  --color-success-border: rgba(107, 179, 132, 0.30);
   --color-muted: #6B7680;
   --color-text-tagline: #C08B7A;
   --color-text-on-primary: #1A1A1A;

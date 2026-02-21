@@ -6,14 +6,9 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
-        surface: 'rgb(var(--color-surface) / <alpha-value>)',
-        accent: {
-          DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
-          hover: 'rgb(var(--color-accent-hover) / <alpha-value>)',
-        },
-      },
+      // NOTE: All colors use inline style={{ color: 'var(--color-*)' }} per project convention.
+      // Tailwind color utilities (bg-canvas, text-accent) are NOT used — see CLAUDE.md §1.3.
+      colors: {},
       boxShadow: {
         'sm': 'var(--shadow-sm)',
         'md': 'var(--shadow-md)',

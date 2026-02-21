@@ -277,11 +277,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
   if (userVote !== null && userRating !== null && step === 1) {
     return (
       <div className="space-y-3">
-        <div className="p-4 rounded-xl" style={{ background: '#F0FFF4', border: '1.5px solid #16A34A' }}>
-          <p className="text-sm font-medium text-center mb-2" style={{ color: '#16A34A' }}>Your review</p>
+        <div className="p-4 rounded-xl" style={{ background: 'var(--color-success-light)', border: '1.5px solid var(--color-success)' }}>
+          <p className="text-sm font-medium text-center mb-2" style={{ color: 'var(--color-success)' }}>Your review</p>
           <div className="flex items-center justify-center gap-4">
             {userVote ? <ThumbsUpIcon size={32} /> : <ThumbsDownIcon size={32} />}
-            <span className="text-xl font-bold" style={{ color: '#16A34A' }}>{Number(userRating).toFixed(1)}</span>
+            <span className="text-xl font-bold" style={{ color: 'var(--color-success)' }}>{Number(userRating).toFixed(1)}</span>
           </div>
           {userReviewText && (
             <p className="mt-3 text-sm text-center italic" style={{ color: 'var(--color-text-tertiary)' }}>
@@ -295,10 +295,10 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
               className="w-full overflow-hidden"
               style={{ height: '6px', borderRadius: '3px', background: 'var(--color-surface)' }}
             >
-              <div style={{ width: `${yesPercent}%`, height: '100%', borderRadius: '3px', background: '#16A34A' }} />
+              <div style={{ width: `${yesPercent}%`, height: '100%', borderRadius: '3px', background: 'var(--color-success)' }} />
             </div>
             <div className="flex items-baseline gap-1.5 mt-1.5">
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#16A34A' }}>{yesPercent}%</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-success)' }}>{yesPercent}%</span>
               <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>would order again</span>
             </div>
           </div>
@@ -384,10 +384,10 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
               className="w-full overflow-hidden"
               style={{ height: '6px', borderRadius: '3px', background: 'var(--color-surface)' }}
             >
-              <div style={{ width: `${yesPercent}%`, height: '100%', borderRadius: '3px', background: '#16A34A' }} />
+              <div style={{ width: `${yesPercent}%`, height: '100%', borderRadius: '3px', background: 'var(--color-success)' }} />
             </div>
             <div className="flex items-baseline gap-1.5 mt-1.5">
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#16A34A' }}>{yesPercent}%</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-success)' }}>{yesPercent}%</span>
               <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>would order again</span>
             </div>
           </div>
@@ -406,11 +406,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             disabled={showConfirmation}
             className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
             style={(showConfirmation && confirmationType === 'yes') || showPendingYes
-              ? { background: 'linear-gradient(to bottom right, #16A34A, #5A9E72)', color: '#FFFFFF', boxShadow: '0 10px 15px -3px rgba(107, 179, 132, 0.3)', transform: 'scale(1.05)' }
+              ? { background: `linear-gradient(to bottom right, var(--color-success), var(--color-green-deep))`, color: 'var(--color-text-on-primary)', boxShadow: '0 10px 15px -3px var(--color-success-border)', transform: 'scale(1.05)' }
               : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '1.5px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'yes' ? (
-              <span className="text-2xl animate-pulse" style={{ color: '#FFFFFF' }}>✓</span>
+              <span className="text-2xl animate-pulse" style={{ color: 'var(--color-text-on-primary)' }}>✓</span>
             ) : (
               <><ThumbsUpIcon size={30} /><span>Yes</span></>
             )}
@@ -420,11 +420,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
             disabled={showConfirmation}
             className="relative overflow-hidden flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ease-out focus-ring active:scale-95"
             style={(showConfirmation && confirmationType === 'no') || showPendingNo
-              ? { background: 'linear-gradient(to bottom right, var(--color-primary), #C8502E)', color: '#FFFFFF', boxShadow: '0 10px 15px -3px rgba(232, 102, 60, 0.3)', transform: 'scale(1.05)' }
+              ? { background: 'linear-gradient(to bottom right, var(--color-primary), var(--color-danger))', color: 'var(--color-text-on-primary)', boxShadow: '0 10px 15px -3px var(--color-primary-glow)', transform: 'scale(1.05)' }
               : { background: 'var(--color-surface-elevated)', color: 'var(--color-text-primary)', border: '1.5px solid var(--color-divider)' }}
           >
             {showConfirmation && confirmationType === 'no' ? (
-              <span className="text-2xl animate-pulse" style={{ color: '#FFFFFF' }}>✓</span>
+              <span className="text-2xl animate-pulse" style={{ color: 'var(--color-text-on-primary)' }}>✓</span>
             ) : (
               <><ThumbsDownIcon size={30} /><span>No</span></>
             )}
@@ -512,11 +512,11 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
 
       {/* Photo upload — inline */}
       {photoAdded ? (
-        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'rgba(22, 163, 74, 0.1)', border: '1px solid rgba(22, 163, 74, 0.3)' }}>
-          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: '#16A34A' }}>
+        <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'var(--color-success-muted)', border: '1px solid var(--color-success-border)' }}>
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--color-success)' }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-sm font-medium" style={{ color: '#16A34A' }}>Photo added</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>Photo added</span>
         </div>
       ) : (
         <PhotoUploadButton
@@ -535,7 +535,7 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
         disabled={submitting || reviewText.length > MAX_REVIEW_LENGTH}
         className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ease-out focus-ring
           ${submitting || reviewText.length > MAX_REVIEW_LENGTH ? 'opacity-50 cursor-not-allowed' : 'active:scale-98 hover:shadow-xl'}`}
-        style={{ background: 'var(--color-primary)', color: '#FFFFFF' }}
+        style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
       >
         {submitting ? 'Saving...' : (reviewText.trim() || photoAdded) ? 'Submit' : 'Submit Rating'}
       </button>

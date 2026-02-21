@@ -295,13 +295,11 @@ export const votesApi = {
         : { data: [] }
       const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]))
 
-      // Fetch jitter profiles for all reviewers to determine trust badges
+      // Fetch jitter badge data via RPC (restricts exposed columns — no biometric data)
       let jitterMap = {}
       if (userIds.length > 0) {
         const { data: jitterData } = await supabase
-          .from('jitter_profiles')
-          .select('user_id, confidence_level, consistency_score, review_count, flagged')
-          .in('user_id', userIds)
+          .rpc('get_jitter_badges', { p_user_ids: userIds })
 
         if (jitterData) {
           for (const j of jitterData) {

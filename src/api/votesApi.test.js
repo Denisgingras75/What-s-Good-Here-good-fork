@@ -439,12 +439,8 @@ describe('votesApi', () => {
           in: vi.fn().mockResolvedValue({ data: mockProfiles, error: null }),
         }),
       })
-      // Third call: jitter_profiles query
-      supabase.from.mockReturnValueOnce({
-        select: vi.fn().mockReturnValue({
-          in: vi.fn().mockResolvedValue({ data: [], error: null }),
-        }),
-      })
+      // Third call: jitter badges via RPC
+      supabase.rpc.mockResolvedValueOnce({ data: [], error: null })
 
       const result = await votesApi.getReviewsForDish('dish-1', { limit: 10, offset: 0 })
 
