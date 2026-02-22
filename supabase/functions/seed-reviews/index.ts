@@ -52,6 +52,42 @@ interface ExtractedDishMention {
 }
 
 /**
+ * Build a short review snippet from descriptive phrases (max 200 chars)
+ */
+function buildReviewSnippet(phrases: string[], wouldOrderAgain: boolean): string | null {
+  if (!phrases || phrases.length === 0) return null
+
+  // Capitalize first phrase
+  const capitalized = phrases.map((p, i) =>
+    i === 0 ? p.charAt(0).toUpperCase() + p.slice(1) : p
+  )
+
+  // Join phrases naturally
+  let snippet: string
+  if (capitalized.length === 1) {
+    snippet = `${capitalized[0]}.`
+  } else if (capitalized.length === 2) {
+    snippet = `${capitalized[0]} and ${capitalized[1]}.`
+  } else {
+    const last = capitalized[capitalized.length - 1]
+    const rest = capitalized.slice(0, -1).join(', ')
+    snippet = `${rest}, and ${last}.`
+  }
+
+  // Add a closing sentiment if there's room
+  const closers = wouldOrderAgain
+    ? [' Would definitely order again.', ' A must-try.', ' Highly recommend.']
+    : [' Probably wouldn\'t order again.', ' Not my favorite.']
+  const closer = closers[Math.floor(Math.random() * closers.length)]
+
+  if (snippet.length + closer.length <= 200) {
+    snippet += closer
+  }
+
+  return snippet.length <= 200 ? snippet : snippet.slice(0, 197) + '...'
+}
+
+/**
  * Map Google star rating + AI sentiment to WGH 1-10 scale
  */
 function mapToWghRating(googleStars: number, sentiment: string): number {
@@ -306,12 +342,14 @@ serve(async (req) => {
             // Max 3 AI votes per dish to avoid over-seeding
             if ((existing?.length || 0) >= 3) continue
 
+            const reviewSnippet = buildReviewSnippet(mention.descriptive_phrases, wouldOrderAgain)
+
             const { error: insertErr } = await supabase.from('votes').insert({
               dish_id: matched.id,
               user_id: AI_SYSTEM_USER_ID,
               would_order_again: wouldOrderAgain,
               rating_10: rating10,
-              review_text: null,
+              review_text: reviewSnippet,
               source: 'ai_estimated',
               source_metadata: {
                 google_rating: review.rating,
