@@ -641,37 +641,9 @@ export function Dish() {
               </div>
             )}
 
-            {/* Review Flow */}
-            <div
-              className="p-4 rounded-xl mb-4"
-              style={{
-                background: 'var(--color-surface-elevated)',
-                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
-              }}
-            >
-              <ReviewFlow
-                dishId={dish.dish_id}
-                dishName={dish.dish_name}
-                restaurantId={dish.restaurant_id}
-                restaurantName={dish.restaurant_name}
-                category={dish.category}
-                price={dish.price}
-                totalVotes={dish.total_votes}
-                yesVotes={dish.yes_votes}
-                percentWorthIt={dish.percent_worth_it}
-                isRanked={isRanked}
-                hasPhotos={allPhotos.length > 0}
-                onVote={handleVote}
-                onLoginRequired={handleLoginRequired}
-                onPhotoUploaded={handlePhotoUploaded}
-                onToggleFavorite={handleToggleSave}
-                isFavorite={isFavorite?.(dishId)}
-              />
-            </div>
-
             {/* Reviews Section — card-style list */}
             {reviews.length > 0 && (
-              <div className="mb-6">
+              <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
                     Reviews ({reviews.length})
@@ -729,6 +701,34 @@ export function Dish() {
                 </div>
               </div>
             )}
+
+            {/* Review Flow */}
+            <div
+              className="p-4 rounded-xl mb-4"
+              style={{
+                background: 'var(--color-surface-elevated)',
+                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
+              }}
+            >
+              <ReviewFlow
+                dishId={dish.dish_id}
+                dishName={dish.dish_name}
+                restaurantId={dish.restaurant_id}
+                restaurantName={dish.restaurant_name}
+                category={dish.category}
+                price={dish.price}
+                totalVotes={dish.total_votes}
+                yesVotes={dish.yes_votes}
+                percentWorthIt={dish.percent_worth_it}
+                isRanked={isRanked}
+                hasPhotos={allPhotos.length > 0}
+                onVote={handleVote}
+                onLoginRequired={handleLoginRequired}
+                onPhotoUploaded={handlePhotoUploaded}
+                onToggleFavorite={handleToggleSave}
+                isFavorite={isFavorite?.(dishId)}
+              />
+            </div>
 
             {/* No reviews message */}
             {!reviewsLoading && reviews.length === 0 && dish.total_votes > 0 && (
