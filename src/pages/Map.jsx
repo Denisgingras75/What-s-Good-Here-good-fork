@@ -220,7 +220,11 @@ export function Map() {
           <div
             ref={listScrollRef}
             className="flex-1 overflow-y-auto"
-            style={{ paddingBottom: '80px' }}
+            style={{
+              paddingBottom: '80px',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+            }}
           >
             {/* Section title */}
             <div className="px-4 pt-2 pb-2">
