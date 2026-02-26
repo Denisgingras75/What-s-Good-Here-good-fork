@@ -32,6 +32,7 @@ export function Map() {
   var [focusDishId, setFocusDishId] = useState(null)
   var [highlightedDishId, setHighlightedDishId] = useState(null)
   var [pinSelected, setPinSelected] = useState(false)
+  var [listLimit, setListLimit] = useState(10)
 
   var mapRef = useRef(null)
   var listScrollRef = useRef(null)
@@ -89,9 +90,12 @@ export function Map() {
     ? BROWSE_CATEGORIES.find(function (c) { return c.id === selectedCategory })
     : null
 
-  var sortedDishes = rankedDishes ? rankedDishes.slice(0, 10) : []
+  var allRanked = rankedDishes || []
+  var listDishes = selectedCategory ? allRanked.slice(0, listLimit) : allRanked.slice(0, 10)
+  var mapDishes = allRanked.slice(0, 10)
+  var hasMoreDishes = selectedCategory && allRanked.length > listLimit
 
-  var dishesWithCoords = sortedDishes.filter(function (d) {
+  var dishesWithCoords = mapDishes.filter(function (d) {
     return d.restaurant_lat != null && d.restaurant_lng != null
   })
 
@@ -107,17 +111,17 @@ export function Map() {
       ? 'Best ' + selectedCategoryLabel.label + ' Nearby'
       : 'Top Rated Nearby'
 
-  var activeDishes = searchQuery ? searchResults : sortedDishes
+  var activeDishes = searchQuery ? searchResults : listDishes
 
-  // Build dish rank map for mini-card display
+  // Build dish rank map for mini-card display (always based on top 10)
   var dishRanks = useMemo(function () {
     var ranks = {}
-    var list = activeDishes || []
+    var list = mapDishes || []
     for (var i = 0; i < list.length; i++) {
       ranks[list[i].dish_id] = i + 1
     }
     return ranks
-  }, [activeDishes])
+  }, [mapDishes])
 
   var rankingContext = useMemo(function () {
     var categoryLabel = selectedCategoryLabel ? selectedCategoryLabel.label : null
@@ -210,7 +214,7 @@ export function Map() {
           {/* Category chips */}
           <CategoryChips
             selected={selectedCategory}
-            onSelect={setSelectedCategory}
+            onSelect={function (cat) { setSelectedCategory(cat); setListLimit(10) }}
             sticky
             maxVisible={23}
           />
@@ -232,19 +236,41 @@ export function Map() {
             {searchQuery && searchLoading ? (
               <ListSkeleton />
             ) : activeDishes && activeDishes.length > 0 ? (
-              <div className="flex flex-col" style={{ gap: '2px' }}>
-                {activeDishes.map(function (dish, i) {
-                  return (
-                    <DishListItem
-                      key={dish.dish_id}
-                      dish={dish}
-                      rank={i + 1}
-                      showDistance
-                      onClick={function () { navigate('/dish/' + dish.dish_id) }}
-                    />
-                  )
-                })}
-              </div>
+              <>
+                <div className="flex flex-col" style={{ gap: '2px' }}>
+                  {activeDishes.map(function (dish, i) {
+                    return (
+                      <DishListItem
+                        key={dish.dish_id}
+                        dish={dish}
+                        rank={i + 1}
+                        showDistance
+                        onClick={function () { navigate('/dish/' + dish.dish_id) }}
+                      />
+                    )
+                  })}
+                </div>
+                {hasMoreDishes && !searchQuery && (
+                  <button
+                    onClick={function () { setListLimit(function (prev) { return prev + 5 }) }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '12px',
+                      marginTop: '8px',
+                      background: 'none',
+                      border: '1.5px solid var(--color-divider)',
+                      borderRadius: '10px',
+                      color: 'var(--color-accent-gold)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Show more
+                  </button>
+                )}
+              </>
             ) : searchQuery ? (
               <EmptyState
                 emoji="🔍"
