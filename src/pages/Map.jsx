@@ -85,6 +85,7 @@ export function Map() {
   // Ranked dishes — single source of truth for both modes
   var rankedData = useDishes(location, radius, selectedCategory, null, null)
   var rankedDishes = rankedData.dishes
+  var rankedLoading = rankedData.loading || rankedData.isFetching
 
   var selectedCategoryLabel = selectedCategory
     ? BROWSE_CATEGORIES.find(function (c) { return c.id === selectedCategory })
@@ -233,7 +234,7 @@ export function Map() {
 
           {/* Dish list */}
           <div className="px-4 pb-4">
-            {searchQuery && searchLoading ? (
+            {(searchQuery && searchLoading) || (!searchQuery && rankedLoading) ? (
               <ListSkeleton />
             ) : activeDishes && activeDishes.length > 0 ? (
               <>
