@@ -10,7 +10,7 @@ export function ModeFAB({ mode, onToggle }) {
         position: 'fixed',
         bottom: '80px',
         right: '16px',
-        zIndex: 25,
+        zIndex: 50,
         borderRadius: '28px',
         background: 'var(--color-surface-elevated)',
         boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
