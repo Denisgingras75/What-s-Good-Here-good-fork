@@ -490,6 +490,54 @@ export const dishesApi = {
   },
 
   /**
+   * Get all dishes with search-relevant fields for client-side caching.
+   * Returns a flat array (restaurant data denormalized into each dish).
+   * ~300 rows, ~50KB. Cached by React Query in useAllDishes hook.
+   * @returns {Promise<Array>} All dishes with restaurant metadata
+   */
+  async getAllSearchable() {
+    try {
+      const { data, error } = await supabase
+        .from('dishes')
+        .select(`
+          id, name, category, tags, photo_url, price,
+          avg_rating, total_votes, value_score, value_percentile,
+          restaurants!inner (
+            id, name, is_open, cuisine, town, lat, lng
+          )
+        `)
+        .order('avg_rating', { ascending: false, nullsFirst: false })
+
+      if (error) throw createClassifiedError(error)
+
+      return (data || [])
+        .filter(d => d.restaurants)
+        .map(d => ({
+          id: d.id,
+          name: d.name,
+          category: d.category,
+          tags: d.tags || [],
+          photo_url: d.photo_url,
+          price: d.price,
+          avg_rating: d.avg_rating,
+          total_votes: d.total_votes || 0,
+          value_score: d.value_score,
+          value_percentile: d.value_percentile,
+          restaurant_id: d.restaurants.id,
+          restaurant_name: d.restaurants.name,
+          restaurant_is_open: d.restaurants.is_open,
+          restaurant_cuisine: d.restaurants.cuisine,
+          restaurant_town: d.restaurants.town,
+          restaurant_lat: d.restaurants.lat,
+          restaurant_lng: d.restaurants.lng,
+        }))
+    } catch (error) {
+      logger.error('Error fetching all searchable dishes:', error)
+      throw error.type ? error : createClassifiedError(error)
+    }
+  },
+
+  /**
    * Get variants for a parent dish
    * @param {string} parentDishId - Parent dish ID
    * @returns {Promise<Array>} Array of variant dishes with vote stats
