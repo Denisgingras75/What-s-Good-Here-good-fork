@@ -211,7 +211,7 @@ export function Map() {
             {/* Category chips */}
             <CategoryChips
               selected={selectedCategory}
-              onSelect={function (cat) { setSelectedCategory(cat); setListLimit(10) }}
+              onSelect={function (cat) { setSelectedCategory(cat); setSearchQuery(''); setListLimit(10) }}
               maxVisible={23}
             />
           </div>

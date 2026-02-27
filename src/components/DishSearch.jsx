@@ -35,6 +35,11 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
 
+  // Sync internal query when parent clears/changes initialQuery
+  useEffect(() => {
+    setQuery(initialQuery)
+  }, [initialQuery])
+
   // Client-side search for dropdown mode (instant, no network calls)
   const { results: hookResults, loading: hookLoading } = useDishSearch(
     onSearchChange ? '' : query,  // Only search in dropdown mode
