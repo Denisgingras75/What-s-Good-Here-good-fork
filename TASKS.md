@@ -364,32 +364,20 @@
 
 ---
 
-## T36: Migrate search to client-side filtering
+## ~~T36: Migrate search to client-side filtering~~ DONE
 
-**Why:** The current search makes up to 5 sequential Supabase API calls (4-level fallback ladder with client-side AND filtering at each level). For our dataset (~300 dishes on Martha's Vineyard), this is over-engineered. On spotty island cell service, each round-trip adds 100-300ms — worst case, search-as-you-type takes 400ms-1.2s before results appear. We already hit a bug where tag results leaked through without filtering (fixed in `db9a703`), a direct consequence of the complexity.
+**Why:** The 4-level Supabase API fallback search ladder made up to 5 sequential network calls for ~300 dishes. On island cell service: 400ms-1.2s per search. We'd already shipped a tag-leak bug from the complexity.
 
-**Approach:** Cache all dishes (id, name, category, tags, restaurant name/town, rating, votes) in React Query on first load (~50KB for 300 dishes). Search becomes zero-latency JavaScript filtering. Works offline. Tag synonym expansion stays in JS. One `useQuery` call to fetch all dishes, one filter function to search them.
+**What was done:**
+- `searchDishes()` pure function in `src/utils/dishSearch.js` — single-pass scoring (phrase match 100, all-tokens-in-name 80, cross-field 60, tag overlap 40, partial 20), tag synonym expansion, misspelling normalization, stop words
+- `dishesApi.getAllSearchable()` fetches all dishes into React Query cache (~50KB, 5-min staleTime)
+- `useAllDishes` hook wraps the cache; `useDishSearch` rewritten to filter locally via `useMemo`
+- `DishSearch.jsx` and `Browse.jsx` switched from direct API calls to the hook
+- Deleted `dishesApi.search()` (~230 lines) and old mock-heavy tests (~148 lines)
+- 33 new pure-function tests, 454 total unit tests passing
+- Search is now ~1ms (zero network), works offline after first load
 
-**What to keep:**
-- Tag synonym expansion from `constants/tags.js` (smart intent mapping)
-- Misspelling normalization
-- Stop word filtering
-
-**What to delete:**
-- The 4-level fallback ladder in `dishesApi.search()`
-- Multiple sequential/parallel Supabase queries for search
-- Client-side AND filtering workarounds for PostgREST limitations
-
-**Acceptance criteria:**
-- Search results appear in <50ms (no network dependency)
-- "fried chicken sandwich" returns only fried chicken sandwiches
-- "healthy" still returns dishes tagged fresh/light via synonym expansion
-- Single-word searches ("lobster", "pizza") return relevant results
-- Town filter still works
-- `npm run build` passes
-- `npm run test` passes
-
-**Files:** `src/api/dishesApi.js` (delete `search` method), new: `src/hooks/useSearchableDishes.js` or similar, `src/hooks/useDishSearch.js` (rewrite to use local data)
+**Files:** `src/utils/dishSearch.js`, `src/utils/dishSearch.test.js`, `src/hooks/useAllDishes.js`, `src/hooks/useDishSearch.js`, `src/api/dishesApi.js`, `src/components/DishSearch.jsx`, `src/pages/Browse.jsx`
 
 ---
 
