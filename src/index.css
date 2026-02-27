@@ -1430,12 +1430,12 @@ input.outline-none:focus-visible {
 
 /* ===========================
    Map Tile Styling
-   Warm coral land, blue ocean — Martha's Vineyard identity
+   Stamen Watercolor — treasure map aesthetic
    =========================== */
 .wgh-map-tiles {
-  filter: saturate(1.3) brightness(1.03);
+  filter: brightness(1.02) contrast(1.05);
 }
 
 [data-theme="dark"] .wgh-map-tiles {
-  filter: sepia(0.2) saturate(0.8) hue-rotate(340deg) brightness(0.7) contrast(1.1);
+  filter: sepia(0.35) brightness(0.6) contrast(1.15);
 }

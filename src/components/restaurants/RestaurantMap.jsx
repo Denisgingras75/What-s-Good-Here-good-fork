@@ -564,10 +564,11 @@ export function RestaurantMap({
         {/* Expose map instance to parent */}
         {mapRef && <MapRefExposer mapRef={mapRef} />}
 
-        {/* Tiles — warm land, blue ocean */}
+        {/* Tiles — Stamen Watercolor via Stadia Maps */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://stamen.com/">Stamen Design</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg"
+          maxZoom={16}
           className="wgh-map-tiles"
         />
 
