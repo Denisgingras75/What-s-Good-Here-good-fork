@@ -1,11 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { capture } from '../lib/analytics'
-import { dishesApi } from '../api/dishesApi'
+import { useDishSearch } from '../hooks/useDishSearch'
 import { getCategoryNeonImage } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
 import { getRatingColor } from '../utils/ranking'
-import { logger } from '../utils/logger'
 const MIN_SEARCH_LENGTH = 2
 const MAX_DISH_RESULTS = 5
 const MAX_CATEGORY_RESULTS = 2
@@ -33,19 +32,15 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
   const navigate = useNavigate()
   const [query, setQuery] = useState(initialQuery)
   const [isFocused, setIsFocused] = useState(false)
-  const [searchResults, setSearchResults] = useState([])
-  const [searching, setSearching] = useState(false)
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
-  const mountedRef = useRef(true)
 
-  // Track mounted state for async operations
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-    }
-  }, [])
+  // Client-side search for dropdown mode (instant, no network calls)
+  const { results: hookResults, loading: hookLoading } = useDishSearch(
+    onSearchChange ? '' : query,  // Only search in dropdown mode
+    MAX_DISH_RESULTS,
+    town
+  )
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -73,39 +68,6 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
     }
   }, [query, onSearchChange])
 
-  // Fetch search results from API (dropdown mode only)
-  useEffect(() => {
-    if (onSearchChange) return // Skip dropdown fetch in inline mode
-    if (query.length < MIN_SEARCH_LENGTH) {
-      setSearchResults([])
-      return
-    }
-
-    const fetchResults = async () => {
-      setSearching(true)
-      try {
-        const results = await dishesApi.search(query, MAX_DISH_RESULTS, town)
-        // Only update state if still mounted
-        if (mountedRef.current) {
-          setSearchResults(results)
-        }
-      } catch (error) {
-        logger.error('Search error:', error)
-        if (mountedRef.current) {
-          setSearchResults([])
-        }
-      } finally {
-        if (mountedRef.current) {
-          setSearching(false)
-        }
-      }
-    }
-
-    // Debounce the search
-    const timer = setTimeout(fetchResults, 150)
-    return () => clearTimeout(timer)
-  }, [query, town, onSearchChange])
-
   // Find matching categories (client-side since it's a small constant array)
   const matchingCategories = useMemo(() => {
     if (query.length < MIN_SEARCH_LENGTH) return []
@@ -118,13 +80,13 @@ export function DishSearch({ loading = false, placeholder = "Find What's Good ne
   }, [query])
 
   const results = {
-    dishes: searchResults,
+    dishes: onSearchChange ? [] : hookResults,
     categories: matchingCategories,
   }
 
   const hasResults = results.dishes.length > 0 || results.categories.length > 0
   const showDropdown = !onSearchChange && isFocused && query.length >= MIN_SEARCH_LENGTH
-  const isLoading = loading || searching
+  const isLoading = loading || (hookLoading && !onSearchChange)
 
   // Handle dish selection
   const handleDishSelect = (dish) => {
