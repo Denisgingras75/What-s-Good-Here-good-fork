@@ -114,7 +114,7 @@ export const DishListItem = memo(function DishListItem({
       {/* Category icon */}
       {!showPhoto && (
         <span className="flex-shrink-0">
-          <CategoryIcon categoryId={category} dishName={dishName} size={50} />
+          <CategoryIcon categoryId={category} dishName={dishName} size={64} />
         </span>
       )}
 
