@@ -7,6 +7,7 @@ export function useTasteStats(userId) {
     queryFn: () => diaryApi.getTasteStats(userId),
     enabled: !!userId,
     staleTime: 1000 * 60 * 5,
+    retry: false,
   })
 
   return {

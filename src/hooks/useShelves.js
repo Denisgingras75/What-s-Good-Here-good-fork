@@ -12,6 +12,7 @@ export function useShelves(userId) {
     queryFn: () => diaryApi.getShelves(),
     enabled: !!userId,
     staleTime: 1000 * 60 * 2,
+    retry: false,
   })
 
   const createMutation = useMutation({

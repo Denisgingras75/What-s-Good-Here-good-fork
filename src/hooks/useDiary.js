@@ -11,6 +11,7 @@ export function useDiary(userId) {
     queryFn: () => diaryApi.getDiaryFeed({ limit: 50 }),
     enabled: !!userId,
     staleTime: 1000 * 60 * 2,
+    retry: false,
   })
 
   const logMutation = useMutation({
