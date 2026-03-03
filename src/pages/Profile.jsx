@@ -2,18 +2,15 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { authApi } from '../api/authApi'
-import { profileApi } from '../api/profileApi'
 import { followsApi } from '../api/followsApi'
 import { votesApi } from '../api/votesApi'
 import { dishPhotosApi } from '../api/dishPhotosApi'
-import { jitterApi } from '../api/jitterApi'
 import { useProfile } from '../hooks/useProfile'
 import { useUserVotes } from '../hooks/useUserVotes'
 import { useFavorites } from '../hooks/useFavorites'
 import { useUnratedDishes } from '../hooks/useUnratedDishes'
 import { DishModal } from '../components/DishModal'
 import { LoginModal } from '../components/Auth/LoginModal'
-import { UserSearch } from '../components/UserSearch'
 import { FollowListModal } from '../components/FollowListModal'
 import { ProfileSkeleton } from '../components/Skeleton'
 import { CameraIcon } from '../components/CameraIcon'
@@ -22,8 +19,8 @@ import {
   ShelfFilter,
   JournalFeed,
   SharePicksButton,
+  FoodMap,
 } from '../components/profile'
-import { TrustBadge } from '../components/TrustBadge'
 
 const SHELVES = [
   { id: 'all', label: 'All' },
@@ -55,8 +52,6 @@ export function Profile() {
   const [followListModal, setFollowListModal] = useState(null) // 'followers' | 'following' | null
   const [userReviews, setUserReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
-  const [ratingBias, setRatingBias] = useState(null)
-  const [jitterProfile, setJitterProfile] = useState(null)
 
   // Fetch follow counts
   useEffect(() => {
@@ -68,31 +63,6 @@ export function Profile() {
       })
   }, [user])
 
-  // Fetch rating deviation score
-  useEffect(() => {
-    if (!user) {
-      setRatingBias(null)
-      return
-    }
-    profileApi.getRatingBias(user.id)
-      .then(setRatingBias)
-      .catch((error) => {
-        logger.error('Failed to fetch rating bias:', error)
-      })
-  }, [user])
-
-  // Fetch jitter profile for trust badge
-  useEffect(() => {
-    if (!user) {
-      setJitterProfile(null)
-      return
-    }
-    jitterApi.getMyProfile()
-      .then(setJitterProfile)
-      .catch((error) => {
-        logger.error('Failed to fetch jitter profile:', error)
-      })
-  }, [user])
 
   // Set initial name for editing
   useEffect(() => {
@@ -277,172 +247,76 @@ export function Profile() {
             setFollowListModal={setFollowListModal}
           />
 
-          {/* Share My Picks */}
-          <div className="px-4 pt-3">
+          {/* Dashboard cards */}
+          <div className="px-4 pt-4 flex flex-col gap-3">
+            {/* Share My Picks */}
             <SharePicksButton
               userId={user.id}
               userName={profile?.display_name}
             />
-          </div>
 
-          {/* Rating Style + Deviation Score */}
-          {(stats.ratingStyle || (ratingBias && ratingBias.votesWithConsensus > 0)) && (
-            <div className="px-4 pt-4 flex gap-2.5">
-              {stats.ratingStyle && (
-                <div
-                  className="flex-1 rounded-2xl border px-4 py-3.5"
-                  style={{
-                    background: 'var(--color-card)',
-                    borderColor: 'var(--color-divider)',
-                    boxShadow: 'none',
-                  }}
-                >
-                  <p
-                    className="text-sm font-bold"
+            {/* Food Map + Standouts — side by side */}
+            {stats.totalVotes > 0 && (
+              <div className="flex gap-3">
+                <div className="flex-1 min-w-0">
+                  <FoodMap stats={stats} />
+                </div>
+
+                {stats.totalVotes >= 3 && Object.keys(stats.standoutPicks).length > 0 && (
+                  <div
+                    className="flex-1 min-w-0 rounded-2xl px-3.5 py-4"
                     style={{
-                      color: stats.ratingStyle.level === 'generous' || stats.ratingStyle.level === 'easy'
-                        ? 'var(--color-emerald)'
-                        : stats.ratingStyle.level === 'tough'
-                        ? 'var(--color-red)'
-                        : 'var(--color-orange)',
+                      background: 'var(--color-card)',
+                      border: '1px solid var(--color-divider)',
                     }}
                   >
-                    {stats.ratingStyle.label}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    avg {stats.avgRating.toFixed(1)}/10
-                  </p>
-                </div>
-              )}
-              {ratingBias && ratingBias.votesWithConsensus > 0 && (
-                <div
-                  className="flex-1 rounded-2xl border px-4 py-3.5"
-                  style={{
-                    background: 'var(--color-card)',
-                    borderColor: 'var(--color-divider)',
-                    boxShadow: 'none',
-                  }}
-                >
-                  <p className="text-sm font-bold" style={{
-                    color: (() => {
-                      const isAbove = stats.ratingStyle?.level === 'generous' || stats.ratingStyle?.level === 'easy'
-                      if (isAbove) {
-                        return ratingBias.ratingBias < 1.0 ? 'var(--color-emerald)' : 'var(--color-emerald-light)'
-                      }
-                      const isBelow = stats.ratingStyle?.level === 'tough'
-                      if (isBelow) {
-                        return ratingBias.ratingBias < 1.0 ? 'var(--color-red-light)' : 'var(--color-red)'
-                      }
-                      return 'var(--color-orange)' // fair judge
-                    })(),
-                  }}>
-                    {ratingBias.biasLabel}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {ratingBias.ratingBias.toFixed(1)} pts from crowd
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+                    <h2
+                      className="font-bold mb-3"
+                      style={{
+                        color: 'var(--color-text-primary)',
+                        fontSize: '15px',
+                        letterSpacing: '-0.01em',
+                      }}
+                    >
+                      Standouts
+                    </h2>
 
+                    <div className="space-y-3">
+                      {stats.standoutPicks.bestFind && (
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-sm">{'\u2B50'}</span>
+                            <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Top pick</span>
+                          </div>
+                          <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
+                            {stats.standoutPicks.bestFind.dish_name}
+                          </p>
+                          <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                            {stats.standoutPicks.bestFind.restaurant_name} &middot; {stats.standoutPicks.bestFind.userRating}/10
+                          </p>
+                        </div>
+                      )}
 
-          {/* Review Trust */}
-          {jitterApi.getTrustBadgeType(jitterProfile) && (
-            <div className="px-4 pt-3">
-              <div
-                className="rounded-2xl border px-4 py-3.5 flex items-center justify-between"
-                style={{
-                  background: 'var(--color-card)',
-                  borderColor: 'var(--color-divider)',
-                  boxShadow: 'none',
-                }}
-              >
-                <div>
-                  <p className="text-xs font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
-                    Review Trust
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {jitterProfile.review_count} review{jitterProfile.review_count !== 1 ? 's' : ''} analyzed
-                  </p>
-                </div>
-                <TrustBadge type={jitterApi.getTrustBadgeType(jitterProfile)} size="md" />
+                      {stats.standoutPicks.harshestTake && (
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-sm">{'\uD83C\uDF36\uFE0F'}</span>
+                            <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Hot take</span>
+                          </div>
+                          <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
+                            {stats.standoutPicks.harshestTake.dish_name}
+                          </p>
+                          <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                            {stats.standoutPicks.harshestTake.restaurant_name} &middot; {stats.standoutPicks.harshestTake.userRating}/10
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* Standout Picks */}
-          {stats.totalVotes >= 3 && Object.keys(stats.standoutPicks).length > 0 && (
-            <div className="px-4 pt-3 flex flex-col gap-2.5">
-              {stats.standoutPicks.bestFind && (
-                <div
-                  className="rounded-xl border px-3.5 py-3 flex items-center gap-3"
-                  style={{
-                    background: 'var(--color-card)',
-                    borderColor: 'var(--color-divider)',
-                  }}
-                >
-                  <span className="text-lg flex-shrink-0" style={{ color: 'var(--color-accent-gold)' }}>
-                    {'\u2B50'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
-                      Your top pick
-                    </p>
-                    <p className="text-sm font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                      {stats.standoutPicks.bestFind.dish_name}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                      {stats.standoutPicks.bestFind.restaurant_name} &middot; You: {stats.standoutPicks.bestFind.userRating}/10
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {stats.standoutPicks.harshestTake && (
-                <div
-                  className="rounded-xl border px-3.5 py-3 flex items-center gap-3"
-                  style={{
-                    background: 'var(--color-card)',
-                    borderColor: 'var(--color-red-muted, rgba(239, 68, 68, 0.2))',
-                  }}
-                >
-                  <span className="text-lg flex-shrink-0" style={{ color: 'var(--color-red)' }}>
-                    {'\uD83C\uDF36\uFE0F'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold" style={{ color: 'var(--color-red)' }}>
-                      Your hottest take
-                    </p>
-                    <p className="text-sm font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                      {stats.standoutPicks.harshestTake.dish_name}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                      {stats.standoutPicks.harshestTake.restaurant_name} &middot; You: {stats.standoutPicks.harshestTake.userRating}/10, Crowd: {stats.standoutPicks.harshestTake.communityAvg.toFixed(1)}/10
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Find Friends Section */}
-          <div className="px-4 py-4 relative" style={{ background: 'var(--color-bg)' }}>
-            <div
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px"
-              style={{
-                width: '90%',
-                background: 'linear-gradient(90deg, transparent, var(--color-divider), transparent)',
-              }}
-            />
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{ background: 'var(--color-primary)', padding: '2px' }}
-            >
-              <UserSearch />
-            </div>
+            )}
           </div>
-
 
           {/* Unrated Photos Banner - shown when user has photos to rate */}
           {unratedCount > 0 && (
