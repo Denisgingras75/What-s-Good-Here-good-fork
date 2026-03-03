@@ -51,9 +51,9 @@ export function WelcomeSplash({ onComplete }) {
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center cursor-pointer"
+      className="fixed inset-0 z-[99999] flex items-center justify-center cursor-pointer"
       style={{
-        background: 'var(--color-bg)',
+        background: 'var(--color-primary)',
         opacity: isFadingOut ? 0 : isVisible ? 1 : 0,
         transition: isFadingOut ? 'opacity 300ms ease-out' : 'opacity 300ms ease-in',
         pointerEvents: (isFadingOut || !isVisible) ? 'none' : 'auto',
@@ -64,56 +64,29 @@ export function WelcomeSplash({ onComplete }) {
       tabIndex={0}
       aria-label="Welcome splash screen. Press Enter or tap to skip."
     >
-      {/* Brand mark + logotype */}
       <div
-        className="transition-all duration-300 ease-out text-center px-8"
+        className="flex items-center gap-3"
         style={{
           opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
+          transform: isVisible ? 'scale(1)' : 'scale(0.92)',
+          transition: 'opacity 300ms ease-out, transform 300ms ease-out',
         }}
       >
-        <div className="flex justify-center" style={{ marginBottom: '-18px', position: 'relative', zIndex: 2 }}>
-          <WghLogo size={72} />
-        </div>
+        <WghLogo size={52} color="#FFFFFF" />
         <h1
           style={{
             fontFamily: "'DM Sans', sans-serif",
-            fontSize: '42px',
+            fontSize: '36px',
             fontWeight: 700,
-            color: 'var(--color-primary)',
-            lineHeight: 1.15,
+            color: '#FFFFFF',
             letterSpacing: '-0.02em',
-            position: 'relative',
-            zIndex: 1,
+            lineHeight: 1,
+            whiteSpace: 'nowrap',
           }}
         >
           What's Good Here
         </h1>
-        <p
-          style={{
-            color: 'var(--color-text-secondary)',
-            opacity: 0.7,
-            fontSize: '13px',
-            fontWeight: 500,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            marginTop: '14px',
-          }}
-        >
-          Dish Discovery
-        </p>
       </div>
-
-      {/* Tap to skip hint */}
-      <p
-        className="absolute bottom-10 text-xs transition-opacity duration-300"
-        style={{
-          color: 'var(--color-text-tertiary)',
-          opacity: isVisible && !isFadingOut ? 1 : 0,
-        }}
-      >
-        Tap anywhere to skip
-      </p>
     </div>
   )
 }
