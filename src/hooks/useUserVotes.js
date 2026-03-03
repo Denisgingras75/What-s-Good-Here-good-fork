@@ -193,7 +193,7 @@ function calculateStats(data) {
     ? catValues.reduce((sum, c) => sum + Math.pow(c / catTotal, 2), 0)
     : 0
 
-  // Favorite restaurant (most votes)
+  // Favorite restaurant (most votes) + visit count
   const restaurantCounts = {}
   data.forEach(v => {
     const name = v.dishes.restaurants?.name
@@ -201,12 +201,25 @@ function calculateStats(data) {
       restaurantCounts[name] = (restaurantCounts[name] || 0) + 1
     }
   })
-  const favoriteRestaurant = Object.entries(restaurantCounts).length > 0
-    ? Object.entries(restaurantCounts).sort((a, b) => b[1] - a[1])[0][0]
-    : null
+  const restaurantsSorted = Object.entries(restaurantCounts).sort((a, b) => b[1] - a[1])
+  const favoriteRestaurant = restaurantsSorted.length > 0 ? restaurantsSorted[0][0] : null
+  const favoriteRestaurantCount = restaurantsSorted.length > 0 ? restaurantsSorted[0][1] : 0
 
   // Count unique restaurants
   const uniqueRestaurants = Object.keys(restaurantCounts).length
+
+  // Recent meals — last 3 rated dishes, most recent first
+  const recentMeals = data
+    .filter(v => v.rating_10 != null)
+    .slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 3)
+    .map(v => ({
+      dish_name: v.dishes.name,
+      restaurant_name: v.dishes.restaurants?.name,
+      rating: v.rating_10,
+      category: v.dishes.category,
+      voted_at: v.created_at,
+    }))
 
   return {
     totalVotes,
@@ -219,8 +232,10 @@ function calculateStats(data) {
     topCategories,
     ratingStyle,
     favoriteRestaurant,
+    favoriteRestaurantCount,
     uniqueRestaurants,
     categoryCounts,
+    recentMeals,
   }
 }
 
@@ -235,8 +250,10 @@ const DEFAULT_STATS = {
   topCategories: [],
   ratingStyle: null,
   favoriteRestaurant: null,
+  favoriteRestaurantCount: 0,
   uniqueRestaurants: 0,
   categoryCounts: {},
+  recentMeals: [],
   dishesHelpedRank: 0,
   categoryComparison: {},
   standoutPicks: {},

@@ -19,7 +19,6 @@ import {
   ShelfFilter,
   JournalFeed,
   SharePicksButton,
-  FoodMap,
 } from '../components/profile'
 
 const SHELVES = [
@@ -247,75 +246,125 @@ export function Profile() {
             setFollowListModal={setFollowListModal}
           />
 
-          {/* Dashboard cards */}
-          <div className="px-4 pt-4 flex flex-col gap-3">
-            {/* Share My Picks */}
+          {/* Dashboard cards — side by side */}
+          {stats.totalVotes > 0 && (
+            <div className="px-4 pt-4 flex gap-3">
+              {/* Left card — Recent Meals */}
+              <div
+                className="flex-1 min-w-0 rounded-2xl px-3.5 py-3.5"
+                style={{
+                  background: 'var(--color-card)',
+                  border: '1px solid var(--color-divider)',
+                }}
+              >
+                <h2
+                  className="font-bold mb-2.5"
+                  style={{
+                    color: 'var(--color-text-primary)',
+                    fontSize: '14px',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Recent
+                </h2>
+                <div className="space-y-2.5">
+                  {stats.recentMeals.map(function (meal, i) {
+                    return (
+                      <div key={i}>
+                        <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
+                          {meal.dish_name}
+                        </p>
+                        <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                          {meal.restaurant_name} &middot; <span className="font-semibold" style={{ color: 'var(--color-rating)' }}>{meal.rating}/10</span>
+                        </p>
+                      </div>
+                    )
+                  })}
+                  {stats.recentMeals.length === 0 && (
+                    <p style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
+                      Rate some dishes to see them here
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Right card — Loyal Spot + Best Find */}
+              <div
+                className="flex-1 min-w-0 rounded-2xl px-3.5 py-3.5"
+                style={{
+                  background: 'var(--color-card)',
+                  border: '1px solid var(--color-divider)',
+                }}
+              >
+                <h2
+                  className="font-bold mb-2.5"
+                  style={{
+                    color: 'var(--color-text-primary)',
+                    fontSize: '14px',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Highlights
+                </h2>
+                <div className="space-y-2.5">
+                  {/* Most loyal spot */}
+                  {stats.favoriteRestaurant && (
+                    <div>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <span style={{ fontSize: '12px' }}>{'\uD83C\uDFE0'}</span>
+                        <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Most loyal</span>
+                      </div>
+                      <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
+                        {stats.favoriteRestaurant}
+                      </p>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                        {stats.favoriteRestaurantCount} {stats.favoriteRestaurantCount === 1 ? 'dish' : 'dishes'} rated
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Best find */}
+                  {stats.standoutPicks.bestFind && (
+                    <div>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <span style={{ fontSize: '12px' }}>{'\u2B50'}</span>
+                        <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Best find</span>
+                      </div>
+                      <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
+                        {stats.standoutPicks.bestFind.dish_name}
+                      </p>
+                      <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                        {stats.standoutPicks.bestFind.restaurant_name} &middot; <span className="font-semibold" style={{ color: 'var(--color-accent-gold)' }}>{stats.standoutPicks.bestFind.userRating}/10</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Controversial pick */}
+                  {stats.standoutPicks.harshestTake && (
+                    <div>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <span style={{ fontSize: '12px' }}>{'\uD83C\uDF36\uFE0F'}</span>
+                        <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Hot take</span>
+                      </div>
+                      <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
+                        {stats.standoutPicks.harshestTake.dish_name}
+                      </p>
+                      <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
+                        You: {stats.standoutPicks.harshestTake.userRating} &middot; Crowd: {stats.standoutPicks.harshestTake.communityAvg.toFixed(1)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Share My Picks */}
+          <div className="px-4 pt-3">
             <SharePicksButton
               userId={user.id}
               userName={profile?.display_name}
             />
-
-            {/* Food Map + Standouts — side by side */}
-            {stats.totalVotes > 0 && (
-              <div className="flex gap-3">
-                <div className="flex-1 min-w-0">
-                  <FoodMap stats={stats} />
-                </div>
-
-                {stats.totalVotes >= 3 && Object.keys(stats.standoutPicks).length > 0 && (
-                  <div
-                    className="flex-1 min-w-0 rounded-2xl px-3.5 py-4"
-                    style={{
-                      background: 'var(--color-card)',
-                      border: '1px solid var(--color-divider)',
-                    }}
-                  >
-                    <h2
-                      className="font-bold mb-3"
-                      style={{
-                        color: 'var(--color-text-primary)',
-                        fontSize: '15px',
-                        letterSpacing: '-0.01em',
-                      }}
-                    >
-                      Standouts
-                    </h2>
-
-                    <div className="space-y-3">
-                      {stats.standoutPicks.bestFind && (
-                        <div>
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-sm">{'\u2B50'}</span>
-                            <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Top pick</span>
-                          </div>
-                          <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
-                            {stats.standoutPicks.bestFind.dish_name}
-                          </p>
-                          <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                            {stats.standoutPicks.bestFind.restaurant_name} &middot; {stats.standoutPicks.bestFind.userRating}/10
-                          </p>
-                        </div>
-                      )}
-
-                      {stats.standoutPicks.harshestTake && (
-                        <div>
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-sm">{'\uD83C\uDF36\uFE0F'}</span>
-                            <span style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', fontWeight: '600' }}>Hot take</span>
-                          </div>
-                          <p className="font-bold truncate" style={{ color: 'var(--color-text-primary)', fontSize: '13px' }}>
-                            {stats.standoutPicks.harshestTake.dish_name}
-                          </p>
-                          <p className="truncate" style={{ color: 'var(--color-text-secondary)', fontSize: '11px' }}>
-                            {stats.standoutPicks.harshestTake.restaurant_name} &middot; {stats.standoutPicks.harshestTake.userRating}/10
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Unrated Photos Banner - shown when user has photos to rate */}
