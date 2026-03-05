@@ -15,7 +15,7 @@ import { ReviewFlow } from '../components/ReviewFlow'
 import { PhotoUploadConfirmation } from '../components/PhotoUploadConfirmation'
 import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
-import { DishPlaceholder } from '../components/DishPlaceholder'
+import { CategoryIcon } from '../components/home/CategoryIcons'
 import { PhotoUploadButton } from '../components/PhotoUploadButton'
 import { TrustBadge, TrustSummary } from '../components/TrustBadge'
 import { ValueBadge } from '../components/browse/ValueBadge'
@@ -381,7 +381,6 @@ export function Dish() {
   const hasMorePhotos = allPhotos.length > 4 && !showAllPhotos
 
   // Hero image — only use real photos, fall back to RestaurantAvatar placeholder
-  const heroImage = featuredPhoto?.photo_url || dish?.photo_url
 
   if (loading) {
     return (
@@ -515,35 +514,16 @@ export function Dish() {
               Score, consensus, distance. 2 seconds.
               ═══════════════════════════════════════════ */}
 
-          {/* Hero Image */}
-          {heroImage ? (
-            <div className="relative aspect-[3/2] overflow-hidden">
-              <img
-                src={heroImage}
-                alt={dish.dish_name}
-                className="w-full h-full object-cover"
-              />
-              <div
-                className="absolute inset-x-0 bottom-0 h-24"
-                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)' }}
-              />
-              {featuredPhoto?.source_type === 'restaurant' && (
-                <div
-                  className="absolute top-3 right-3 px-2 py-0.5 rounded-md"
-                  style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)' }}
-                >
-                  <span className="text-[10px] font-bold" style={{ color: 'var(--color-primary)' }}>Official</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div
-              className="relative overflow-hidden flex items-center justify-center"
-              style={{ height: '48px', background: 'var(--color-surface)' }}
-            >
-              <DishPlaceholder restaurantName={dish.restaurant_name} restaurantTown={dish.restaurant_town} category={dish.category} />
-            </div>
-          )}
+          {/* Category Icon Hero */}
+          <div
+            className="flex items-center justify-center"
+            style={{
+              height: '120px',
+              background: 'var(--color-surface)',
+            }}
+          >
+            <CategoryIcon categoryId={dish.category} dishName={dish.dish_name} size={80} />
+          </div>
 
           {/* Verdict Card */}
           <div
@@ -551,7 +531,7 @@ export function Dish() {
             style={{
               background: 'var(--color-card)',
               border: '1.5px solid var(--color-divider)',
-              marginTop: heroImage ? '-32px' : '0',
+              marginTop: '12px',
               position: 'relative',
               zIndex: 5,
             }}
