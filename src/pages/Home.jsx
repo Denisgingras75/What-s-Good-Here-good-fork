@@ -12,6 +12,7 @@ import { CategoryChips } from '../components/CategoryChips'
 import { SectionHeader } from '../components/SectionHeader'
 import { EmptyState } from '../components/EmptyState'
 import { CuratorListSection, StatBar, HowItWorks } from '../components/home'
+import { JitterBadge } from '../components/jitter/JitterBadge'
 
 export function Home() {
   var navigate = useNavigate()
@@ -79,10 +80,11 @@ export function Home() {
       </div>
 
       {/* Trust line + stats */}
-      <div className="text-center px-4 pb-1">
+      <div className="flex items-center justify-center gap-2 px-4 pb-1">
         <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-          Powered by real ratings from locals and visitors
+          Verified by
         </p>
+        <JitterBadge warScore={0.95} size="sm" animate={false} />
       </div>
       <StatBar />
 
@@ -183,10 +185,10 @@ export function Home() {
           >
             <div>
               <p className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                The 50 Best Dishes on MV
+                The 50 Best Dishes
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                See the full island ranking
+                See the full ranking
               </p>
             </div>
             <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
