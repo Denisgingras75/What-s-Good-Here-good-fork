@@ -72,13 +72,14 @@ export function WelcomeSplash({ onComplete }) {
           transition: 'opacity 300ms ease-out, transform 300ms ease-out',
         }}
       >
+        {/* White on brand coral — intentional, not theme-dependent */}
         <WghLogo size={52} color="#FFFFFF" />
         <h1
           style={{
             fontFamily: "'DM Sans', sans-serif",
             fontSize: '36px',
             fontWeight: 700,
-            color: '#FFFFFF',
+            color: 'var(--color-text-on-primary)',
             letterSpacing: '-0.02em',
             lineHeight: 1,
             whiteSpace: 'nowrap',

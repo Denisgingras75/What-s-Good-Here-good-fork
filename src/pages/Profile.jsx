@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { logger } from '../utils/logger'
 import { authApi } from '../api/authApi'
@@ -47,20 +48,12 @@ export function Profile() {
 
   const [selectedDish, setSelectedDish] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 })
+  const { data: followCounts = { followers: 0, following: 0 } } = useQuery({
+    queryKey: ['followCounts', user?.id],
+    queryFn: () => followsApi.getFollowCounts(user.id),
+    enabled: !!user,
+  })
   const [followListModal, setFollowListModal] = useState(null) // 'followers' | 'following' | null
-  const [userReviews, setUserReviews] = useState([])
-  const [reviewsLoading, setReviewsLoading] = useState(false)
-
-  // Fetch follow counts
-  useEffect(() => {
-    if (!user) return
-    followsApi.getFollowCounts(user.id)
-      .then(setFollowCounts)
-      .catch((error) => {
-        logger.error('Failed to fetch follow counts:', error)
-      })
-  }, [user])
 
 
   // Set initial name for editing
@@ -97,25 +90,11 @@ export function Profile() {
     return () => clearTimeout(timer)
   }, [newName, editingName, profile?.display_name])
 
-  // Fetch user's written reviews
-  useEffect(() => {
-    if (!user) {
-      setUserReviews([])
-      return
-    }
-    async function fetchReviews() {
-      setReviewsLoading(true)
-      try {
-        const reviews = await votesApi.getReviewsForUser(user.id)
-        setUserReviews(reviews)
-      } catch (error) {
-        logger.error('Failed to fetch reviews:', error)
-      } finally {
-        setReviewsLoading(false)
-      }
-    }
-    fetchReviews()
-  }, [user])
+  const { data: userReviews = [] } = useQuery({
+    queryKey: ['userReviews', user?.id],
+    queryFn: () => votesApi.getReviewsForUser(user.id),
+    enabled: !!user,
+  })
 
   const handleGoogleSignIn = async () => {
     setAuthLoading(true)
@@ -148,11 +127,15 @@ export function Profile() {
       return
     }
 
-    if (newName.trim()) {
-      await updateProfile({ display_name: newName.trim() })
+    try {
+      if (newName.trim()) {
+        await updateProfile({ display_name: newName.trim() })
+      }
+      setEditingName(false)
+      setNameStatus(null)
+    } catch (error) {
+      logger.error('Profile: failed to save display name', error)
     }
-    setEditingName(false)
-    setNameStatus(null)
   }
 
   // Enrich worthIt/avoid dishes with review text for journal cards
@@ -210,6 +193,7 @@ export function Profile() {
 
   // Handle deleting an unrated photo
   const handleDeletePhoto = async (photoId) => {
+    // TODO: Replace browser confirm() with custom confirmation modal
     if (!confirm('Delete this photo? This cannot be undone.')) return
     try {
       await dishPhotosApi.deletePhoto(photoId)
@@ -483,11 +467,7 @@ export function Profile() {
             </div>
 
             {message && (
-              <div className={`p-3 rounded-lg mb-4 text-sm ${
-                message.type === 'error'
-                  ? ''
-                  : ''
-              }`}
+              <div className="p-3 rounded-lg mb-4 text-sm"
                 style={{
                   background: message.type === 'error' ? 'var(--color-danger-muted, rgba(239, 68, 68, 0.1))' : 'var(--color-success-muted, rgba(16, 185, 129, 0.1))',
                   color: message.type === 'error' ? 'var(--color-red)' : 'var(--color-emerald)',
