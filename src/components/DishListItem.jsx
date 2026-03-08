@@ -77,6 +77,9 @@ export const DishListItem = memo(function DishListItem({
   const category = dish.category
   const latestVoteAt = dish.latest_vote_at
   const recency = timeAgo(latestVoteAt)
+  const toastSlug = dish.toast_slug || (dish.restaurants && dish.restaurants.toast_slug)
+  const websiteUrl = dish.website_url || (dish.restaurants && dish.restaurants.website_url)
+  const restaurantAddress = dish.restaurant_address || (dish.restaurants && dish.restaurants.address)
 
   var handleClick = onClick || function () { navigate('/dish/' + dishId) }
 
@@ -180,29 +183,75 @@ export const DishListItem = memo(function DishListItem({
         </div>
       </div>
 
-      {/* Rating */}
-      <div className="flex-shrink-0 text-right">
-        {isRanked ? (
-          <span
-            className="font-bold"
-            style={{
-              fontSize: isPodium ? '17px' : '15px',
-              color: getRatingColor(avgRating),
-            }}
+      {/* Rating + Action buttons */}
+      <div className="flex-shrink-0 flex items-center gap-2">
+        {/* Order Now / See Menu */}
+        {toastSlug ? (
+          <a
+            href={'https://order.toasttab.com/online/' + toastSlug}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={function (e) { e.stopPropagation() }}
+            className="rounded-lg px-2.5 py-1 text-xs font-bold"
+            style={{ background: 'var(--color-primary)', color: 'white', whiteSpace: 'nowrap' }}
           >
-            {avgRating}
-          </span>
-        ) : (
-          <span
-            style={{
-              fontSize: '12px',
-              color: 'var(--color-text-tertiary)',
-              fontWeight: 500,
-            }}
+            Order Now
+          </a>
+        ) : websiteUrl ? (
+          <a
+            href={websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={function (e) { e.stopPropagation() }}
+            className="rounded-lg px-2.5 py-1 text-xs font-bold"
+            style={{ background: 'var(--color-surface)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-divider)', whiteSpace: 'nowrap' }}
           >
-            {totalVotes ? totalVotes + ' review' + (totalVotes === 1 ? '' : 's') : 'New'}
-          </span>
-        )}
+            See Menu
+          </a>
+        ) : null}
+
+        {/* Directions */}
+        <a
+          href={dish.restaurant_lat && dish.restaurant_lng
+            ? 'https://www.google.com/maps/dir/?api=1&destination=' + dish.restaurant_lat + ',' + dish.restaurant_lng
+            : 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent((restaurantAddress || restaurantName) + ', Martha\'s Vineyard, MA')
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={function (e) { e.stopPropagation() }}
+          className="flex-shrink-0 rounded-lg p-1.5"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-divider)' }}
+          aria-label="Directions"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+          </svg>
+        </a>
+
+        {/* Rating */}
+        <div className="text-right" style={{ minWidth: '28px' }}>
+          {isRanked ? (
+            <span
+              className="font-bold"
+              style={{
+                fontSize: isPodium ? '17px' : '15px',
+                color: getRatingColor(avgRating),
+              }}
+            >
+              {avgRating}
+            </span>
+          ) : (
+            <span
+              style={{
+                fontSize: '12px',
+                color: 'var(--color-text-tertiary)',
+                fontWeight: 500,
+              }}
+            >
+              {totalVotes ? totalVotes + ' review' + (totalVotes === 1 ? '' : 's') : 'New'}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   )

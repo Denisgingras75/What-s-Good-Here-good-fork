@@ -890,7 +890,10 @@ RETURNS TABLE (
   value_percentile DECIMAL,
   search_score DECIMAL,
   featured_photo_url TEXT,
-  latest_vote_at TIMESTAMPTZ
+  latest_vote_at TIMESTAMPTZ,
+  toast_slug TEXT,
+  website_url TEXT,
+  restaurant_address TEXT
 ) AS $$
 DECLARE
   lat_delta DECIMAL := radius_miles / 69.0;
@@ -898,7 +901,7 @@ DECLARE
 BEGIN
   RETURN QUERY
   WITH nearby_restaurants AS (
-    SELECT r.id, r.name, r.town, r.lat, r.lng, r.cuisine
+    SELECT r.id, r.name, r.town, r.lat, r.lng, r.cuisine, r.toast_slug, r.website_url, r.address
     FROM restaurants r
     WHERE r.is_open = true
       AND r.lat BETWEEN (user_lat - lat_delta) AND (user_lat + lat_delta)
@@ -907,7 +910,7 @@ BEGIN
   ),
   restaurants_with_distance AS (
     SELECT
-      nr.id, nr.name, nr.town, nr.lat, nr.lng, nr.cuisine,
+      nr.id, nr.name, nr.town, nr.lat, nr.lng, nr.cuisine, nr.toast_slug, nr.website_url, nr.address,
       ROUND((
         3959 * ACOS(
           LEAST(1.0, GREATEST(-1.0,
@@ -1033,7 +1036,10 @@ BEGIN
       COALESCE(rvc.recent_votes, 0)
     ) AS search_score,
     bp.photo_url AS featured_photo_url,
-    MAX(v.created_at) AS latest_vote_at
+    MAX(v.created_at) AS latest_vote_at,
+    fr.toast_slug,
+    fr.website_url,
+    fr.address AS restaurant_address
   FROM dishes d
   INNER JOIN filtered_restaurants fr ON d.restaurant_id = fr.id
   LEFT JOIN votes v ON d.id = v.dish_id
@@ -1049,7 +1055,8 @@ BEGIN
            bv.best_name, bv.best_rating,
            d.value_score, d.value_percentile,
            rvc.recent_votes,
-           bp.photo_url
+           bp.photo_url,
+           fr.toast_slug, fr.website_url, fr.address
   ORDER BY search_score DESC NULLS LAST, total_votes DESC;
 END;
 $$ LANGUAGE plpgsql STABLE SET search_path = public;
