@@ -17,7 +17,7 @@ import { LoginModal } from '../components/Auth/LoginModal'
 import { VariantSelector } from '../components/VariantPicker'
 import { DishPlaceholder } from '../components/DishPlaceholder'
 import { PhotoUploadButton } from '../components/PhotoUploadButton'
-import { TrustBadge, TrustSummary } from '../components/TrustBadge'
+import { TrustBadge, TrustSummary, JitterExplainer } from '../components/jitter'
 import { ValueBadge } from '../components/browse/ValueBadge'
 import { CATEGORY_INFO } from '../constants/categories'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
@@ -113,6 +113,8 @@ export function Dish() {
 
   // Ear icon tooltip — show once per device
   const [showEarTooltip, setShowEarTooltip] = useState(false)
+  const [explainerOpen, setExplainerOpen] = useState(false)
+  const [explainerData, setExplainerData] = useState(null)
   const tooltipChecked = useRef(false)
 
   useEffect(() => {
@@ -452,7 +454,7 @@ export function Dish() {
         className="sticky top-0 z-30 px-3 py-2 flex items-center gap-2 top-bar"
         style={{
           background: 'var(--color-bg)',
-          borderBottom: '1.5px solid var(--color-divider)',
+          borderBottom: '2px solid var(--color-divider)',
         }}
       >
         <button
@@ -576,9 +578,9 @@ export function Dish() {
               <h1
                 style={{
                   fontFamily: "'DM Sans', sans-serif",
-                  fontWeight: 800,
+                  fontWeight: 900,
                   fontSize: '22px',
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '-0.03em',
                   color: 'var(--color-text-primary)',
                   lineHeight: 1.15,
                   margin: 0,
@@ -599,9 +601,9 @@ export function Dish() {
                 onClick={() => navigate('/restaurants/' + dish.restaurant_id)}
                 className="flex items-center gap-1"
                 style={{
-                  fontSize: '12px',
+                  fontSize: '14px',
                   fontWeight: 700,
-                  color: 'var(--color-text-tertiary)',
+                  color: 'var(--color-accent-gold)',
                   background: 'none',
                   border: 'none',
                   padding: 0,
@@ -635,7 +637,7 @@ export function Dish() {
 
             {/* Score Block — the whole point */}
             {isRanked && dish.avg_rating ? (
-              <div className="flex items-end justify-between mt-4 pt-3" style={{ borderTop: '1px solid var(--color-divider)' }}>
+              <div className="flex items-end justify-between mt-4 pt-3" style={{ borderTop: '2px solid var(--color-divider)' }}>
                 <div className="flex items-baseline gap-2">
                   <span
                     style={{
@@ -645,6 +647,7 @@ export function Dish() {
                       lineHeight: 1,
                       color: getRatingColor(dish.avg_rating),
                       fontVariantNumeric: 'tabular-nums',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
                     }}
                   >
                     {formatScore10(dish.avg_rating)}
@@ -668,74 +671,19 @@ export function Dish() {
                       transition: 'width 0.4s ease',
                     }} />
                   </div>
-                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                     {dish.total_votes} vote{dish.total_votes === 1 ? '' : 's'}
                   </p>
                   <ValueBadge valuePercentile={dish.value_percentile} />
                 </div>
               </div>
             ) : dish.total_votes > 0 ? (
-              <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--color-divider)' }}>
+              <div className="mt-3 pt-3" style={{ borderTop: '2px solid var(--color-divider)' }}>
                 <p className="text-sm font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
                   {dish.total_votes} vote{dish.total_votes === 1 ? '' : 's'} — needs {MIN_VOTES_FOR_RANKING - dish.total_votes} more to rank
                 </p>
               </div>
             ) : null}
-          </div>
-
-          {/* ═══════════════════════════════════════════
-              LAYER 2: THE ACTION
-              Get there or order online. 3 seconds.
-              ═══════════════════════════════════════════ */}
-          <div className="px-3 pt-3">
-            <div className="flex gap-2">
-              {/* Toast ordering takes priority over generic website link */}
-              {dish.toast_slug ? (
-                <a
-                  href={`https://order.toasttab.com/online/${dish.toast_slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => capture('toast_order_clicked', {
-                    dish_id: dish.dish_id,
-                    dish_name: dish.dish_name,
-                    restaurant_id: dish.restaurant_id,
-                    restaurant_name: dish.restaurant_name,
-                  })}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all active:scale-95"
-                  style={{
-                    background: 'var(--color-accent-orange)',
-                    color: 'var(--color-bg)',
-                  }}
-                >
-                  Order This
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                  </svg>
-                </a>
-              ) : dish.website_url ? (
-                <a
-                  href={dish.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => capture('order_link_clicked', {
-                    dish_id: dish.dish_id,
-                    dish_name: dish.dish_name,
-                    restaurant_id: dish.restaurant_id,
-                    restaurant_name: dish.restaurant_name,
-                  })}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all active:scale-95"
-                  style={{
-                    background: 'var(--color-primary)',
-                    color: 'var(--color-text-on-primary)',
-                  }}
-                >
-                  Order Online
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </a>
-              ) : null}
-            </div>
           </div>
 
           {/* Review Flow */}
@@ -800,7 +748,7 @@ export function Dish() {
                   &ldquo;{smartSnippet.review_text}&rdquo;
                 </p>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                     — @{smartSnippet.profiles?.display_name || 'Anonymous'}
                   </span>
                   {smartSnippet.rating_10 && (
@@ -815,7 +763,7 @@ export function Dish() {
             {/* Photos grid */}
             {displayPhotos.length > 0 && (
               <div className="mb-4">
-                <h3 className="text-xs font-bold mb-3" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <h3 className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 800 }}>
                   Photos ({displayPhotos.length})
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
@@ -855,7 +803,7 @@ export function Dish() {
                 className="mb-4 p-4 rounded-xl"
                 style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-divider)' }}
               >
-                <h3 className="text-xs font-bold mb-3" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <h3 className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 800 }}>
                   Friends who rated this
                 </h3>
                 <div className="space-y-3">
@@ -921,7 +869,7 @@ export function Dish() {
             {reviews.length > 0 && (
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  <h3 className="text-xs" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 800 }}>
                     Reviews ({reviews.length})
                   </h3>
                   <TrustSummary
@@ -929,53 +877,81 @@ export function Dish() {
                     aiCount={reviews.filter(function (r) { return r.trust_badge === 'ai_estimated' }).length}
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {reviews.map(function (review) {
+                    var borderColor = review.rating_10 >= 8 ? 'var(--color-success, #22c55e)' : review.rating_10 >= 6 ? 'var(--color-accent-gold)' : 'var(--color-primary)';
                     return (
                       <div
                         key={review.id}
                         className="p-4 rounded-xl"
-                        style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-divider)' }}
+                        style={{ background: 'var(--color-card)', border: '1.5px solid var(--color-divider)', borderLeft: '3px solid ' + borderColor }}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <Link to={'/user/' + review.user_id} className="flex items-center gap-2 min-w-0">
-                            <div
-                              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
-                              style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
-                            >
-                              {review.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="flex items-center gap-1.5">
-                                <span className="text-sm font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                                  @{review.profiles?.display_name || 'Anonymous'}
-                                </span>
-                                <TrustBadge type={review.trust_badge} profileData={review.jitter_profile} />
-                              </span>
-                              <span className="text-[11px] block" style={{ color: 'var(--color-text-tertiary)' }}>
-                                {formatRelativeTime(review.review_created_at)}
-                              </span>
-                            </div>
-                          </Link>
-                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                            <span className="font-bold" style={{ fontSize: '18px', color: getRatingColor(review.rating_10) }}>
-                              {review.rating_10 ? formatScore10(review.rating_10) : ''}
-                            </span>
-                            <span>{review.would_order_again ? <ThumbsUpIcon size={22} /> : <ThumbsDownIcon size={22} />}</span>
+                        {/* Row 1: Avatar + Name + Timestamp */}
+                        <Link to={'/user/' + review.user_id} className="flex items-center gap-3 mb-2.5 min-w-0">
+                          <div
+                            className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                            style={{ background: 'var(--color-primary)', color: 'var(--color-text-on-primary)' }}
+                          >
+                            {review.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
                           </div>
+                          <div className="min-w-0">
+                            <span className="flex items-center gap-1.5">
+                              <span className="text-sm font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                                @{review.profiles?.display_name || 'Anonymous'}
+                              </span>
+                              <TrustBadge type={review.trust_badge} profileData={review.jitter_profile} />
+                              {review.trust_badge && review.trust_badge !== 'building' && (
+                                <button
+                                  onClick={function (e) {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setExplainerData({ warScore: review.war_score, stats: review.jitter_profile })
+                                    setExplainerOpen(true)
+                                  }}
+                                  className="flex-shrink-0"
+                                  style={{ color: 'var(--color-text-tertiary)', fontSize: '11px', lineHeight: 1 }}
+                                  aria-label="What is this badge?"
+                                >
+                                  ?
+                                </button>
+                              )}
+                            </span>
+                            <span className="text-[11px] block" style={{ color: 'var(--color-text-secondary)' }}>
+                              {formatRelativeTime(review.review_created_at)}{dish.restaurant_town ? ' · ' + dish.restaurant_town : ''}
+                            </span>
+                          </div>
+                        </Link>
+
+                        {/* Row 2: Rating pill + sentiment */}
+                        <div className="flex items-center gap-2 mb-2.5">
+                          {review.rating_10 ? (
+                            <span
+                              className="rounded-full px-2.5 py-0.5 font-bold text-sm"
+                              style={{ background: getRatingColor(review.rating_10) + '26', color: getRatingColor(review.rating_10) }}
+                            >
+                              {formatScore10(review.rating_10)}
+                            </span>
+                          ) : null}
+                          <span className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                            {review.would_order_again ? <><ThumbsUpIcon size={18} /> Would order again</> : <><ThumbsDownIcon size={18} /> Would skip</>}
+                          </span>
                         </div>
+
+                        {/* Row 3: Review text */}
                         {review.review_text && (
-                          <p className="text-sm" style={{ color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
+                          <p style={{ color: 'var(--color-text-primary)', fontSize: '15px', lineHeight: 1.7 }}>
                             {review.review_text}
                           </p>
                         )}
+
+                        {/* Row 4: Verified badge */}
                         {review.verify_url && (
                           <a
                             href={review.verify_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] mt-1"
-                            style={{ color: 'var(--color-text-tertiary)' }}
+                            className="inline-flex items-center gap-1 text-[11px] mt-2"
+                            style={{ color: 'var(--color-text-secondary)' }}
                           >
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             Verified · WAR {review.war_score}
@@ -1003,7 +979,7 @@ export function Dish() {
             {/* Variant Selector */}
             {variants.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-bold mb-2" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 800 }}>
                   {isVariant ? 'Other flavors' : 'Available flavors'}
                 </p>
                 <VariantSelector
@@ -1052,6 +1028,67 @@ export function Dish() {
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
       />
+
+      {/* Jitter Explainer */}
+      <JitterExplainer
+        open={explainerOpen}
+        onClose={function () { setExplainerOpen(false) }}
+        warScore={explainerData && explainerData.warScore}
+        stats={explainerData && explainerData.stats}
+      />
+
+      {/* Sticky bottom action bar */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-30 px-4 pt-3"
+        style={{
+          background: 'var(--color-bg)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 -2px 12px rgba(0,0,0,0.08)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
+        <div className="flex gap-2 pb-2">
+          {dish.toast_slug && (
+            <a
+              href={`https://order.toasttab.com/online/${dish.toast_slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => capture('toast_order_clicked', {
+                dish_id: dish.dish_id,
+                dish_name: dish.dish_name,
+                restaurant_id: dish.restaurant_id,
+                restaurant_name: dish.restaurant_name,
+              })}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+              style={{
+                background: 'var(--color-accent-orange)',
+                color: 'var(--color-bg)',
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+              </svg>
+              Order This
+            </a>
+          )}
+          {dish.restaurant_lat && dish.restaurant_lng && (
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${dish.restaurant_lat},${dish.restaurant_lng}`}
+              rel="noopener noreferrer"
+              className={`${dish.toast_slug ? 'flex-1' : 'w-full'} flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]`}
+              style={{
+                background: 'var(--color-accent-gold)',
+                color: 'var(--color-bg)',
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+              </svg>
+              Directions
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

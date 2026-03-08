@@ -1,6 +1,18 @@
 import { memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MIN_VOTES_FOR_RANKING } from '../constants/app'
+
+function timeAgo(dateStr) {
+  if (!dateStr) return null
+  var days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+  if (days === 0) return 'today'
+  if (days === 1) return '1 day ago'
+  if (days < 30) return days + ' days ago'
+  var months = Math.floor(days / 30)
+  if (months === 1) return '1 month ago'
+  if (months < 12) return months + ' months ago'
+  return '1+ year ago'
+}
 import { getRatingColor } from '../utils/ranking'
 import { CategoryIcon } from './home/CategoryIcons'
 import { RestaurantAvatar } from './RestaurantAvatar'
@@ -63,6 +75,8 @@ export const DishListItem = memo(function DishListItem({
   const photoUrl = dish.photo_url
   const valuePercentile = dish.value_percentile
   const category = dish.category
+  const latestVoteAt = dish.latest_vote_at
+  const recency = timeAgo(latestVoteAt)
 
   var handleClick = onClick || function () { navigate('/dish/' + dishId) }
 
@@ -160,6 +174,7 @@ export const DishListItem = memo(function DishListItem({
             {restaurantName}
             {sortBy === 'best_value' && price != null && ' \u00b7 $' + Number(price).toFixed(0)}
             {showDistance && distanceMiles != null && ' \u00b7 ' + Number(distanceMiles).toFixed(1) + ' mi'}
+            {isRanked && recency && ' \u00b7 ' + recency}
           </p>
           {valuePercentile != null && <ValueBadge valuePercentile={valuePercentile} />}
         </div>
@@ -185,7 +200,7 @@ export const DishListItem = memo(function DishListItem({
               fontWeight: 500,
             }}
           >
-            {totalVotes ? totalVotes + ' vote' + (totalVotes === 1 ? '' : 's') : 'New'}
+            {totalVotes ? totalVotes + ' review' + (totalVotes === 1 ? '' : 's') : 'New'}
           </span>
         )}
       </div>
