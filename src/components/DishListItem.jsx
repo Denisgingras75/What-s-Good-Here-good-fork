@@ -64,7 +64,7 @@ export const DishListItem = memo(function DishListItem({
   const category = dish.category
   const toastSlug = dish.toast_slug || (dish.restaurants && dish.restaurants.toast_slug)
   const orderUrl = dish.order_url || (dish.restaurants && dish.restaurants.order_url)
-  const websiteUrl = dish.website_url || (dish.restaurants && dish.restaurants.website_url)
+  const websiteUrl = dish.website_url || dish.restaurant_website_url || (dish.restaurants && dish.restaurants.website_url)
   const restaurantAddress = dish.restaurant_address || (dish.restaurants && dish.restaurants.address)
   const restaurantPhone = dish.restaurant_phone || (dish.restaurants && dish.restaurants.phone)
   const restaurantLat = dish.restaurant_lat || (dish.restaurants && dish.restaurants.lat)
@@ -208,8 +208,8 @@ export const DishListItem = memo(function DishListItem({
       </div>
       </div>
 
-      {/* Action buttons row */}
-      {(toastSlug || orderUrl || websiteUrl || restaurantPhone) && (
+      {/* Action buttons row — always show at minimum a Directions button */}
+      {(toastSlug || orderUrl || websiteUrl || restaurantPhone || restaurantName) && (
         <div className="flex items-center gap-1.5" style={{ marginTop: '6px', marginLeft: rank != null ? (isPodium ? '44px' : '38px') : '0' }}>
           {/* Order Now */}
           {(toastSlug || orderUrl) && (
