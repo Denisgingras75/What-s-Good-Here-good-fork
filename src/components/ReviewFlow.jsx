@@ -236,15 +236,32 @@ export function ReviewFlow({ dishId, dishName, restaurantId, restaurantName, cat
     // Notify parent to refresh data
     onVote?.()
 
-    // Submit to server in background (non-blocking)
-    submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit, purityData, jitterData, jitterScore)
+    // Attest + submit in parallel (both non-blocking)
+    const attestPromise = jitterScore && user
+      ? jitterApi.attestReview({
+          userId: user.id,
+          warScore: jitterScore.score,
+          classification: jitterScore.classification,
+          flags: jitterScore.flags,
+          meta: {
+            keys: badge?.session?.keystrokes || 0,
+            paste_chars: badge?.session?.pasteChars || 0,
+            focus_ms: badge?.session?.duration ? badge.session.duration * 1000 : 0,
+          },
+        })
+      : Promise.resolve(null)
+
+    attestPromise
+      .then((attestResult) => {
+        const badgeHash = attestResult?.badge_hash || null
+        return submitVote(dishId, pendingVote, sliderValue, reviewTextToSubmit, purityData, jitterData, jitterScore, badgeHash)
+      })
       .then(async (result) => {
         if (result.success && sessionStatsData?.isCapturing) {
           try {
             const profile = await jitterApi.getMyProfile()
             setSessionCardData({ sessionStats: sessionStatsData, profileStats: profile })
           } catch (e) {
-            // Non-critical — show card with session stats only
             setSessionCardData({ sessionStats: sessionStatsData, profileStats: null })
           }
         }

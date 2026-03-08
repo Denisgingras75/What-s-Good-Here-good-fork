@@ -21,7 +21,7 @@ export const votesApi = {
    * @param {string} params.reviewText - Optional review text (max 200 chars)
    * @returns {Promise<Object>} Success status
    */
-  async submitVote({ dishId, wouldOrderAgain, rating10 = null, reviewText = null, purityData = null, jitterData = null, jitterScore = null }) {
+  async submitVote({ dishId, wouldOrderAgain, rating10 = null, reviewText = null, purityData = null, jitterData = null, jitterScore = null, badgeHash = null }) {
     // Quick client-side check first (better UX)
       const clientRateLimit = checkVoteRateLimit()
       if (!clientRateLimit.allowed) {
@@ -79,6 +79,14 @@ export const votesApi = {
       // Attach purity score if available (silent anti-spam metric)
       if (purityData && purityData.purity != null) {
         voteData.purity_score = purityData.purity
+      }
+
+      // Attach WAR score and badge hash from attestation
+      if (jitterScore && jitterScore.score != null) {
+        voteData.war_score = jitterScore.score
+      }
+      if (badgeHash) {
+        voteData.badge_hash = badgeHash
       }
 
       const { error } = await supabase
@@ -278,7 +286,9 @@ export const votesApi = {
           review_created_at,
           user_id,
           source,
-          source_metadata
+          source_metadata,
+          war_score,
+          badge_hash
         `)
         .eq('dish_id', dishId)
         .not('review_text', 'is', null)
@@ -314,6 +324,9 @@ export const votesApi = {
       }
 
       // Enrich reviews with profiles and trust badges
+      const attestBase = import.meta.env.VITE_JITTER_ATTEST_URL
+      const verifyBase = attestBase ? attestBase.replace('/attest', '/verify') : null
+
       return data.map(review => ({
         ...review,
         profiles: profileMap[review.user_id] || { id: review.user_id, display_name: null },
@@ -321,6 +334,9 @@ export const votesApi = {
           ? 'ai_estimated'
           : jitterApi.getTrustBadgeType(jitterMap[review.user_id] || null),
         jitter_profile: jitterMap[review.user_id] || null,
+        verify_url: review.badge_hash && verifyBase
+          ? verifyBase + '?hash=' + review.badge_hash
+          : null,
       }))
     } catch (error) {
       logger.error('Error fetching reviews for dish:', error)

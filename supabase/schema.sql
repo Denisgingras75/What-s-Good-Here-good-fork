@@ -84,11 +84,18 @@ CREATE TABLE IF NOT EXISTS votes (
   scored_at TIMESTAMPTZ,
   category_snapshot TEXT,
   purity_score DECIMAL(5, 2),
+  war_score DECIMAL(4, 3),
+  badge_hash TEXT,
   source TEXT NOT NULL DEFAULT 'user' CHECK (source IN ('user', 'ai_estimated', 'curator')),
   source_metadata JSONB,
+  review_weight NUMERIC(4,3) DEFAULT 1.000,
+  is_archived BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   CONSTRAINT review_text_max_length CHECK (review_text IS NULL OR length(review_text) <= 200)
 );
+
+-- Index for weighted scoring queries (decay system)
+CREATE INDEX IF NOT EXISTS idx_votes_decay ON votes (dish_id, is_archived, created_at);
 
 -- Partial unique index: only user votes are unique per dish/user (ai_estimated can have multiples)
 CREATE UNIQUE INDEX IF NOT EXISTS votes_user_unique ON votes (dish_id, user_id) WHERE source = 'user';
@@ -765,6 +772,26 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE SET search_path = public;
 
 
+-- Review decay: time-weighted scoring (dormant until Phase 2 activation)
+-- Reviews fade: 7d=100%, 90d=50%, 180d=25%, 365+=archived
+-- MV Season: May 22 – Oct 15
+CREATE OR REPLACE FUNCTION calculate_review_weight(vote_created_at TIMESTAMPTZ)
+RETURNS NUMERIC AS $$
+DECLARE
+  days_old NUMERIC;
+BEGIN
+  days_old := EXTRACT(EPOCH FROM (NOW() - vote_created_at)) / 86400;
+
+  IF days_old <= 7 THEN RETURN 1.000;
+  ELSIF days_old <= 90 THEN RETURN ROUND((1.0 - ((days_old - 7) / 83) * 0.5)::NUMERIC, 3);
+  ELSIF days_old <= 180 THEN RETURN ROUND((0.5 - ((days_old - 90) / 90) * 0.25)::NUMERIC, 3);
+  ELSIF days_old <= 365 THEN RETURN 0.250;
+  ELSE RETURN 0.000;
+  END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE SET search_path = public;
+
+
 -- =============================================
 -- 5. CORE FUNCTIONS
 -- =============================================
@@ -849,7 +876,8 @@ RETURNS TABLE (
   value_score DECIMAL,
   value_percentile DECIMAL,
   search_score DECIMAL,
-  featured_photo_url TEXT
+  featured_photo_url TEXT,
+  latest_vote_at TIMESTAMPTZ
 ) AS $$
 DECLARE
   lat_delta DECIMAL := radius_miles / 69.0;
@@ -991,7 +1019,8 @@ BEGIN
       fr.distance,
       COALESCE(rvc.recent_votes, 0)
     ) AS search_score,
-    bp.photo_url AS featured_photo_url
+    bp.photo_url AS featured_photo_url,
+    MAX(v.created_at) AS latest_vote_at
   FROM dishes d
   INNER JOIN filtered_restaurants fr ON d.restaurant_id = fr.id
   LEFT JOIN votes v ON d.id = v.dish_id
