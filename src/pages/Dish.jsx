@@ -1071,9 +1071,13 @@ export function Dish() {
               Order This
             </a>
           )}
-          {dish.restaurant_lat && dish.restaurant_lng && (
+          {(dish.restaurant_lat || dish.restaurant_address || dish.restaurant_name) && (
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${dish.restaurant_lat},${dish.restaurant_lng}`}
+              href={dish.restaurant_lat && dish.restaurant_lng
+                ? `https://www.google.com/maps/dir/?api=1&destination=${dish.restaurant_lat},${dish.restaurant_lng}`
+                : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((dish.restaurant_address || dish.restaurant_name) + ', Martha\'s Vineyard, MA')}`
+              }
+              target="_blank"
               rel="noopener noreferrer"
               className={`${dish.toast_slug ? 'flex-1' : 'w-full'} flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]`}
               style={{
