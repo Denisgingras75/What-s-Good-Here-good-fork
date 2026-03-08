@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS restaurants (
   menu_last_checked TIMESTAMPTZ,
   menu_content_hash TEXT,
   menu_section_order TEXT[] DEFAULT '{}',
+  toast_slug TEXT,
+  order_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -84,6 +86,8 @@ CREATE TABLE IF NOT EXISTS votes (
   scored_at TIMESTAMPTZ,
   category_snapshot TEXT,
   purity_score DECIMAL(5, 2),
+  war_score DECIMAL(4, 3),
+  badge_hash TEXT,
   source TEXT NOT NULL DEFAULT 'user' CHECK (source IN ('user', 'ai_estimated')),
   source_metadata JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
