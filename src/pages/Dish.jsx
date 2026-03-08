@@ -1120,7 +1120,7 @@ export function Dish() {
           {dish.restaurant_phone && (
             <a
               href={'tel:' + dish.restaurant_phone}
-              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all active:scale-[0.97]"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.97]"
               style={{
                 background: 'var(--color-emerald)',
                 color: 'white',
