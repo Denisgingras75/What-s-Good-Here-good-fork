@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
   instagram_url TEXT,
   phone TEXT,
   menu_url TEXT,
+  toast_slug TEXT,
   menu_last_checked TIMESTAMPTZ,
   menu_content_hash TEXT,
   menu_section_order TEXT[] DEFAULT '{}',
