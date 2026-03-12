@@ -8,19 +8,19 @@ export function BottomNav() {
       to: '/restaurants',
       label: 'Restaurants',
       prefetch: prefetchRoutes.restaurants,
-      icon: (isActive) => <Storefront size={24} weight={isActive ? 'fill' : 'duotone'} />,
+      icon: (isActive) => <Storefront size={isActive ? 26 : 24} weight={isActive ? 'fill' : 'duotone'} />,
     },
     {
       to: '/',
       label: 'Home',
       prefetch: prefetchRoutes.map,
-      icon: (isActive) => <HouseLine size={24} weight={isActive ? 'fill' : 'duotone'} />,
+      icon: (isActive) => <HouseLine size={isActive ? 26 : 24} weight={isActive ? 'fill' : 'duotone'} />,
     },
     {
       to: '/profile',
       label: 'You',
       prefetch: prefetchRoutes.profile,
-      icon: (isActive) => <UserCircle size={24} weight={isActive ? 'fill' : 'duotone'} />,
+      icon: (isActive) => <UserCircle size={isActive ? 26 : 24} weight={isActive ? 'fill' : 'duotone'} />,
     },
   ]
 
@@ -33,7 +33,7 @@ export function BottomNav() {
         borderTop: '1px solid var(--color-divider)',
       }}
     >
-      <div className="flex justify-around items-center h-16 pb-safe">
+      <div className="flex justify-around items-center h-[72px] pb-safe">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
@@ -55,8 +55,19 @@ export function BottomNav() {
           >
             {({ isActive }) => (
               <>
+                {isActive && (
+                  <div
+                    style={{
+                      width: 20,
+                      height: 2,
+                      borderRadius: 1,
+                      background: 'var(--color-primary)',
+                      marginBottom: 4,
+                    }}
+                  />
+                )}
                 {tab.icon(isActive)}
-                <span className="text-[11px] mt-1" style={{ fontWeight: 'inherit' }}>{tab.label}</span>
+                <span className="mt-1" style={{ fontSize: 10, fontWeight: 'inherit' }}>{tab.label}</span>
               </>
             )}
           </NavLink>
