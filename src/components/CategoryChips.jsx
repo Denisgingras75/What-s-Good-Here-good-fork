@@ -42,13 +42,14 @@ export function CategoryChips({
     >
       <div
         ref={scrollRef}
-        className="flex px-3 overflow-x-auto"
+        className="flex px-4 overflow-x-auto"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
-          minHeight: '68px',
+          minHeight: '72px',
           touchAction: 'pan-x pan-y',
+          gap: '2px',
         }}
       >
         {townPicker && (
@@ -64,16 +65,26 @@ export function CategoryChips({
               onClick={function () { onSelect(isActive ? null : cat.id) }}
               className="flex-shrink-0 flex flex-col items-center justify-center"
               style={{
-                padding: '4px 6px',
-                minWidth: '56px',
-                fontSize: '11px',
-                background: 'transparent',
-                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                padding: '4px 8px',
+                minWidth: '58px',
+                fontSize: '10px',
+                fontFamily: "'Outfit', sans-serif",
                 fontWeight: isActive ? 700 : 500,
+                letterSpacing: '0.02em',
+                background: 'transparent',
+                color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                borderRadius: '12px',
+                transition: 'color 0.15s ease',
               }}
             >
               <CategoryIcon categoryId={cat.id} size={46} />
-              <span className="mt-1" style={{ lineHeight: 1.2 }}>{cat.label}</span>
+              <span style={{
+                marginTop: 3,
+                lineHeight: 1.2,
+                borderBottom: isActive ? '2px solid var(--color-primary)' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'border-color 0.15s ease',
+              }}>{cat.label}</span>
             </button>
           )
         })}

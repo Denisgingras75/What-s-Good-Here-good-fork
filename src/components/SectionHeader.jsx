@@ -13,24 +13,15 @@ export function SectionHeader({ title, subtitle, action, level = 'h2' }) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <div
-          style={{
-            width: '40px',
-            height: '2px',
-            background: 'var(--color-primary)',
-            opacity: 0.3,
-            marginBottom: '8px',
-          }}
-        />
         <Tag
           className="font-bold"
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: '18px',
+            fontFamily: "'Cormorant', Georgia, serif",
+            fontSize: '22px',
             fontWeight: 700,
             color: 'var(--color-text-primary)',
-            letterSpacing: '-0.01em',
-            lineHeight: 1.3,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.2,
           }}
         >
           {title}
@@ -38,11 +29,11 @@ export function SectionHeader({ title, subtitle, action, level = 'h2' }) {
         {subtitle && (
           <p
             style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "'Outfit', system-ui, sans-serif",
               fontSize: '12px',
               fontWeight: 400,
               color: 'var(--color-text-secondary)',
-              marginTop: '2px',
+              marginTop: '4px',
             }}
           >
             {subtitle}

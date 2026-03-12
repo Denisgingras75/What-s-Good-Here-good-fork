@@ -29,7 +29,7 @@ export function BottomNav() {
       aria-label="Main navigation"
       className="fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: 'var(--color-surface-elevated)',
+        background: 'var(--color-surface)',
         borderTop: '1px solid var(--color-divider)',
       }}
     >
@@ -58,16 +58,23 @@ export function BottomNav() {
                 {isActive && (
                   <div
                     style={{
-                      width: 20,
+                      width: 24,
                       height: 2,
                       borderRadius: 1,
                       background: 'var(--color-primary)',
-                      marginBottom: 4,
+                      marginBottom: 6,
+                      boxShadow: '0 0 8px rgba(232, 163, 23, 0.4)',
                     }}
                   />
                 )}
                 {tab.icon(isActive)}
-                <span className="mt-1" style={{ fontSize: 10, fontWeight: 'inherit' }}>{tab.label}</span>
+                <span style={{
+                  marginTop: 4,
+                  fontSize: 10,
+                  fontWeight: 'inherit',
+                  fontFamily: "'Outfit', sans-serif",
+                  letterSpacing: '0.04em',
+                }}>{tab.label}</span>
               </>
             )}
           </NavLink>

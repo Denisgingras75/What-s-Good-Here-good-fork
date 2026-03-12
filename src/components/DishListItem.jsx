@@ -82,7 +82,7 @@ export const DishListItem = memo(function DishListItem({
   var isHero = rank === 1
   var isSupporting = rank === 2 || rank === 3
 
-  // --- PODIUM CARDS (ranks 1-3): Magazine-style feature cards ---
+  // --- PODIUM CARDS (ranks 1-3): Night Market spotlight cards ---
   if (isPodium) {
     var medalColor = isHero ? 'var(--color-medal-gold)' : rank === 2 ? 'var(--color-medal-silver)' : 'var(--color-medal-bronze)'
 
@@ -95,15 +95,27 @@ export const DishListItem = memo(function DishListItem({
           position: 'relative',
           overflow: 'hidden',
           background: highlighted ? 'var(--color-accent-gold-muted)' : 'var(--color-card)',
-          border: '1px solid var(--color-divider)',
-          borderRadius: isHero ? '16px' : '12px',
-          borderLeft: isHero ? '4px solid ' + medalColor : '3px solid ' + medalColor,
-          padding: isHero ? '20px' : '16px',
-          minHeight: isHero ? '140px' : '100px',
+          border: '1px solid var(--color-card-border)',
+          borderRadius: isHero ? '20px' : '16px',
+          padding: isHero ? '24px' : '18px',
+          minHeight: isHero ? '160px' : '110px',
           cursor: 'pointer',
           transition: 'background 1s ease-out',
         }}
       >
+        {/* Spotlight glow for #1 */}
+        {isHero && (
+          <div style={{
+            position: 'absolute',
+            top: '-30%',
+            right: '-10%',
+            width: '60%',
+            height: '160%',
+            background: 'radial-gradient(ellipse at center, rgba(232, 163, 23, 0.06) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+        )}
+
         {/* Background photo (right side, fading in) */}
         {photoUrl && (
           <img
@@ -119,100 +131,102 @@ export const DishListItem = memo(function DishListItem({
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center',
-              maskImage: 'linear-gradient(to right, transparent 0%, black 40%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%)',
+              maskImage: 'linear-gradient(to right, transparent 0%, black 45%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 45%)',
             }}
           />
         )}
 
         {/* Content layer (above photo) */}
-        <div className="flex flex-col justify-between" style={{ position: 'relative', zIndex: 1, minHeight: isHero ? '100px' : '68px' }}>
-          {/* Rank watermark */}
-          <span
-            style={{
-              position: 'absolute',
-              top: isHero ? '-4px' : '-2px',
-              right: '0',
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: isHero ? '48px' : '36px',
-              fontWeight: 900,
-              color: medalColor,
-              opacity: isHero ? 0.25 : 0.2,
-              lineHeight: 1,
-              pointerEvents: 'none',
-            }}
-          >
-            {rank}
-          </span>
-
-          {/* Dish name + restaurant */}
-          <div style={{ maxWidth: '70%' }}>
-            <p
-              className="font-bold"
-              style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: isHero ? '20px' : '17px',
+        <div className="flex flex-col justify-between" style={{ position: 'relative', zIndex: 1, minHeight: isHero ? '112px' : '74px' }}>
+          {/* Rank badge — bold graphic */}
+          <div className="flex items-start justify-between">
+            <div style={{ maxWidth: '65%' }}>
+              {/* Rank number as inline badge */}
+              <div className="flex items-center gap-2" style={{ marginBottom: '8px' }}>
+                <span style={{
+                  fontFamily: "'Cormorant', Georgia, serif",
+                  fontSize: isHero ? '14px' : '12px',
+                  fontWeight: 700,
+                  color: medalColor,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}>
+                  {'#' + rank}
+                </span>
+                {isHero && (
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    color: 'var(--color-primary)',
+                    opacity: 0.6,
+                  }}>
+                    Top Pick
+                  </span>
+                )}
+              </div>
+              {/* Dish name */}
+              <p style={{
+                fontFamily: "'Cormorant', Georgia, serif",
+                fontSize: isHero ? '24px' : '19px',
                 fontWeight: 700,
-                letterSpacing: '-0.01em',
+                letterSpacing: '-0.02em',
                 color: 'var(--color-text-primary)',
-                lineHeight: 1.3,
-              }}
-            >
-              {dishName}
-            </p>
-            <p
-              style={{
+                lineHeight: 1.2,
+              }}>
+                {dishName}
+              </p>
+              <p style={{
+                fontFamily: "'Outfit', sans-serif",
                 fontSize: isHero ? '13px' : '12px',
                 fontWeight: 500,
                 color: 'var(--color-text-secondary)',
-                marginTop: '4px',
-              }}
-            >
-              {restaurantName}
-              {sortBy === 'best_value' && price != null && ' \u00b7 $' + Number(price).toFixed(0)}
-              {showDistance && distanceMiles != null && ' \u00b7 ' + Number(distanceMiles).toFixed(1) + ' mi'}
-            </p>
-            {valuePercentile != null && (
-              <div style={{ marginTop: '4px' }}>
-                <ValueBadge valuePercentile={valuePercentile} />
-              </div>
-            )}
-          </div>
+                marginTop: '6px',
+                letterSpacing: '0.01em',
+              }}>
+                {restaurantName}
+                {sortBy === 'best_value' && price != null && ' \u00b7 $' + Number(price).toFixed(0)}
+                {showDistance && distanceMiles != null && ' \u00b7 ' + Number(distanceMiles).toFixed(1) + ' mi'}
+              </p>
+              {valuePercentile != null && (
+                <div style={{ marginTop: '6px' }}>
+                  <ValueBadge valuePercentile={valuePercentile} />
+                </div>
+              )}
+            </div>
 
-          {/* Rating — bottom right */}
-          <div className="flex items-end justify-between" style={{ marginTop: '8px' }}>
-            <div />
-            <div className="text-right">
+            {/* Rating — top right, bold */}
+            <div className="text-right flex-shrink-0">
               {isRanked ? (
-                <>
-                  <span
-                    className="font-bold"
-                    style={{
-                      fontSize: isHero ? '28px' : '22px',
-                      fontWeight: 800,
-                      letterSpacing: '-0.02em',
-                      color: getRatingColor(avgRating),
-                    }}
-                  >
+                <div>
+                  <span style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: isHero ? '32px' : '24px',
+                    fontWeight: 800,
+                    letterSpacing: '-0.03em',
+                    color: getRatingColor(avgRating),
+                    lineHeight: 1,
+                  }}>
                     {avgRating}
                   </span>
                   <div style={{
-                    fontSize: '11px',
+                    fontSize: '10px',
                     color: 'var(--color-text-tertiary)',
-                    fontWeight: 500,
-                    marginTop: '1px',
+                    fontWeight: 600,
+                    marginTop: '2px',
+                    letterSpacing: '0.05em',
                   }}>
                     {totalVotes} vote{totalVotes === 1 ? '' : 's'}
                   </div>
-                </>
+                </div>
               ) : (
-                <span
-                  style={{
-                    fontSize: '12px',
-                    color: 'var(--color-text-tertiary)',
-                    fontWeight: 500,
-                  }}
-                >
+                <span style={{
+                  fontSize: '11px',
+                  color: 'var(--color-text-tertiary)',
+                  fontWeight: 600,
+                }}>
                   {totalVotes ? totalVotes + ' vote' + (totalVotes === 1 ? '' : 's') : 'New'}
                 </span>
               )}
@@ -222,7 +236,7 @@ export const DishListItem = memo(function DishListItem({
 
         {/* Action buttons row */}
         {(toastSlug || orderUrl || websiteUrl || restaurantPhone || restaurantName) && (
-          <div className="flex items-center gap-1.5" style={{ marginTop: '6px', position: 'relative', zIndex: 1 }}>
+          <div className="flex items-center gap-1.5" style={{ marginTop: '8px', position: 'relative', zIndex: 1 }}>
             {renderActionButtons()}
           </div>
         )}
@@ -286,6 +300,7 @@ export const DishListItem = memo(function DishListItem({
         <p
           className="font-bold truncate"
           style={{
+            fontFamily: "'Outfit', sans-serif",
             fontSize: '15px',
             fontWeight: 700,
             color: 'var(--color-text-primary)',

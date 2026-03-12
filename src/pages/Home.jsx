@@ -70,63 +70,93 @@ export function Home() {
     ? BROWSE_CATEGORIES.find(function (c) { return c.id === selectedCategory })
     : null
 
-  var sectionLabelStyle = {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: '10px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.15em',
-    color: 'var(--color-text-tertiary)',
-    fontWeight: 600,
-    marginBottom: '8px',
-  }
-
   function renderDishSections(items, makeOnClick) {
     var top = items.slice(0, 3)
     var rest = items.slice(3)
     return (
       <>
         {top.length > 0 && (
-          <>
-            <div style={sectionLabelStyle}>THE BEST</div>
-            <div className="flex flex-col" style={{ gap: '12px' }}>
+          <div className="stagger-item" style={{ animationDelay: '100ms' }}>
+            {/* Section label */}
+            <div className="flex items-center gap-3" style={{ marginBottom: '16px' }}>
+              <div style={{
+                width: '3px',
+                height: '16px',
+                borderRadius: '2px',
+                background: 'var(--color-primary)',
+              }} />
+              <span style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.2em',
+                color: 'var(--color-primary)',
+                fontWeight: 700,
+              }}>
+                The Best
+              </span>
+            </div>
+            <div className="flex flex-col" style={{ gap: '16px' }}>
               {top.map(function (dish, i) {
+                return (
+                  <div
+                    key={dish.dish_id}
+                    className="stagger-item"
+                    style={{ animationDelay: (i * 80 + 150) + 'ms' }}
+                  >
+                    <DishListItem
+                      dish={dish}
+                      rank={i + 1}
+                      showDistance
+                      onClick={makeOnClick(dish)}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+        {rest.length > 0 && (
+          <div className="stagger-item" style={{ marginTop: '28px', animationDelay: '400ms' }}>
+            {/* Section label */}
+            <div className="flex items-center gap-3" style={{ marginBottom: '12px' }}>
+              <div style={{
+                width: '3px',
+                height: '16px',
+                borderRadius: '2px',
+                background: 'var(--color-text-tertiary)',
+              }} />
+              <span style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.2em',
+                color: 'var(--color-text-tertiary)',
+                fontWeight: 700,
+              }}>
+                Also Great
+              </span>
+            </div>
+            <div style={{
+              background: 'var(--color-card)',
+              border: '1px solid var(--color-divider)',
+              borderRadius: '16px',
+              overflow: 'hidden',
+            }}>
+              {rest.map(function (dish, i) {
                 return (
                   <DishListItem
                     key={dish.dish_id}
                     dish={dish}
-                    rank={i + 1}
+                    rank={i + 4}
                     showDistance
+                    isLast={i === rest.length - 1}
                     onClick={makeOnClick(dish)}
                   />
                 )
               })}
             </div>
-          </>
-        )}
-        {rest.length > 0 && (
-          <>
-            <div style={{ marginTop: '16px' }}>
-              <div style={sectionLabelStyle}>ALSO GREAT</div>
-              <div style={{
-                background: 'var(--color-card)',
-                border: '1px solid var(--color-divider)',
-                borderRadius: '12px',
-                overflow: 'hidden',
-              }}>
-                {rest.map(function (dish, i) {
-                  return (
-                    <DishListItem
-                      key={dish.dish_id}
-                      dish={dish}
-                      rank={i + 4}
-                      showDistance
-                      onClick={makeOnClick(dish)}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          </>
+          </div>
         )}
       </>
     )
@@ -135,31 +165,52 @@ export function Home() {
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
 
-      {/* Brand header */}
-      <div className="px-4 pt-5 pb-2 text-center">
+      {/* ── BRAND HEADER ── */}
+      <div style={{
+        padding: '28px 20px 12px',
+        textAlign: 'center',
+        position: 'relative',
+      }}>
+        {/* Ambient glow behind brand name */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '200px',
+          height: '80px',
+          background: 'radial-gradient(ellipse, rgba(232, 163, 23, 0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
         <h1 style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: '22px',
+          fontFamily: "'Cormorant', Georgia, serif",
+          fontSize: '32px',
           fontWeight: 700,
           color: 'var(--color-text-primary)',
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.03em',
+          lineHeight: 1,
+          position: 'relative',
         }}>
-          What&rsquo;s <span style={{ color: 'var(--color-primary)' }}>Good</span> Here
+          What&rsquo;s <span style={{
+            color: 'var(--color-primary)',
+            fontStyle: 'italic',
+          }}>Good</span> Here
         </h1>
         <p style={{
-          fontSize: '12px',
+          fontFamily: "'Outfit', sans-serif",
+          fontSize: '11px',
           color: 'var(--color-text-tertiary)',
-          marginTop: '2px',
-          letterSpacing: '0.05em',
+          marginTop: '6px',
+          letterSpacing: '0.25em',
           textTransform: 'uppercase',
-          fontWeight: 500,
+          fontWeight: 600,
         }}>
           Martha&rsquo;s Vineyard
         </p>
       </div>
 
-      {/* Search row */}
-      <div className="px-4 pt-4 pb-3">
+      {/* ── SEARCH ── */}
+      <div className="px-5 pt-3 pb-3">
         <DishSearch
           loading={loading}
           placeholder="What are you craving?"
@@ -168,8 +219,8 @@ export function Home() {
         />
       </div>
 
-      {/* Location banner */}
-      <div className="px-4">
+      {/* ── LOCATION BANNER ── */}
+      <div className="px-5">
         <LocationBanner
           permissionState={permissionState}
           requestLocation={requestLocation}
@@ -177,17 +228,19 @@ export function Home() {
         />
       </div>
 
-      {/* Radius chip */}
-      <div className="px-4 pb-2">
+      {/* ── RADIUS CHIP ── */}
+      <div className="px-5 pb-2">
         <button
           onClick={function () { setShowRadiusSheet(true) }}
           aria-label={'Search radius: ' + radius + ' miles'}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full font-bold"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold"
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
+            fontWeight: 700,
+            letterSpacing: '0.02em',
             background: 'var(--color-surface)',
-            color: 'var(--color-text-primary)',
-            border: '1.5px solid var(--color-divider)',
+            color: 'var(--color-text-secondary)',
+            border: '1px solid var(--color-divider)',
           }}
         >
           {radius} mi
@@ -195,7 +248,7 @@ export function Home() {
         </button>
       </div>
 
-      {/* Category chips + town picker */}
+      {/* ── CATEGORY CHIPS ── */}
       <CategoryChips
         selected={selectedCategory}
         onSelect={setSelectedCategory}
@@ -212,8 +265,8 @@ export function Home() {
         }
       />
 
-      {/* Section header */}
-      <div className="px-4 pt-3 pb-2">
+      {/* ── SECTION HEADER ── */}
+      <div className="px-5 pt-4 pb-3">
         <SectionHeader
           title={selectedCategoryLabel
             ? (town ? 'Best ' + selectedCategoryLabel.label + ' in ' + town : 'Best ' + selectedCategoryLabel.label)
@@ -222,8 +275,8 @@ export function Home() {
         />
       </div>
 
-      {/* Ranked dish list */}
-      <div className="px-4 pb-4">
+      {/* ── DISH LIST ── */}
+      <div className="px-5 pb-4">
         {searchQuery ? (
           searchLoading ? (
             <ListSkeleton />
@@ -257,19 +310,22 @@ export function Home() {
         )}
       </div>
 
-      {/* Floating Check In button */}
+      {/* ── CHECK IN FAB ── */}
       <button
         onClick={function () { setAddModalQuery(''); setAddModalOpen(true) }}
-        className="fixed right-4 flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-sm active:scale-95 transition-all"
+        className="fixed right-5 flex items-center gap-2 px-5 py-3.5 rounded-full font-semibold active:scale-95 transition-all"
         style={{
           bottom: 'calc(80px + env(safe-area-inset-bottom))',
           zIndex: 40,
-          background: 'var(--color-accent-gold)',
-          color: 'var(--color-bg)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1)',
+          background: 'var(--color-primary)',
+          color: 'var(--color-text-on-primary)',
+          fontSize: '14px',
+          fontWeight: 700,
+          letterSpacing: '0.02em',
+          boxShadow: '0 4px 24px rgba(232, 163, 23, 0.3), 0 0 0 1px rgba(232, 163, 23, 0.1)',
         }}
       >
-        <Plus size={20} weight="bold" />
+        <Plus size={18} weight="bold" />
         Check In
       </button>
 
@@ -291,15 +347,40 @@ export function Home() {
   )
 }
 
-/* --- Loading skeleton ----------------------------------------------------- */
+/* --- Loading skeleton --------------------------------------------------- */
 function ListSkeleton() {
   return (
     <div className="animate-pulse">
-      {[0, 1, 2, 3, 4].map(function (i) {
+      {/* Hero skeleton */}
+      <div
+        className="rounded-2xl"
+        style={{
+          height: '140px',
+          background: 'var(--color-card)',
+          border: '1px solid var(--color-divider)',
+          marginBottom: '12px',
+        }}
+      />
+      {/* Supporting skeletons */}
+      {[0, 1].map(function (i) {
         return (
-          <div key={i} className="flex items-center gap-3 py-3 px-3">
+          <div
+            key={i}
+            className="rounded-xl"
+            style={{
+              height: '100px',
+              background: 'var(--color-card)',
+              border: '1px solid var(--color-divider)',
+              marginBottom: '12px',
+            }}
+          />
+        )
+      })}
+      {/* Compact skeletons */}
+      {[0, 1, 2].map(function (i) {
+        return (
+          <div key={'c' + i} className="flex items-center gap-3 py-3 px-3">
             <div className="w-7 h-5 rounded" style={{ background: 'var(--color-divider)' }} />
-            <div className="w-6 h-6 rounded" style={{ background: 'var(--color-divider)' }} />
             <div className="flex-1">
               <div className="h-4 w-28 rounded mb-1" style={{ background: 'var(--color-divider)' }} />
               <div className="h-3 w-20 rounded" style={{ background: 'var(--color-divider)' }} />
