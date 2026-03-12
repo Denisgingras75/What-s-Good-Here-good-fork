@@ -78,25 +78,171 @@ export const DishListItem = memo(function DishListItem({
   }
 
   // --- RANKED VARIANT (home, browse, restaurant detail) ---
-  // Scoreboard layout: rank · dish name / restaurant · rating / votes
   var isPodium = rank != null && rank <= 3
+  var isHero = rank === 1
+  var isSupporting = rank === 2 || rank === 3
 
+  // --- PODIUM CARDS (ranks 1-3): Magazine-style feature cards ---
+  if (isPodium) {
+    var medalColor = isHero ? 'var(--color-medal-gold)' : rank === 2 ? 'var(--color-medal-silver)' : 'var(--color-medal-bronze)'
+
+    return (
+      <button
+        data-dish-id={dishId}
+        onClick={handleClick}
+        className="w-full text-left active:opacity-85"
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: highlighted ? 'var(--color-accent-gold-muted)' : 'var(--color-card)',
+          border: '1px solid var(--color-divider)',
+          borderRadius: isHero ? '16px' : '12px',
+          borderLeft: isHero ? '4px solid ' + medalColor : '3px solid ' + medalColor,
+          padding: isHero ? '20px' : '16px',
+          minHeight: isHero ? '140px' : '100px',
+          cursor: 'pointer',
+          transition: 'background 1s ease-out',
+        }}
+      >
+        {/* Background photo (right side, fading in) */}
+        {photoUrl && (
+          <img
+            src={photoUrl}
+            alt=""
+            loading="lazy"
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: isHero ? '55%' : '45%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              maskImage: 'linear-gradient(to right, transparent 0%, black 40%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%)',
+            }}
+          />
+        )}
+
+        {/* Content layer (above photo) */}
+        <div className="flex flex-col justify-between" style={{ position: 'relative', zIndex: 1, minHeight: isHero ? '100px' : '68px' }}>
+          {/* Rank watermark */}
+          <span
+            style={{
+              position: 'absolute',
+              top: isHero ? '-4px' : '-2px',
+              right: '0',
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: isHero ? '48px' : '36px',
+              fontWeight: 900,
+              color: medalColor,
+              opacity: isHero ? 0.25 : 0.2,
+              lineHeight: 1,
+              pointerEvents: 'none',
+            }}
+          >
+            {rank}
+          </span>
+
+          {/* Dish name + restaurant */}
+          <div style={{ maxWidth: '70%' }}>
+            <p
+              className="font-bold"
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: isHero ? '20px' : '17px',
+                fontWeight: 700,
+                letterSpacing: '-0.01em',
+                color: 'var(--color-text-primary)',
+                lineHeight: 1.3,
+              }}
+            >
+              {dishName}
+            </p>
+            <p
+              style={{
+                fontSize: isHero ? '13px' : '12px',
+                fontWeight: 500,
+                color: 'var(--color-text-secondary)',
+                marginTop: '4px',
+              }}
+            >
+              {restaurantName}
+              {sortBy === 'best_value' && price != null && ' \u00b7 $' + Number(price).toFixed(0)}
+              {showDistance && distanceMiles != null && ' \u00b7 ' + Number(distanceMiles).toFixed(1) + ' mi'}
+            </p>
+            {valuePercentile != null && (
+              <div style={{ marginTop: '4px' }}>
+                <ValueBadge valuePercentile={valuePercentile} />
+              </div>
+            )}
+          </div>
+
+          {/* Rating — bottom right */}
+          <div className="flex items-end justify-between" style={{ marginTop: '8px' }}>
+            <div />
+            <div className="text-right">
+              {isRanked ? (
+                <>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontSize: isHero ? '28px' : '22px',
+                      fontWeight: 800,
+                      letterSpacing: '-0.02em',
+                      color: getRatingColor(avgRating),
+                    }}
+                  >
+                    {avgRating}
+                  </span>
+                  <div style={{
+                    fontSize: '11px',
+                    color: 'var(--color-text-tertiary)',
+                    fontWeight: 500,
+                    marginTop: '1px',
+                  }}>
+                    {totalVotes} vote{totalVotes === 1 ? '' : 's'}
+                  </div>
+                </>
+              ) : (
+                <span
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--color-text-tertiary)',
+                    fontWeight: 500,
+                  }}
+                >
+                  {totalVotes ? totalVotes + ' vote' + (totalVotes === 1 ? '' : 's') : 'New'}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons row */}
+        {(toastSlug || orderUrl || websiteUrl || restaurantPhone || restaurantName) && (
+          <div className="flex items-center gap-1.5" style={{ marginTop: '6px', position: 'relative', zIndex: 1 }}>
+            {renderActionButtons()}
+          </div>
+        )}
+      </button>
+    )
+  }
+
+  // --- RANKS 4+ (Compact Rows) ---
   return (
     <button
       data-dish-id={dishId}
       onClick={handleClick}
-      className={'w-full text-left active:opacity-85' + (isPodium ? ' rounded-xl' : '')}
+      className="w-full text-left active:opacity-85"
       style={{
-        background: highlighted
-          ? 'var(--color-accent-gold-muted)'
-          : isPodium
-            ? 'var(--color-surface)'
-            : 'transparent',
-        padding: isPodium ? '14px 12px' : '10px 12px',
+        background: highlighted ? 'var(--color-accent-gold-muted)' : 'transparent',
+        padding: '10px 12px',
         cursor: 'pointer',
         transition: 'background 1s ease-out',
-        borderLeft: rank === 1 ? '3px solid var(--color-medal-gold)' : rank === 2 ? '3px solid var(--color-medal-silver)' : rank === 3 ? '3px solid var(--color-medal-bronze)' : 'none',
-        borderBottom: !isPodium && !isLast ? '1px solid var(--color-divider)' : 'none',
+        borderLeft: 'none',
+        borderBottom: !isLast ? '1px solid var(--color-divider)' : 'none',
       }}
     >
       <div className="flex items-center">
@@ -105,26 +251,19 @@ export const DishListItem = memo(function DishListItem({
         <span
           className="flex-shrink-0 font-bold"
           style={{
-            width: isPodium ? '36px' : '32px',
+            width: '32px',
             textAlign: 'center',
-            fontFamily: isPodium ? "'Playfair Display', Georgia, serif" : 'inherit',
-            fontSize: isPodium ? '28px' : '16px',
-            fontWeight: isPodium ? 900 : 800,
+            fontSize: '16px',
+            fontWeight: 800,
             letterSpacing: '-0.02em',
-            color: rank === 1
-              ? 'var(--color-medal-gold)'
-              : rank === 2
-                ? 'var(--color-medal-silver)'
-                : rank === 3
-                  ? 'var(--color-medal-bronze)'
-                  : 'var(--color-text-tertiary)',
+            color: 'var(--color-text-tertiary)',
           }}
         >
           {rank}
         </span>
       )}
 
-      {/* Photo thumbnail (restaurant detail only) */}
+      {/* Photo thumbnail (restaurant detail only, or rank 4+ inline) */}
       {showPhoto && photoUrl && (
         <div
           className="flex-shrink-0 rounded-lg overflow-hidden"
@@ -143,13 +282,12 @@ export const DishListItem = memo(function DishListItem({
       )}
 
       {/* Name + restaurant + distance */}
-      <div className="flex-1 min-w-0" style={{ marginLeft: showPhoto ? '6px' : (isPodium ? '8px' : '6px') }}>
+      <div className="flex-1 min-w-0" style={{ marginLeft: showPhoto ? '6px' : '6px' }}>
         <p
           className="font-bold truncate"
           style={{
-            fontFamily: isPodium ? "'Playfair Display', Georgia, serif" : 'inherit',
-            fontSize: isPodium ? '18px' : '15px',
-            fontWeight: isPodium ? 700 : 700,
+            fontSize: '15px',
+            fontWeight: 700,
             color: 'var(--color-text-primary)',
             lineHeight: 1.3,
             letterSpacing: '-0.01em',
@@ -161,7 +299,7 @@ export const DishListItem = memo(function DishListItem({
           <p
             className="truncate"
             style={{
-              fontSize: isPodium ? '13px' : '12px',
+              fontSize: '12px',
               color: 'var(--color-text-tertiary)',
             }}
           >
@@ -173,6 +311,30 @@ export const DishListItem = memo(function DishListItem({
         </div>
       </div>
 
+      {/* Small photo thumbnail for rank 4+ (before rating) */}
+      {!showPhoto && photoUrl && (
+        <div
+          className="flex-shrink-0 rounded-lg overflow-hidden"
+          style={{
+            width: '40px',
+            height: '40px',
+            marginLeft: '8px',
+            background: 'var(--color-surface)',
+          }}
+        >
+          <img
+            src={photoUrl}
+            alt={dishName}
+            loading="lazy"
+            className="w-full h-full object-cover"
+            style={{
+              maskImage: 'linear-gradient(to right, transparent 0%, black 20%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 20%)',
+            }}
+          />
+        </div>
+      )}
+
       {/* Rating + votes */}
       <div className="flex-shrink-0 text-right" style={{ marginLeft: '8px' }}>
         {isRanked ? (
@@ -180,7 +342,7 @@ export const DishListItem = memo(function DishListItem({
             <span
               className="font-bold"
               style={{
-                fontSize: isPodium ? '24px' : '18px',
+                fontSize: '18px',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
                 color: getRatingColor(avgRating),
@@ -213,68 +375,77 @@ export const DishListItem = memo(function DishListItem({
 
       {/* Action buttons row — always show at minimum a Directions button */}
       {(toastSlug || orderUrl || websiteUrl || restaurantPhone || restaurantName) && (
-        <div className="flex items-center gap-1.5" style={{ marginTop: '6px', marginLeft: rank != null ? (isPodium ? '44px' : '38px') : '0' }}>
-          {/* Order Now */}
-          {(toastSlug || orderUrl) && (
-            <a
-              href={toastSlug ? 'https://order.toasttab.com/online/' + toastSlug : orderUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={function (e) { e.stopPropagation() }}
-              className="rounded-md"
-              style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 700, background: 'var(--color-primary)', color: 'white', whiteSpace: 'nowrap', textDecoration: 'none' }}
-            >
-              Order Now
-            </a>
-          )}
-          {/* See Menu */}
-          {!toastSlug && !orderUrl && websiteUrl && (
-            <a
-              href={websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={function (e) { e.stopPropagation() }}
-              className="rounded-md"
-              style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 700, background: 'var(--color-surface)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-divider)', whiteSpace: 'nowrap', textDecoration: 'none' }}
-            >
-              See Menu
-            </a>
-          )}
-          {/* Directions */}
+        <div className="flex items-center gap-1.5" style={{ marginTop: '6px', marginLeft: rank != null ? '38px' : '0' }}>
+          {renderActionButtons()}
+        </div>
+      )}
+    </button>
+  )
+
+  // --- ACTION BUTTONS RENDERER (shared by podium + compact) ---
+  function renderActionButtons() {
+    return (
+      <>
+        {/* Order Now */}
+        {(toastSlug || orderUrl) && (
           <a
-            href={restaurantLat && restaurantLng
-              ? 'https://www.google.com/maps/dir/?api=1&destination=' + restaurantLat + ',' + restaurantLng
-              : 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent((restaurantAddress || (restaurantName + ', ' + (restaurantTown || ''))) + ', Martha\'s Vineyard, MA')
-            }
+            href={toastSlug ? 'https://order.toasttab.com/online/' + toastSlug : orderUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={function (e) { e.stopPropagation() }}
+            className="rounded-md"
+            style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 700, background: 'var(--color-primary)', color: 'white', whiteSpace: 'nowrap', textDecoration: 'none' }}
+          >
+            Order Now
+          </a>
+        )}
+        {/* See Menu */}
+        {!toastSlug && !orderUrl && websiteUrl && (
+          <a
+            href={websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={function (e) { e.stopPropagation() }}
+            className="rounded-md"
+            style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 700, background: 'var(--color-surface)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-divider)', whiteSpace: 'nowrap', textDecoration: 'none' }}
+          >
+            See Menu
+          </a>
+        )}
+        {/* Directions */}
+        <a
+          href={restaurantLat && restaurantLng
+            ? 'https://www.google.com/maps/dir/?api=1&destination=' + restaurantLat + ',' + restaurantLng
+            : 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent((restaurantAddress || (restaurantName + ', ' + (restaurantTown || ''))) + ', Martha\'s Vineyard, MA')
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={function (e) { e.stopPropagation() }}
+          className="rounded-md flex items-center gap-1"
+          style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 600, background: 'var(--color-surface)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-divider)', whiteSpace: 'nowrap', textDecoration: 'none' }}
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+          </svg>
+          Directions
+        </a>
+        {/* Call */}
+        {restaurantPhone && (
+          <a
+            href={'tel:' + restaurantPhone}
             onClick={function (e) { e.stopPropagation() }}
             className="rounded-md flex items-center gap-1"
             style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 600, background: 'var(--color-surface)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-divider)', whiteSpace: 'nowrap', textDecoration: 'none' }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+              <path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
             </svg>
-            Directions
+            Call
           </a>
-          {/* Call */}
-          {restaurantPhone && (
-            <a
-              href={'tel:' + restaurantPhone}
-              onClick={function (e) { e.stopPropagation() }}
-              className="rounded-md flex items-center gap-1"
-              style={{ padding: '3px 8px', fontSize: '11px', fontWeight: 600, background: 'var(--color-surface)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-divider)', whiteSpace: 'nowrap', textDecoration: 'none' }}
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-              </svg>
-              Call
-            </a>
-          )}
-        </div>
-      )}
-    </button>
-  )
+        )}
+      </>
+    )
+  }
 
   // --- VOTED CARD RENDERER ---
   function renderVotedCard() {
