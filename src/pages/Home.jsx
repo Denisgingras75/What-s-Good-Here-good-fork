@@ -70,9 +70,93 @@ export function Home() {
     ? BROWSE_CATEGORIES.find(function (c) { return c.id === selectedCategory })
     : null
 
+  var sectionLabelStyle = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.15em',
+    color: 'var(--color-text-tertiary)',
+    fontWeight: 600,
+    marginBottom: '8px',
+  }
+
+  function renderDishSections(items, makeOnClick) {
+    var top = items.slice(0, 3)
+    var rest = items.slice(3)
+    return (
+      <>
+        {top.length > 0 && (
+          <>
+            <div style={sectionLabelStyle}>THE BEST</div>
+            <div className="flex flex-col" style={{ gap: '12px' }}>
+              {top.map(function (dish, i) {
+                return (
+                  <DishListItem
+                    key={dish.dish_id}
+                    dish={dish}
+                    rank={i + 1}
+                    showDistance
+                    onClick={makeOnClick(dish)}
+                  />
+                )
+              })}
+            </div>
+          </>
+        )}
+        {rest.length > 0 && (
+          <>
+            <div style={{ marginTop: '16px' }}>
+              <div style={sectionLabelStyle}>ALSO GREAT</div>
+              <div style={{
+                background: 'var(--color-card)',
+                border: '1px solid var(--color-divider)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+              }}>
+                {rest.map(function (dish, i) {
+                  return (
+                    <DishListItem
+                      key={dish.dish_id}
+                      dish={dish}
+                      rank={i + 4}
+                      showDistance
+                      onClick={makeOnClick(dish)}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    )
+  }
+
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
-      <h1 className="sr-only">What's Good Here</h1>
+
+      {/* Brand header */}
+      <div className="px-4 pt-5 pb-2 text-center">
+        <h1 style={{
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: '22px',
+          fontWeight: 700,
+          color: 'var(--color-text-primary)',
+          letterSpacing: '-0.02em',
+        }}>
+          What&rsquo;s <span style={{ color: 'var(--color-primary)' }}>Good</span> Here
+        </h1>
+        <p style={{
+          fontSize: '12px',
+          color: 'var(--color-text-tertiary)',
+          marginTop: '2px',
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+        }}>
+          Martha&rsquo;s Vineyard
+        </p>
+      </div>
 
       {/* Search row */}
       <div className="px-4 pt-4 pb-3">
@@ -144,19 +228,9 @@ export function Home() {
           searchLoading ? (
             <ListSkeleton />
           ) : searchResults.length > 0 ? (
-            <div className="flex flex-col" style={{ gap: '2px' }}>
-              {searchResults.map(function (dish, i) {
-                return (
-                  <DishListItem
-                    key={dish.dish_id}
-                    dish={dish}
-                    rank={i + 1}
-                    showDistance
-                    onClick={function () { navigate('/dish/' + dish.dish_id) }}
-                  />
-                )
-              })}
-            </div>
+            renderDishSections(searchResults, function (dish) {
+              return function () { navigate('/dish/' + dish.dish_id) }
+            })
           ) : (
             <EmptyState
               emoji="🔍"
@@ -172,19 +246,9 @@ export function Home() {
             </p>
           </div>
         ) : rankedDishes.length > 0 ? (
-          <div className="flex flex-col" style={{ gap: '2px' }}>
-            {rankedDishes.map(function (dish, i) {
-              return (
-                <DishListItem
-                  key={dish.dish_id}
-                  dish={dish}
-                  rank={i + 1}
-                  showDistance
-                  onClick={function () { navigate('/dish/' + dish.dish_id) }}
-                />
-              )
-            })}
-          </div>
+          renderDishSections(rankedDishes, function (dish) {
+            return function () { navigate('/dish/' + dish.dish_id) }
+          })
         ) : (
           <EmptyState
             emoji="🍽️"
@@ -198,7 +262,7 @@ export function Home() {
         onClick={function () { setAddModalQuery(''); setAddModalOpen(true) }}
         className="fixed right-4 flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-sm active:scale-95 transition-all"
         style={{
-          bottom: 'calc(72px + env(safe-area-inset-bottom))',
+          bottom: 'calc(80px + env(safe-area-inset-bottom))',
           zIndex: 40,
           background: 'var(--color-accent-gold)',
           color: 'var(--color-bg)',
